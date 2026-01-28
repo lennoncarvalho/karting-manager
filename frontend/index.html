@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kartarados - Championship Manager</title>
+  
+  <!-- Bootstrap CSS from CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="src/styles/main.css">
+  <link rel="stylesheet" href="src/styles/bootstrap-overrides.css">
+  <link rel="stylesheet" href="src/styles/theme.css">
+  <link rel="stylesheet" href="src/styles/custom.css">
+</head>
+<body>
+  <div id="app"></div>
+  
+  <!-- Bootstrap JS Bundle (required for modals, dropdowns, etc.) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+          integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+          crossorigin="anonymous"></script>
+  
+  <!-- Supabase JS from CDN (UMD) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script type="module">
+    import { SUPABASE_URL, SUPABASE_ANON_KEY } from './src/config.js';
+    
+    if (!window.supabase || !window.supabase.createClient) {
+      console.error('Supabase JS failed to load.');
+    } else {
+      window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  </script>
+  
+  <!-- Main application script -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

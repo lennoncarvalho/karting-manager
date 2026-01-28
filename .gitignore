@@ -1,0 +1,46 @@
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies (if using npm/yarn later)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.cache
+.cache/
+
+# Supabase local (if using Supabase CLI)
+.supabase/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

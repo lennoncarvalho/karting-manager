@@ -1,0 +1,121 @@
+/* Custom F1-inspired styles and components */
+
+/* F1-inspired card styles */
+.card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(255, 24, 1, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Driver profile picture styling */
+.driver-picture {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--season-accent, #FF1801);
+}
+
+.driver-picture-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--season-accent, #FF1801);
+}
+
+/* Rankings table styling */
+.rankings-table {
+  font-size: 0.95rem;
+}
+
+.rankings-table .position {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--season-accent, #FF1801);
+}
+
+.rankings-table .points {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Race results table */
+.race-results-table {
+  font-size: 0.9rem;
+}
+
+.race-results-table .position-badge {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: 700;
+  background-color: var(--season-accent, #FF1801);
+  color: #fff;
+}
+
+/* Loading spinner */
+.spinner-f1 {
+  border: 3px solid #333;
+  border-top: 3px solid var(--season-accent, #FF1801);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.85rem;
+  }
+  
+  .driver-picture {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Touch-friendly targets (mobile) */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .nav-link {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+}

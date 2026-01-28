@@ -1,0 +1,52 @@
+/* Main stylesheet for Kartarados Championship Manager */
+
+/* Base styles - F1 inspired dark theme */
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: 'Arial', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+}
+
+/* Typography - F1 inspired bold, modern sans-serif */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Layout */
+.container-fluid {
+  padding: 1rem;
+}
+
+/* Links */
+a {
+  color: var(--season-accent, #FF1801);
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff4d4d;
+  text-decoration: underline;
+}
+
+/* Focus states for accessibility */
+*:focus {
+  outline: 2px solid var(--season-accent, #FF1801);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Utility classes */
+.text-f1-red {
+  color: #FF1801;
+}
+
+.bg-f1-dark {
+  background-color: #1a1a1a;
+}

@@ -1,0 +1,74 @@
+/* Season accent color theming */
+
+:root {
+  --season-accent: #FF1801; /* Default F1 red */
+}
+
+/* Apply season accent to themable elements */
+.table thead th {
+  background-color: var(--season-accent);
+  color: #fff;
+}
+
+.navbar {
+  background-color: var(--season-accent) !important;
+}
+
+.btn-primary {
+  background-color: var(--season-accent);
+  border-color: var(--season-accent);
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--season-accent) 90%, #fff);
+  border-color: color-mix(in srgb, var(--season-accent) 90%, #fff);
+}
+
+.card-header {
+  background-color: var(--season-accent);
+}
+
+.modal-header {
+  background-color: var(--season-accent);
+}
+
+.badge-primary {
+  background-color: var(--season-accent);
+}
+
+/* Navigation tabs */
+.nav-tabs .nav-link.active {
+  background-color: var(--season-accent);
+  border-color: var(--season-accent);
+  color: #fff;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: var(--season-accent);
+  color: var(--season-accent);
+}
+
+/* Progress bars */
+.progress-bar {
+  background-color: var(--season-accent);
+}
+
+/* Links */
+a {
+  color: var(--season-accent);
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--season-accent) 80%, #fff);
+}
+
+/* Focus states */
+*:focus {
+  outline-color: var(--season-accent);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--season-accent);
+  color: #fff;
+}

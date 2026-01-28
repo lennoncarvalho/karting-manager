@@ -1,0 +1,176 @@
+/* Bootstrap component overrides for F1 theme */
+
+:root {
+  --bs-body-bg: #000;
+  --bs-body-color: #fff;
+  --bs-primary: #FF1801; /* F1 Red */
+  --bs-border-color: #333;
+  --bs-secondary: #1a1a1a;
+  --bs-success: #00ff00;
+  --bs-danger: #ff0000;
+  --bs-warning: #ffaa00;
+  --bs-info: #00aaff;
+  --bs-light: #333;
+  --bs-dark: #000;
+}
+
+/* Override Bootstrap table styles */
+.table {
+  --bs-table-bg: #1a1a1a;
+  --bs-table-color: #fff;
+  --bs-table-border-color: #333;
+  --bs-table-hover-bg: #2a2a2a;
+  --bs-table-hover-color: #fff;
+}
+
+.table thead th {
+  background-color: var(--season-accent, #FF1801);
+  color: #fff;
+  border-bottom: 2px solid #fff;
+  font-weight: 700;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid #333;
+}
+
+.table tbody tr:hover {
+  background-color: #2a2a2a;
+}
+
+/* Override Bootstrap button styles */
+.btn-primary {
+  background-color: var(--season-accent, #FF1801);
+  border-color: var(--season-accent, #FF1801);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: #ff4d4d;
+  border-color: #ff4d4d;
+  color: #fff;
+}
+
+.btn-secondary {
+  background-color: #1a1a1a;
+  border-color: #333;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #fff;
+}
+
+/* Override Bootstrap card styles */
+.card {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+}
+
+.card-header {
+  background-color: var(--season-accent, #FF1801);
+  color: #fff;
+  border-bottom: 1px solid #333;
+  font-weight: 700;
+}
+
+/* Override Bootstrap form styles */
+.form-control {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+}
+
+.form-control:focus {
+  background-color: #1a1a1a;
+  border-color: var(--season-accent, #FF1801);
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(255, 24, 1, 0.25);
+}
+
+.form-label {
+  color: #fff;
+  font-weight: 600;
+}
+
+.form-select {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+}
+
+.form-select:focus {
+  background-color: #1a1a1a;
+  border-color: var(--season-accent, #FF1801);
+  color: #fff;
+}
+
+/* Override Bootstrap modal styles */
+.modal-content {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+}
+
+.modal-header {
+  background-color: var(--season-accent, #FF1801);
+  border-bottom: 1px solid #333;
+  color: #fff;
+}
+
+.modal-footer {
+  border-top: 1px solid #333;
+}
+
+/* Override Bootstrap navbar styles */
+.navbar {
+  background-color: var(--season-accent, #FF1801) !important;
+  border-bottom: 2px solid #fff;
+}
+
+.navbar-brand,
+.navbar-nav .nav-link {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffcccc !important;
+}
+
+/* Override Bootstrap alert styles */
+.alert {
+  border: 1px solid #333;
+}
+
+.alert-primary {
+  background-color: rgba(255, 24, 1, 0.2);
+  border-color: var(--season-accent, #FF1801);
+  color: #fff;
+}
+
+.alert-danger {
+  background-color: rgba(255, 0, 0, 0.2);
+  border-color: #ff0000;
+  color: #fff;
+}
+
+.alert-success {
+  background-color: rgba(0, 255, 0, 0.2);
+  border-color: #00ff00;
+  color: #fff;
+}
+
+/* Override Bootstrap badge styles */
+.badge {
+  font-weight: 600;
+}
+
+.badge-primary {
+  background-color: var(--season-accent, #FF1801);
+  color: #fff;
+}

@@ -1,0 +1,460 @@
+/**
+ * Supabase API Client
+ * Handles all database operations via Supabase REST API
+ * 
+ * Reference: contracts/api-contracts.md for endpoint specifications
+ */
+
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../config.js';
+
+// Supabase client is initialized in index.html
+// This module provides helper functions for API operations
+
+/**
+ * Get the Supabase client instance
+ * @returns {Object} Supabase client
+ */
+export function getSupabaseClient() {
+  if (!window.supabase) {
+    throw new Error('Supabase client not initialized. Ensure index.html loads Supabase JS.');
+  }
+  return window.supabase;
+}
+
+/**
+ * Get authenticated Supabase client with session
+ * @returns {Object} Supabase client with auth session
+ */
+export async function getAuthenticatedClient() {
+  const supabase = getSupabaseClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+  
+  return supabase;
+}
+
+/**
+ * Handle API errors and return user-friendly messages
+ * @param {Error} error - Error object from Supabase
+ * @returns {string} User-friendly error message
+ */
+export function handleApiError(error) {
+  if (error.message) {
+    // Supabase-specific errors
+    if (error.message.includes('JWT')) {
+      return 'Session expired. Please log in again.';
+    }
+    if (error.message.includes('duplicate key')) {
+      return 'This record already exists.';
+    }
+    if (error.message.includes('foreign key')) {
+      return 'Cannot delete: this record is referenced by other data.';
+    }
+    if (error.message.includes('violates check constraint')) {
+      return 'Invalid data provided. Please check your input.';
+    }
+    return error.message;
+  }
+  return 'An unexpected error occurred. Please try again.';
+}
+
+/**
+ * Base query builder for Supabase operations
+ * @param {string} table - Table name
+ * @param {Object} options - Query options (select, filter, order, limit, offset)
+ * @returns {Promise} Query result
+ */
+export async function queryTable(table, options = {}) {
+  const supabase = getSupabaseClient();
+  let query = supabase.from(table).select(options.select || '*');
+  
+  // Apply filters
+  if (options.filters) {
+    options.filters.forEach(filter => {
+      query = query[filter.operator](filter.column, filter.value);
+    });
+  }
+  
+  // Apply ordering
+  if (options.order) {
+    query = query.order(options.order.column, { ascending: options.order.ascending !== false });
+  }
+  
+  // Apply pagination
+  if (options.limit) {
+    query = query.limit(options.limit);
+  }
+  if (options.offset) {
+    query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+/**
+ * Seasons CRUD
+ */
+export async function listSeasons(options = {}) {
+  return queryTable('seasons', {
+    order: options.order || { column: 'end_date', ascending: false },
+    limit: options.limit,
+    offset: options.offset,
+    filters: options.filters
+  });
+}
+
+export async function createSeason(payload) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('seasons')
+    .insert([payload])
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function updateSeason(id, updates) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('seasons')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deleteSeason(id) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('seasons')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Drivers CRUD
+ */
+export async function listDrivers(options = {}) {
+  return queryTable('drivers', {
+    order: options.order || { column: 'name', ascending: true },
+    limit: options.limit,
+    offset: options.offset,
+    filters: options.filters
+  });
+}
+
+export async function createDriver(payload) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('drivers')
+    .insert([payload])
+    .select('*')
+    .single();
+  
+  if (error) {
+    if (error.code === '23505' || error.status === 409) {
+      throw new Error('Email already exists. Please use a different email.');
+    }
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function updateDriver(id, updates) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('drivers')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deleteDriver(id) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('drivers')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Cups CRUD
+ */
+export async function listCups(options = {}) {
+  const filters = options.filters ? [...options.filters] : [];
+  if (options.seasonId) {
+    filters.push({ column: 'season_id', operator: 'eq', value: options.seasonId });
+  }
+  
+  return queryTable('cups', {
+    order: options.order || { column: 'start_date', ascending: true },
+    limit: options.limit,
+    offset: options.offset,
+    filters
+  });
+}
+
+export async function createCup(payload) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('cups')
+    .insert([payload])
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function updateCup(id, updates) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('cups')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deleteCup(id) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('cups')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Races CRUD
+ */
+export async function listRaces(options = {}) {
+  const filters = options.filters ? [...options.filters] : [];
+  if (options.seasonId) {
+    filters.push({ column: 'season_id', operator: 'eq', value: options.seasonId });
+  }
+  if (options.cupId) {
+    filters.push({ column: 'cup_id', operator: 'eq', value: options.cupId });
+  }
+  
+  return queryTable('races', {
+    order: options.order || { column: 'race_datetime', ascending: true },
+    limit: options.limit,
+    offset: options.offset,
+    filters
+  });
+}
+
+export async function createRace(payload) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('races')
+    .insert([payload])
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function updateRace(id, updates) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('races')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deleteRace(id) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('races')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Race Results CRUD
+ */
+export async function listRaceResults(raceId) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('race_results')
+    .select('*, drivers(*), penalties(*)')
+    .eq('race_id', raceId)
+    .order('finish_position', { ascending: true });
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function listRaceResultsByRaceIds(raceIds = []) {
+  if (!raceIds.length) {
+    return [];
+  }
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('race_results')
+    .select('*, drivers(*), penalties(*)')
+    .in('race_id', raceIds);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function createRaceResult(payload) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('race_results')
+    .insert([payload])
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function updateRaceResult(id, updates) {
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('race_results')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deleteRaceResult(id) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('race_results')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Penalties CRUD
+ */
+export async function createPenalties(penalties) {
+  if (!penalties.length) {
+    return [];
+  }
+  const supabase = await getAuthenticatedClient();
+  const { data, error } = await supabase
+    .from('penalties')
+    .insert(penalties)
+    .select('*');
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+  
+  return data;
+}
+
+export async function deletePenaltiesByRaceResult(raceResultId) {
+  const supabase = await getAuthenticatedClient();
+  const { error } = await supabase
+    .from('penalties')
+    .delete()
+    .eq('race_result_id', raceResultId);
+  
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
+ * Sum penalty points by type and count
+ * @param {Array} penalties - Penalty records
+ * @returns {number} Total penalty points
+ */
+export function calculatePenaltyPoints(penalties = []) {
+  return penalties.reduce((total, penalty) => {
+    const count = Number(penalty.count || 0);
+    const points = Number(penalty.point_deduction || 0);
+    return total + (points * count);
+  }, 0);
+}
