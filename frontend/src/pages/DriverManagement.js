@@ -8,6 +8,7 @@ import { listDrivers, createDriver, updateDriver, deleteDriver, getSupabaseClien
 import { getCurrentUser, logout } from '../services/auth.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { getDriverImageHtml } from '../utils/image.js';
 
 const DriverManagement = {
   async render(container) {
@@ -154,7 +155,13 @@ const DriverManagement = {
         <tr>
           <td>
             <div class="d-flex align-items-center gap-2">
-              ${driver.picture_url ? `<img src="${driver.picture_url}" alt="${driver.name}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">` : '<span class="badge bg-secondary">N/A</span>'}
+              ${getDriverImageHtml({
+                src: driver.picture_url,
+                seed: driver.id || driver.email || driver.name,
+                alt: driver.name,
+                className: 'rounded-circle',
+                size: 36
+              })}
               <span>${driver.name}</span>
             </div>
           </td>

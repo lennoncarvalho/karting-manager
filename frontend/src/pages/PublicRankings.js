@@ -9,6 +9,7 @@ import { listCups, listRaces, listRaceResultsByRaceIds } from '../services/api.j
 import { calculateRankings } from '../services/points.js';
 import { applySeasonTheme, getActiveSeason } from '../services/theme.js';
 import { showNotification } from '../utils/helpers.js';
+import { getDriverImageHtml } from '../utils/image.js';
 
 const PublicRankings = {
   async render(container) {
@@ -136,7 +137,13 @@ const PublicRankings = {
                       <td>${driver.rank}</td>
                       <td>
                         <div class="d-flex align-items-center gap-2">
-                          ${driver.picture ? `<img src="${driver.picture}" alt="${driver.name}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">` : '<span class="badge bg-secondary">N/A</span>'}
+                          ${getDriverImageHtml({
+                            src: driver.picture,
+                            seed: driver.driverId || driver.name,
+                            alt: driver.name,
+                            className: 'rounded-circle',
+                            size: 36
+                          })}
                           <span>${driver.name}</span>
                         </div>
                       </td>

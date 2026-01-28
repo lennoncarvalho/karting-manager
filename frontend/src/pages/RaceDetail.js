@@ -18,6 +18,7 @@ import {
   queryTable
 } from '../services/api.js';
 import { showNotification, showConfirmation } from '../utils/helpers.js';
+import { getDriverImageHtml } from '../utils/image.js';
 
 function getHashParam(name) {
   const hash = window.location.hash || '';
@@ -165,7 +166,13 @@ const RaceDetail = {
             <td>${result.finish_position}</td>
             <td>
               <div class="d-flex align-items-center gap-2">
-                ${result.drivers && result.drivers.picture_url ? `<img src="${result.drivers.picture_url}" alt="${result.drivers.name}" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;">` : '<span class="badge bg-secondary">N/A</span>'}
+                ${getDriverImageHtml({
+                  src: result.drivers ? result.drivers.picture_url : null,
+                  seed: result.driver_id || (result.drivers ? result.drivers.email : null) || (result.drivers ? result.drivers.name : null),
+                  alt: result.drivers ? result.drivers.name : 'Driver',
+                  className: 'rounded-circle',
+                  size: 32
+                })}
                 <span>${result.drivers ? result.drivers.name : result.driver_id}</span>
               </div>
             </td>
