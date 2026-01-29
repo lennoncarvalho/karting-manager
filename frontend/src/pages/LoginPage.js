@@ -4,16 +4,12 @@
  */
 
 import { login } from '../services/auth.js';
-import { renderNavigation } from '../components/Navigation.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 
 const LoginPage = {
   async render(container) {
     container.innerHTML = '';
-    
-    const nav = renderNavigation({ isAuthenticated: false });
-    container.appendChild(nav);
     
     const main = document.createElement('main');
     main.className = 'container mt-4';

@@ -6,6 +6,39 @@
 import { queryTable } from './api.js';
 import { isValidHexColor } from '../utils/validation.js';
 
+const SEASON_ACCENT_KEY = 'seasonAccent';
+const SEASON_ACCENT_SEASON_KEY = 'seasonAccentSeasonId';
+
+function readStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    // Ignore storage errors (private mode, quota, etc.).
+  }
+}
+
+function cacheSeasonAccent(season) {
+  if (!season || !isValidHexColor(season.accent_color)) {
+    return;
+  }
+  const seasonId = season.id !== undefined && season.id !== null ? String(season.id) : '';
+  const cachedSeasonId = readStorage(SEASON_ACCENT_SEASON_KEY);
+  const cachedAccent = readStorage(SEASON_ACCENT_KEY);
+  if (seasonId && cachedSeasonId === seasonId && cachedAccent === season.accent_color) {
+    return;
+  }
+  writeStorage(SEASON_ACCENT_SEASON_KEY, seasonId);
+  writeStorage(SEASON_ACCENT_KEY, season.accent_color);
+}
+
 /**
  * Set CSS custom property for season accent
  * @param {string} color - Hex color
@@ -24,6 +57,7 @@ export function setSeasonAccent(color) {
 export function applySeasonTheme(season) {
   if (season && season.accent_color) {
     setSeasonAccent(season.accent_color);
+    cacheSeasonAccent(season);
   }
 }
 

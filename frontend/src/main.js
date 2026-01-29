@@ -6,6 +6,7 @@
 import { isAuthenticated } from './services/auth.js';
 import { showNotification } from './utils/helpers.js';
 import { applyThemeForActiveSeason } from './services/theme.js';
+import { initNavigation, syncNavigation } from './components/navigationManager.js';
 
 import LoginPage from './pages/LoginPage.js';
 import AdminDashboard from './pages/AdminDashboard.js';
@@ -51,6 +52,7 @@ class Router {
     
     if (route) {
       try {
+        await syncNavigation();
         await route();
       } catch (error) {
         console.error('Route error:', error);
@@ -70,6 +72,34 @@ class Router {
 
 // Initialize router
 const router = new Router();
+
+function ensureLayout() {
+  const app = document.getElementById('app');
+  if (!app) {
+    return null;
+  }
+  let navHost = app.querySelector('[data-app-nav]');
+  let mainHost = app.querySelector('[data-app-main]');
+  if (!navHost || !mainHost) {
+    app.innerHTML = '';
+    navHost = document.createElement('div');
+    navHost.dataset.appNav = '';
+    mainHost = document.createElement('div');
+    mainHost.dataset.appMain = '';
+    app.appendChild(navHost);
+    app.appendChild(mainHost);
+  }
+  return { navHost, mainHost };
+}
+
+const layout = ensureLayout();
+if (layout) {
+  initNavigation(layout.navHost);
+}
+
+function getMainContainer() {
+  return layout ? layout.mainHost : null;
+}
 
 async function ensureAuthenticated() {
   const authenticated = await isAuthenticated();
@@ -105,7 +135,11 @@ router.register('/', async () => {
  * Public rankings route
  */
 router.register('/rankings', async () => {
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await PublicRankings.render(app);
 });
 
@@ -113,7 +147,11 @@ router.register('/rankings', async () => {
  * Login route
  */
 router.register('/login', async () => {
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await LoginPage.render(app);
 });
 
@@ -123,42 +161,66 @@ router.register('/login', async () => {
 router.register('/admin', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await AdminDashboard.render(app);
 });
 
 router.register('/admin/seasons', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await SeasonManagement.render(app);
 });
 
 router.register('/admin/drivers', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await DriverManagement.render(app);
 });
 
 router.register('/admin/cups', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await CupManagement.render(app);
 });
 
 router.register('/admin/races', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await RaceManagement.render(app);
 });
 
 router.register('/admin/race', async () => {
   const authenticated = await ensureAuthenticated();
   if (!authenticated) return;
-  const app = document.getElementById('app');
+  const app = getMainContainer();
+  if (!app) {
+    console.error('App container not found');
+    return;
+  }
   await RaceDetail.render(app);
 });
 

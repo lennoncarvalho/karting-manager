@@ -3,9 +3,7 @@
  * CRUD interface for seasons
  */
 
-import { renderNavigation } from '../components/Navigation.js';
 import { listSeasons, createSeason, updateSeason, deleteSeason } from '../services/api.js';
-import { getCurrentUser, logout } from '../services/auth.js';
 import { isRequired, isValidDateRange, isValidHexColor } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 
@@ -13,18 +11,7 @@ const SeasonManagement = {
   async render(container) {
     container.innerHTML = '';
     
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
-    
-      const main = document.createElement('main');
+    const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
@@ -64,7 +51,7 @@ const SeasonManagement = {
                 </div>
                 <div class="mb-3">
                   <label class="form-label" for="season-color">Accent Color</label>
-                  <input type="color" class="form-control form-control-color" id="season-color" value="#FF1801" required>
+                  <input type="color" class="form-control form-control-color" id="season-color" value="#000000" required>
                   <div class="invalid-feedback">Accent color is required.</div>
                 </div>
                 <div class="d-flex flex-column flex-sm-row gap-2">
@@ -127,7 +114,7 @@ const SeasonManagement = {
     const resetForm = () => {
       form.reset();
       form.querySelector('#season-id').value = '';
-      form.querySelector('#season-color').value = '#FF1801';
+      form.querySelector('#season-color').value = '#000000';
       form.querySelector('#season-ongoing').checked = false;
       formTitle.textContent = 'Create Season';
       submitButton.textContent = 'Create';

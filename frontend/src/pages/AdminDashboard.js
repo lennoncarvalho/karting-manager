@@ -3,25 +3,13 @@
  * Navigation hub for admin actions
  */
 
-import { renderNavigation } from '../components/Navigation.js';
-import { getCurrentUser, logout, isFirstAdmin, changePassword, createAdmin } from '../services/auth.js';
+import { isFirstAdmin, changePassword, createAdmin } from '../services/auth.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 
 const AdminDashboard = {
   async render(container) {
     container.innerHTML = '';
-    
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
     
     const main = document.createElement('main');
     main.className = 'container mt-4';

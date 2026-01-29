@@ -64,8 +64,45 @@ function getPoleWinner(results) {
   return pole ? pole.driver_id : null;
 }
 
-export function calculateRankings(races, raceResults) {
-  const raceMap = new Map(races.map(race => [race.id, race]));
+function getDiscardCount(races, options = {}) {
+  if (Number.isFinite(options.discardCount)) {
+    return Math.max(0, Math.floor(options.discardCount));
+  }
+  if (options.type === 'cup') {
+    return races.length > 1 ? 1 : 0;
+  }
+  if (options.type === 'overall') {
+    const cupIds = new Set();
+    races.forEach((race) => {
+      if (race.cup_id != null) {
+        cupIds.add(race.cup_id);
+      }
+    });
+    return cupIds.size;
+  }
+  const cupIds = new Set();
+  races.forEach((race) => {
+    if (race.cup_id != null) {
+      cupIds.add(race.cup_id);
+    }
+  });
+  if (cupIds.size === 1 && races.length > 1) {
+    return 1;
+  }
+  return cupIds.size;
+}
+
+function getDiscardIndices(basePoints, discardCount) {
+  if (!discardCount) {
+    return new Set();
+  }
+  const count = Math.min(discardCount, basePoints.length);
+  const sorted = basePoints.map((points, index) => ({ points, index }))
+    .sort((a, b) => (a.points - b.points) || (a.index - b.index));
+  return new Set(sorted.slice(0, count).map(entry => entry.index));
+}
+
+export function calculateRankings(races, raceResults, options = {}) {
   const orderedRaces = [...races].sort((a, b) => new Date(a.race_datetime) - new Date(b.race_datetime));
   
   const resultsByRace = new Map();
@@ -77,6 +114,8 @@ export function calculateRankings(races, raceResults) {
   });
   
   const driverStats = new Map();
+  const driverRacePoints = new Map();
+  const discardCount = getDiscardCount(orderedRaces, options);
   
   orderedRaces.forEach((race, raceIndex) => {
     const results = resultsByRace.get(race.id) || [];
@@ -105,12 +144,16 @@ export function calculateRankings(races, raceResults) {
           suspended: false
         });
       }
+      if (!driverRacePoints.has(driverId)) {
+        driverRacePoints.set(driverId, {
+          basePoints: Array(orderedRaces.length).fill(0),
+          penalties: Array(orderedRaces.length).fill(0)
+        });
+      }
       
       const stats = driverStats.get(driverId);
       const finishPosition = result.finish_position;
       const basePoints = getPositionPoints(finishPosition);
-      const poleBonus = poleWinner === driverId ? 1 : 0;
-      const fastestBonus = fastestLapWinner === driverId ? 1 : 0;
       const penalties = (result.penalties || []).reduce((sum, penalty) => {
         const count = Number(penalty.count || 0);
         const points = Number(penalty.point_deduction || 0);
@@ -119,13 +162,17 @@ export function calculateRankings(races, raceResults) {
         }
         return sum + (points * count);
       }, 0);
-      const totalForRace = basePoints + poleBonus + fastestBonus + penalties;
       
-      stats.totalPoints += totalForRace;
-      stats.bestPosition = stats.bestPosition ? Math.min(stats.bestPosition, finishPosition) : finishPosition;
-      stats.positionCounts[finishPosition] = (stats.positionCounts[finishPosition] || 0) + 1;
-      if (poleBonus) stats.poles += 1;
-      if (fastestBonus) stats.fastestLaps += 1;
+      const ledger = driverRacePoints.get(driverId);
+      ledger.basePoints[raceIndex] += basePoints;
+      ledger.penalties[raceIndex] += penalties;
+      
+      if (finishPosition) {
+        stats.bestPosition = stats.bestPosition ? Math.min(stats.bestPosition, finishPosition) : finishPosition;
+        stats.positionCounts[finishPosition] = (stats.positionCounts[finishPosition] || 0) + 1;
+      }
+      if (poleWinner === driverId) stats.poles += 1;
+      if (fastestLapWinner === driverId) stats.fastestLaps += 1;
       stats.penalties += penalties;
       if (result.is_disqualified) {
         stats.disqualifiedCount += 1;
@@ -133,15 +180,26 @@ export function calculateRankings(races, raceResults) {
       if (stats.raceDirectionPenaltyPoints <= -20) {
         stats.suspended = true;
       }
-      
-      stats.racePoints[raceIndex] = (stats.racePoints[raceIndex] || 0) + totalForRace;
     });
   });
   
   const rankings = Array.from(driverStats.values());
   
   rankings.forEach((entry) => {
-    const totalPoints = entry.totalPoints;
+    const ledger = driverRacePoints.get(entry.driverId) || {
+      basePoints: Array(orderedRaces.length).fill(0),
+      penalties: Array(orderedRaces.length).fill(0)
+    };
+    const discardIndices = getDiscardIndices(ledger.basePoints, discardCount);
+    entry.racePoints = ledger.basePoints.map((base, index) => {
+      const penalties = ledger.penalties[index] || 0;
+      if (discardIndices.has(index)) {
+        return penalties;
+      }
+      return base + penalties;
+    });
+    const totalPoints = entry.racePoints.reduce((sum, value) => sum + value, 0);
+    entry.totalPoints = totalPoints;
     let cumulative = 0;
     let reachedAt = null;
     orderedRaces.forEach((race, index) => {

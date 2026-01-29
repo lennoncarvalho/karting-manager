@@ -1,7 +1,7 @@
 /* Season accent color theming */
 
 :root {
-  --season-accent: #FF1801; /* Default F1 red */
+  --season-accent: #000000; /* Default accent */
 }
 
 /* Apply season accent to themable elements */
@@ -43,6 +43,10 @@
   color: #fff;
 }
 
+.nav-tabs .nav-link {
+  transition: color 0.2s ease;
+}
+
 .nav-tabs .nav-link:hover {
   border-color: var(--season-accent);
   color: var(--season-accent);
@@ -56,6 +60,7 @@
 /* Links */
 a {
   color: var(--season-accent);
+  transition: color 0.2s ease;
 }
 
 a:hover {

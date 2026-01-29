@@ -21,8 +21,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Links */
 a {
-  color: var(--season-accent, #FF1801);
+  color: var(--season-accent, #000000);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 a:hover {
@@ -32,7 +33,7 @@ a:hover {
 
 /* Focus states for accessibility */
 *:focus {
-  outline: 2px solid var(--season-accent, #FF1801);
+  outline: 2px solid var(--season-accent, #000000);
   outline-offset: 2px;
 }
 
@@ -44,7 +45,7 @@ a:hover {
 
 /* Utility classes */
 .text-f1-red {
-  color: #FF1801;
+  color: #000000;
 }
 
 .bg-f1-dark {

@@ -3,7 +3,7 @@
 :root {
   --bs-body-bg: #000;
   --bs-body-color: #fff;
-  --bs-primary: #FF1801; /* F1 Red */
+  --bs-primary: #000000; /* Accent black */
   --bs-border-color: #333;
   --bs-secondary: #1a1a1a;
   --bs-success: #00ff00;
@@ -24,7 +24,7 @@
 }
 
 .table thead th {
-  background-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
   color: #fff;
   border-bottom: 2px solid #fff;
   font-weight: 700;
@@ -40,8 +40,8 @@
 
 /* Override Bootstrap button styles */
 .btn-primary {
-  background-color: var(--season-accent, #FF1801);
-  border-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
+  border-color: var(--season-accent, #000000);
   color: #fff;
   font-weight: 600;
 }
@@ -72,7 +72,7 @@
 }
 
 .card-header {
-  background-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
   color: #fff;
   border-bottom: 1px solid #333;
   font-weight: 700;
@@ -87,7 +87,7 @@
 
 .form-control:focus {
   background-color: #1a1a1a;
-  border-color: var(--season-accent, #FF1801);
+  border-color: var(--season-accent, #000000);
   color: #fff;
   box-shadow: 0 0 0 0.25rem rgba(255, 24, 1, 0.25);
 }
@@ -105,7 +105,7 @@
 
 .form-select:focus {
   background-color: #1a1a1a;
-  border-color: var(--season-accent, #FF1801);
+  border-color: var(--season-accent, #000000);
   color: #fff;
 }
 
@@ -117,7 +117,7 @@
 }
 
 .modal-header {
-  background-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
   border-bottom: 1px solid #333;
   color: #fff;
 }
@@ -128,7 +128,7 @@
 
 /* Override Bootstrap navbar styles */
 .navbar {
-  background-color: var(--season-accent, #FF1801) !important;
+  background-color: var(--season-accent, #000000) !important;
   border-bottom: 2px solid #fff;
 }
 
@@ -149,7 +149,7 @@
 
 .alert-primary {
   background-color: rgba(255, 24, 1, 0.2);
-  border-color: var(--season-accent, #FF1801);
+  border-color: var(--season-accent, #000000);
   color: #fff;
 }
 
@@ -171,6 +171,6 @@
 }
 
 .badge-primary {
-  background-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
   color: #fff;
 }

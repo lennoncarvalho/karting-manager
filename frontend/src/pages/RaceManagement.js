@@ -3,26 +3,13 @@
  * CRUD interface for races
  */
 
-import { renderNavigation } from '../components/Navigation.js';
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
-import { getCurrentUser, logout } from '../services/auth.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 
 const RaceManagement = {
   async render(container) {
     container.innerHTML = '';
-    
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
     
     const main = document.createElement('main');
     main.className = 'container mt-4';

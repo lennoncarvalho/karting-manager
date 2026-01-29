@@ -19,7 +19,7 @@
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--season-accent, #FF1801);
+  border: 2px solid var(--season-accent, #000000);
 }
 
 .driver-picture-small {
@@ -27,7 +27,7 @@
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--season-accent, #FF1801);
+  border: 2px solid var(--season-accent, #000000);
 }
 
 /* Rankings table styling */
@@ -38,7 +38,8 @@
 .rankings-table .position {
   font-weight: 700;
   font-size: 1.2rem;
-  color: var(--season-accent, #FF1801);
+  color: var(--season-accent, #000000);
+  transition: color 0.2s ease;
 }
 
 .rankings-table .points {
@@ -59,14 +60,14 @@
   text-align: center;
   border-radius: 50%;
   font-weight: 700;
-  background-color: var(--season-accent, #FF1801);
+  background-color: var(--season-accent, #000000);
   color: #fff;
 }
 
 /* Loading spinner */
 .spinner-f1 {
   border: 3px solid #333;
-  border-top: 3px solid var(--season-accent, #FF1801);
+  border-top: 3px solid var(--season-accent, #000000);
   border-radius: 50%;
   width: 40px;
   height: 40px;
