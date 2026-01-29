@@ -1,7 +1,7 @@
 // Supabase Configuration
 // Get these values from: Supabase Dashboard → Settings → API
-export const SUPABASE_URL = 'https://pallvdbokvjzctjfntuq.supabase.co';
-export const SUPABASE_ANON_KEY = 'sb_publishable_mv_q4LZt5xHqfGL582Uoqw_01KcjSLy';
+export const SUPABASE_URL = '[SUPABASE_URL]';
+export const SUPABASE_ANON_KEY = '[SUPABASE_ANON_KEY]';
 
 // CDN URLs for libraries
 export const CDN_URLS = {
