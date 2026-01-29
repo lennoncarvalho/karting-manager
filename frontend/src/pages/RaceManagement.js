@@ -194,7 +194,7 @@ const RaceManagement = {
               <span class="fw-semibold text-decoration-underline" role="button" tabindex="0" data-action="results" data-id="${race.id}" style="cursor: pointer;">
                 ${race.name}
               </span>
-              <small class="text-muted d-block">${race.location}</small>
+              <small class="d-block">${race.location}</small>
             </div>
           </td>
           <td>${seasonMap[race.season_id] ? seasonMap[race.season_id].name : 'Unknown'}</td>

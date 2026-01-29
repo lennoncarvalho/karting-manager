@@ -17,7 +17,7 @@ const AdminDashboard = {
       <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
           <h1 class="h3 mb-1">Admin Dashboard</h1>
-          <p class="text-muted mb-0">Manage seasons, drivers, cups, and races.</p>
+          <p class="h6 mb-0">Manage seasons, drivers, cups, and races.</p>
         </div>
         <a href="#/admin/seasons" class="btn btn-primary w-100 w-md-auto">Create Season</a>
       </div>
