@@ -3,8 +3,6 @@
  * Displays driver rankings for active season
  */
 
-import { renderNavigation } from '../components/Navigation.js';
-import { isAuthenticated, getCurrentUser } from '../services/auth.js';
 import { listCups, listRaces, listRaceResultsByRaceIds } from '../services/api.js';
 import { calculateRankings } from '../services/points.js';
 import { applySeasonTheme, getActiveSeason } from '../services/theme.js';
@@ -15,15 +13,6 @@ const PublicRankings = {
   async render(container) {
     container.innerHTML = '';
     
-    const authenticated = await isAuthenticated();
-    const user = authenticated ? await getCurrentUser() : null;
-    
-    const nav = renderNavigation({
-      isAuthenticated: authenticated,
-      currentUserEmail: user ? user.email : ''
-    });
-    container.appendChild(nav);
-    
     const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
@@ -33,7 +22,7 @@ const PublicRankings = {
           <p class="text-muted mb-0" id="season-name">Loading season...</p>
         </div>
       </div>
-      <ul class="nav nav-tabs flex-nowrap overflow-auto mb-3" id="rankings-tabs" role="tablist"></ul>
+      <ul class="nav nav-tabs flex-nowrap mb-3" id="rankings-tabs" role="tablist"></ul>
       <div class="tab-content" id="rankings-content"></div>
     `;
     container.appendChild(main);
@@ -109,7 +98,9 @@ const PublicRankings = {
       
       content.innerHTML = sections.map((section, index) => {
         const sectionResults = raceResults.filter(result => section.races.some(race => race.id === result.race_id));
-        const rankings = calculateRankings(section.races, sectionResults);
+        const rankings = calculateRankings(section.races, sectionResults, {
+          type: section.id === 'overall' ? 'overall' : 'cup'
+        });
         
         if (!section.races.length || !sectionResults.length) {
           return `

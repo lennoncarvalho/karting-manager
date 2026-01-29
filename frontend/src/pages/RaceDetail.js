@@ -3,9 +3,7 @@
  * Display race info and manage race results
  */
 
-import { renderNavigation } from '../components/Navigation.js';
 import { openRaceResultModal } from '../components/RaceResultModal.js';
-import { getCurrentUser, logout } from '../services/auth.js';
 import {
   listDrivers,
   listRaceResults,
@@ -29,17 +27,6 @@ function getHashParam(name) {
 const RaceDetail = {
   async render(container) {
     container.innerHTML = '';
-    
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
     
     const raceId = getHashParam('id');
     const main = document.createElement('main');

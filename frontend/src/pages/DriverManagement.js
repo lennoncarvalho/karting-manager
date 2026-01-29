@@ -3,9 +3,7 @@
  * CRUD interface for drivers
  */
 
-import { renderNavigation } from '../components/Navigation.js';
 import { listDrivers, createDriver, updateDriver, deleteDriver, getSupabaseClient } from '../services/api.js';
-import { getCurrentUser, logout } from '../services/auth.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
@@ -13,17 +11,6 @@ import { getDriverImageHtml } from '../utils/image.js';
 const DriverManagement = {
   async render(container) {
     container.innerHTML = '';
-    
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
     
     const main = document.createElement('main');
     main.className = 'container mt-4';

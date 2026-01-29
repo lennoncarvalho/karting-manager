@@ -18,7 +18,7 @@ export function isValidEmail(email) {
 
 /**
  * Validate hex color format
- * @param {string} color - Hex color to validate (e.g., "#FF1801")
+ * @param {string} color - Hex color to validate (e.g., "#000000")
  * @returns {boolean} True if valid
  */
 export function isValidHexColor(color) {

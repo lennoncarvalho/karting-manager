@@ -3,8 +3,7 @@
  * Navigation hub for admin actions
  */
 
-import { renderNavigation } from '../components/Navigation.js';
-import { getCurrentUser, logout, isFirstAdmin, changePassword, createAdmin } from '../services/auth.js';
+import { isFirstAdmin, changePassword, createAdmin } from '../services/auth.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 
@@ -12,24 +11,13 @@ const AdminDashboard = {
   async render(container) {
     container.innerHTML = '';
     
-    const user = await getCurrentUser();
-    const nav = renderNavigation({
-      isAuthenticated: true,
-      currentUserEmail: user ? user.email : '',
-      onLogout: async () => {
-        await logout();
-        showNotification('Logged out successfully.', 'success');
-      }
-    });
-    container.appendChild(nav);
-    
     const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
         <div>
           <h1 class="h3 mb-1">Admin Dashboard</h1>
-          <p class="text-muted mb-0">Manage seasons, drivers, cups, and races.</p>
+          <p class="h6 mb-0">Manage seasons, drivers, cups, and races.</p>
         </div>
         <a href="#/admin/seasons" class="btn btn-primary w-100 w-md-auto">Create Season</a>
       </div>
