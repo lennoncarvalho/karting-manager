@@ -7,6 +7,7 @@ import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../servi
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { resolveSelectedSeason } from '../services/theme.js';
+import { t } from '../services/i18n.js';
 
 const CupManagement = {
   async render(container) {
@@ -16,42 +17,42 @@ const CupManagement = {
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
-        <h1 class="h3 mb-0">Cups</h1>
+        <h1 class="h3 mb-0">${t('cupManagement.title')}</h1>
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0" id="cup-form-title">Create Cup</h2>
+              <h2 class="h6 mb-0" id="cup-form-title">${t('cupManagement.form.createTitle')}</h2>
             </div>
             <div class="card-body">
               <form id="cup-form" novalidate>
                 <input type="hidden" id="cup-id">
                 <div class="mb-3">
-                  <label class="form-label" for="cup-season">Season</label>
+                  <label class="form-label" for="cup-season">${t('common.labels.season')}</label>
                   <select class="form-select" id="cup-season" required>
-                    <option value="">Select season</option>
+                    <option value="">${t('cupManagement.form.selectSeason')}</option>
                   </select>
-                  <div class="invalid-feedback">Season is required.</div>
+                  <div class="invalid-feedback">${t('validation.seasonRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="cup-name">Name</label>
+                  <label class="form-label" for="cup-name">${t('common.labels.name')}</label>
                   <input type="text" class="form-control" id="cup-name" required>
-                  <div class="invalid-feedback">Cup name is required.</div>
+                  <div class="invalid-feedback">${t('validation.cupNameRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="cup-start">Start Date</label>
+                  <label class="form-label" for="cup-start">${t('common.labels.startDate')}</label>
                   <input type="date" class="form-control" id="cup-start" required>
-                  <div class="invalid-feedback">Start date is required.</div>
+                  <div class="invalid-feedback">${t('validation.startDateRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="cup-end">End Date</label>
+                  <label class="form-label" for="cup-end">${t('common.labels.endDate')}</label>
                   <input type="date" class="form-control" id="cup-end" required>
-                  <div class="invalid-feedback">End date must be after start date.</div>
+                  <div class="invalid-feedback">${t('validation.endDateAfterStart')}</div>
                 </div>
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="cup-submit">Create</button>
-                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="cup-cancel">Cancel</button>
+                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="cup-submit">${t('common.actions.create')}</button>
+                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="cup-cancel">${t('common.actions.cancel')}</button>
                 </div>
               </form>
             </div>
@@ -60,26 +61,26 @@ const CupManagement = {
         <div class="col-lg-8">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0">Existing Cups</h2>
+              <h2 class="h6 mb-0">${t('cupManagement.list.title')}</h2>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-striped align-middle">
                   <thead>
                     <tr>
-                      <th>Cup</th>
-                      <th>Season</th>
-                      <th>Start</th>
-                      <th>End</th>
-                      <th class="text-end">Actions</th>
+                      <th>${t('cupManagement.table.cup')}</th>
+                      <th>${t('cupManagement.table.season')}</th>
+                      <th>${t('cupManagement.table.start')}</th>
+                      <th>${t('cupManagement.table.end')}</th>
+                      <th class="text-end">${t('cupManagement.table.actions')}</th>
                     </tr>
                   </thead>
                   <tbody id="cup-table-body">
                     <tr>
-                      <td colspan="5" class="text-center text-muted">
+                      <td colspan="5" class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-2">
                           <div class="spinner-border spinner-border-sm" role="status"></div>
-                          <span>Loading cups...</span>
+                          <span>${t('common.status.loadingCups')}</span>
                         </div>
                       </td>
                     </tr>
@@ -110,13 +111,13 @@ const CupManagement = {
     const resetForm = () => {
       form.reset();
       form.querySelector('#cup-id').value = '';
-      formTitle.textContent = 'Create Cup';
-      submitButton.textContent = 'Create';
+      formTitle.textContent = t('cupManagement.form.createTitle');
+      submitButton.textContent = t('common.actions.create');
       cancelButton.classList.add('d-none');
     };
     
     const renderSeasonOptions = () => {
-      seasonSelect.innerHTML = '<option value="">Select season</option>' +
+      seasonSelect.innerHTML = `<option value="">${t('cupManagement.form.selectSeason')}</option>` +
         seasons.map(season => `<option value="${season.id}">${season.name}</option>`).join('');
     };
     
@@ -124,7 +125,7 @@ const CupManagement = {
       if (!cups.length) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center text-muted">No cups created yet.</td>
+            <td colspan="5" class="text-center">${t('cupManagement.list.empty')}</td>
           </tr>
         `;
         return;
@@ -135,13 +136,13 @@ const CupManagement = {
       tableBody.innerHTML = cups.map((cup) => `
         <tr>
           <td>${cup.name}</td>
-          <td>${seasonMap[cup.season_id] ? seasonMap[cup.season_id].name : 'Unknown'}</td>
+          <td>${seasonMap[cup.season_id] ? seasonMap[cup.season_id].name : t('common.misc.unknown')}</td>
           <td>${cup.start_date}</td>
           <td>${cup.end_date}</td>
           <td class="text-end">
             <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${cup.id}">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${cup.id}">Delete</button>
+              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${cup.id}">${t('common.actions.edit')}</button>
+              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${cup.id}">${t('common.actions.delete')}</button>
             </div>
           </td>
         </tr>
@@ -181,30 +182,30 @@ const CupManagement = {
       [seasonSelect, nameInput, startInput, endInput].forEach(clearFieldInvalid);
       let hasError = false;
       if (!isRequired(seasonId)) {
-        setFieldInvalid(seasonSelect, 'Season is required.');
+        setFieldInvalid(seasonSelect, t('validation.seasonRequired'));
         hasError = true;
       }
       if (!isRequired(name)) {
-        setFieldInvalid(nameInput, 'Cup name is required.');
+        setFieldInvalid(nameInput, t('validation.cupNameRequired'));
         hasError = true;
       }
       if (!isRequired(startDate)) {
-        setFieldInvalid(startInput, 'Start date is required.');
+        setFieldInvalid(startInput, t('validation.startDateRequired'));
         hasError = true;
       }
       if (!isRequired(endDate) || !isValidDateRange(startDate, endDate)) {
-        setFieldInvalid(endInput, 'End date must be after start date.');
+        setFieldInvalid(endInput, t('validation.endDateAfterStart'));
         hasError = true;
       }
       
       const season = seasons.find(item => item.id === seasonId);
       if (season && !isValidCupDateRange(season.start_date, season.end_date, startDate, endDate)) {
-        setFieldInvalid(endInput, 'Cup dates must fall within the season.');
+        setFieldInvalid(endInput, t('validation.cupDatesWithinSeason'));
         hasError = true;
       }
       
       if (hasError) {
-        showNotification('Please fix the highlighted fields.', 'warning');
+        showNotification(t('notifications.pleaseFix'), 'warning');
         return;
       }
       
@@ -219,10 +220,10 @@ const CupManagement = {
         
         if (id) {
           await updateCup(id, payload);
-          showNotification('Cup updated.', 'success');
+          showNotification(t('notifications.cupUpdated'), 'success');
         } else {
           await createCup(payload);
-          showNotification('Cup created.', 'success');
+          showNotification(t('notifications.cupCreated'), 'success');
         }
         
         resetForm();
@@ -253,21 +254,21 @@ const CupManagement = {
         form.querySelector('#cup-name').value = cup.name;
         form.querySelector('#cup-start').value = cup.start_date;
         form.querySelector('#cup-end').value = cup.end_date;
-        formTitle.textContent = 'Edit Cup';
-        submitButton.textContent = 'Update';
+        formTitle.textContent = t('cupManagement.form.editTitle');
+        submitButton.textContent = t('common.actions.update');
         cancelButton.classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
       if (action === 'delete') {
-        const confirmed = await showConfirmation('Delete this cup? This cannot be undone.');
+        const confirmed = await showConfirmation(t('cupManagement.confirmDelete'));
         if (!confirmed) {
           return;
         }
         try {
           await deleteCup(id);
-          showNotification('Cup deleted.', 'success');
+          showNotification(t('notifications.cupDeleted'), 'success');
           await loadData();
         } catch (error) {
           showNotification(error.message, 'error');

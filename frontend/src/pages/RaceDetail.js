@@ -17,6 +17,7 @@ import {
 } from '../services/api.js';
 import { showNotification, showConfirmation } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
+import { t } from '../services/i18n.js';
 
 function getHashParam(name) {
   const hash = window.location.hash || '';
@@ -34,8 +35,8 @@ const RaceDetail = {
     
     if (!raceId) {
       main.innerHTML = `
-        <div class="alert alert-danger">Race ID not provided.</div>
-        <a href="#/admin/races" class="btn btn-outline-secondary">Back to Races</a>
+        <div class="alert alert-danger">${t('errors.raceIdMissing')}</div>
+        <a href="#/admin/races" class="btn btn-outline-secondary">${t('raceDetail.backToRaces')}</a>
       `;
       container.appendChild(main);
       return;
@@ -43,13 +44,13 @@ const RaceDetail = {
     
     main.innerHTML = `
       <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3">
-        <div>
-          <h1 class="h3 mb-0" id="race-title">Race Details</h1>
-          <p class="text-muted mb-0" id="race-subtitle"></p>
+        <div class="w-50">
+          <h1 class="h3 mb-0" id="race-title">${t('raceDetail.title')}</h1>
+          <p class="mb-0" id="race-subtitle"></p>
         </div>
         <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
-          <button class="btn btn-primary w-100 w-sm-auto" id="add-result">Add Result</button>
-          <a href="#/admin/races" class="btn btn-outline-secondary w-100 w-sm-auto">Back to Races</a>
+          <button class="btn btn-primary w-100 w-sm-auto" id="add-result">${t('raceDetail.addResult')}</button>
+          <a href="#/admin/races" class="btn btn-outline-secondary w-100 w-sm-auto">${t('raceDetail.backToRaces')}</a>
         </div>
       </div>
       <div class="card shadow-sm mb-4">
@@ -59,28 +60,28 @@ const RaceDetail = {
       </div>
       <div class="card shadow-sm">
         <div class="card-header text-white">
-          <h2 class="h6 mb-0">Race Results</h2>
+          <h2 class="h6 mb-0">${t('raceDetail.resultsTitle')}</h2>
         </div>
         <div class="card-body">
           <div class="table-responsive">
             <table class="table table-striped align-middle">
               <thead>
                 <tr>
-                  <th>Position</th>
-                  <th>Driver</th>
-                  <th>Grid</th>
-                  <th>Best Lap</th>
-                  <th>Penalties</th>
-                  <th>DQ</th>
-                  <th class="text-end">Actions</th>
+                  <th>${t('raceDetail.table.position')}</th>
+                  <th>${t('raceDetail.table.driver')}</th>
+                  <th>${t('raceDetail.table.grid')}</th>
+                  <th>${t('raceDetail.table.bestLap')}</th>
+                  <th>${t('raceDetail.table.penalties')}</th>
+                  <th>${t('raceDetail.table.dq')}</th>
+                  <th class="text-end">${t('raceDetail.table.actions')}</th>
                 </tr>
               </thead>
               <tbody id="results-table-body">
                 <tr>
-                  <td colspan="7" class="text-center text-muted">
+                  <td colspan="7" class="text-center">
                     <div class="d-flex align-items-center justify-content-center gap-2">
                       <div class="spinner-border spinner-border-sm" role="status"></div>
-                      <span>Loading results...</span>
+                      <span>${t('raceDetail.loadingResults')}</span>
                     </div>
                   </td>
                 </tr>
@@ -102,6 +103,7 @@ const RaceDetail = {
     let race = null;
     let drivers = [];
     let results = [];
+    let seasonName = '';
     
     const loadRace = async () => {
       const data = await queryTable('races', {
@@ -109,28 +111,39 @@ const RaceDetail = {
       });
       race = data[0] || null;
     };
+
+    const loadSeason = async () => {
+      seasonName = '';
+      if (!race || !race.season_id) return;
+      const data = await queryTable('seasons', {
+        filters: [{ column: 'id', operator: 'eq', value: race.season_id }],
+        limit: 1
+      });
+      seasonName = data[0] ? data[0].name : t('common.misc.unknown');
+    };
     
     const renderRaceInfo = () => {
       if (!race) {
-        raceTitle.textContent = 'Race not found';
+        raceTitle.textContent = t('errors.raceNotFound');
         raceSubtitle.textContent = '';
-        raceInfo.innerHTML = `<div class="col-12 text-danger">Unable to load race details.</div>`;
+        raceInfo.innerHTML = `<div class="col-12 text-danger">${t('errors.raceLoadFailed')}</div>`;
         return;
       }
       raceTitle.textContent = race.name;
       raceSubtitle.textContent = race.location || '';
+      const seasonDisplay = race.season_id ? (seasonName || t('common.misc.unknown')) : '-';
       raceInfo.innerHTML = `
         <div class="col-md-4">
-          <div class="text-muted small">Date & Time</div>
+          <div class="small">${t('raceDetail.info.dateTime')}</div>
           <div>${race.race_datetime ? new Date(race.race_datetime).toLocaleString() : '-'}</div>
         </div>
         <div class="col-md-4">
-          <div class="text-muted small">Season</div>
-          <div>${race.season_id}</div>
+          <div class="small">${t('raceDetail.info.season')}</div>
+          <div>${seasonDisplay}</div>
         </div>
         <div class="col-md-4">
-          <div class="text-muted small">Affects Championship</div>
-          <div>${race.affects_championship ? 'Yes' : 'No'}</div>
+          <div class="small">${t('raceDetail.info.affectsChampionship')}</div>
+          <div>${race.affects_championship ? t('common.misc.yes') : t('common.misc.no')}</div>
         </div>
       `;
     };
@@ -139,7 +152,7 @@ const RaceDetail = {
       if (!results.length) {
         resultsTableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center text-muted">No results yet.</td>
+            <td colspan="7" class="text-center">${t('raceDetail.noResults')}</td>
           </tr>
         `;
         return;
@@ -156,7 +169,7 @@ const RaceDetail = {
                 ${getDriverImageHtml({
                   src: result.drivers ? result.drivers.picture_url : null,
                   seed: result.driver_id || (result.drivers ? result.drivers.email : null) || (result.drivers ? result.drivers.name : null),
-                  alt: result.drivers ? result.drivers.name : 'Driver',
+                  alt: result.drivers ? result.drivers.name : t('common.labels.driver'),
                   className: 'rounded-circle',
                   size: 32
                 })}
@@ -166,11 +179,11 @@ const RaceDetail = {
             <td>${result.grid_start_position || '-'}</td>
             <td>${result.best_lap_time || '-'}</td>
             <td>${penalties.length ? `${penalties.length} (${penaltyTotal})` : '-'}</td>
-            <td>${result.is_disqualified ? 'Yes' : 'No'}</td>
+            <td>${result.is_disqualified ? t('common.misc.yes') : t('common.misc.no')}</td>
             <td class="text-end">
               <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-                <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${result.id}">Edit</button>
-                <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${result.id}">Delete</button>
+                <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${result.id}">${t('common.actions.edit')}</button>
+                <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${result.id}">${t('common.actions.delete')}</button>
               </div>
             </td>
           </tr>
@@ -202,7 +215,7 @@ const RaceDetail = {
               race_result_id: payload.id
             })));
           }
-          showNotification('Race result updated.', 'success');
+          showNotification(t('notifications.raceResultUpdated'), 'success');
         } else {
           const created = await createRaceResult({
             race_id: raceId,
@@ -219,7 +232,7 @@ const RaceDetail = {
               race_result_id: created.id
             })));
           }
-          showNotification('Race result created.', 'success');
+          showNotification(t('notifications.raceResultCreated'), 'success');
         }
         await loadResults();
       } catch (error) {
@@ -254,11 +267,11 @@ const RaceDetail = {
       }
       
       if (action === 'delete') {
-        const confirmed = await showConfirmation('Delete this race result? This cannot be undone.');
+        const confirmed = await showConfirmation(t('raceDetail.confirmDelete'));
         if (!confirmed) return;
         try {
           await deleteRaceResult(id);
-          showNotification('Race result deleted.', 'success');
+          showNotification(t('notifications.raceResultDeleted'), 'success');
           await loadResults();
         } catch (error) {
           showNotification(error.message, 'error');
@@ -268,6 +281,7 @@ const RaceDetail = {
     
     try {
       await loadRace();
+      await loadSeason();
       drivers = await listDrivers({ order: { column: 'name', ascending: true } });
       await loadResults();
       renderRaceInfo();

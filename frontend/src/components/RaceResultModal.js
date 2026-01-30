@@ -5,13 +5,14 @@
 
 import { isPositiveInteger, isValidLapTime, isRequired } from '../utils/validation.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { t } from '../services/i18n.js';
 
 const standardPenalties = [
-  { type: 'disqualification', name: 'Disqualification', points: -8 },
-  { type: 'cone_tire_warning', name: 'Cone/Tire Warning', points: -2 },
-  { type: 'race_direction_warning', name: 'Race Direction Warning', points: -4 },
-  { type: 'stop_and_go', name: 'Stop and Go', points: -6 },
-  { type: 'missing_club_shirt', name: 'Missing Club Shirt', points: -2 }
+  { type: 'disqualification', name: 'Disqualification', labelKey: 'raceResultModal.penalties.disqualification', points: -8 },
+  { type: 'cone_tire_warning', name: 'Cone/Tire Warning', labelKey: 'raceResultModal.penalties.coneTireWarning', points: -2 },
+  { type: 'race_direction_warning', name: 'Race Direction Warning', labelKey: 'raceResultModal.penalties.raceDirectionWarning', points: -4 },
+  { type: 'stop_and_go', name: 'Stop and Go', labelKey: 'raceResultModal.penalties.stopAndGo', points: -6 },
+  { type: 'missing_club_shirt', name: 'Missing Club Shirt', labelKey: 'raceResultModal.penalties.missingClubShirt', points: -2 }
 ];
 
 export function openRaceResultModal(options = {}) {
@@ -36,61 +37,61 @@ export function openRaceResultModal(options = {}) {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} Race Result</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">${isEdit ? t('raceResultModal.titleEdit') : t('raceResultModal.titleAdd')}</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="${t('common.actions.close')}"></button>
         </div>
         <div class="modal-body">
           <form id="race-result-form">
             <input type="hidden" id="race-result-id" value="${initialData ? initialData.id || '' : ''}">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label" for="result-driver">Driver</label>
+                <label class="form-label" for="result-driver">${t('raceResultModal.driver')}</label>
                 <select class="form-select" id="result-driver" required>
-                  <option value="">Select driver</option>
+                  <option value="">${t('raceResultModal.selectDriver')}</option>
                   ${drivers.map(driver => {
                     const selected = initialData && driver.id === initialData.driver_id ? 'selected' : '';
                     const disabled = existingDriverIds.has(driver.id) && (!initialData || driver.id !== initialData.driver_id);
                     return `<option value="${driver.id}" ${selected} ${disabled ? 'disabled' : ''}>${driver.name}</option>`;
                   }).join('')}
                 </select>
-                <div class="invalid-feedback">Driver is required.</div>
+                <div class="invalid-feedback">${t('validation.driverRequired')}</div>
               </div>
               <div class="col-md-3">
-                <label class="form-label" for="result-finish">Finish Position</label>
+                <label class="form-label" for="result-finish">${t('raceResultModal.finishPosition')}</label>
                 <input type="number" class="form-control" id="result-finish" min="1" value="${initialData ? initialData.finish_position || '' : ''}" required>
-                <div class="invalid-feedback">Finish position is required.</div>
+                <div class="invalid-feedback">${t('validation.finishPositionRequired')}</div>
               </div>
               <div class="col-md-3">
-                <label class="form-label" for="result-grid">Grid Start</label>
+                <label class="form-label" for="result-grid">${t('raceResultModal.gridStart')}</label>
                 <input type="number" class="form-control" id="result-grid" min="1" value="${initialData ? initialData.grid_start_position || '' : ''}">
-                <div class="invalid-feedback">Grid start must be a positive number.</div>
+                <div class="invalid-feedback">${t('validation.gridStartPositive')}</div>
               </div>
               <div class="col-md-6">
-                <label class="form-label" for="result-best-lap">Best Lap Time</label>
-                <input type="text" class="form-control" id="result-best-lap" placeholder="MM:SS.mmm" value="${initialData ? initialData.best_lap_time || '' : ''}">
-                <div class="invalid-feedback">Best lap time is invalid.</div>
+                <label class="form-label" for="result-best-lap">${t('raceResultModal.bestLapTime')}</label>
+                <input type="text" class="form-control" id="result-best-lap" placeholder="${t('raceResultModal.bestLapPlaceholder')}" value="${initialData ? initialData.best_lap_time || '' : ''}">
+                <div class="invalid-feedback">${t('validation.bestLapInvalid')}</div>
               </div>
               <div class="col-md-6 d-flex align-items-end">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="result-disqualified" ${initialData && initialData.is_disqualified ? 'checked' : ''}>
-                  <label class="form-check-label" for="result-disqualified">Disqualified</label>
+                  <label class="form-check-label" for="result-disqualified">${t('raceResultModal.disqualified')}</label>
                 </div>
               </div>
               <div class="col-12">
-                <label class="form-label" for="result-comments">Comments</label>
+                <label class="form-label" for="result-comments">${t('raceResultModal.comments')}</label>
                 <textarea class="form-control" id="result-comments" rows="2">${initialData ? initialData.comments || '' : ''}</textarea>
               </div>
             </div>
             <hr>
             <div>
-              <h6 class="mb-3">Standard Penalties</h6>
+              <h6 class="mb-3">${t('raceResultModal.standardPenalties')}</h6>
               <div class="row g-3">
                 ${standardPenalties.map((penalty, index) => {
                   const existing = (initialData && initialData.penalties || []).find(item => item.penalty_type === penalty.type);
                   const countValue = existing ? existing.count : '';
                   return `
                     <div class="col-md-4">
-                      <label class="form-label">${penalty.name} (${penalty.points})</label>
+                      <label class="form-label">${t(penalty.labelKey)} (${penalty.points})</label>
                       <input type="number" min="0" class="form-control penalty-count" data-penalty-index="${index}" value="${countValue}">
                     </div>
                   `;
@@ -100,16 +101,16 @@ export function openRaceResultModal(options = {}) {
             <hr>
             <div>
               <div class="d-flex align-items-center justify-content-between mb-2">
-                <h6 class="mb-0">Custom Penalties</h6>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="add-custom-penalty">Add</button>
+                <h6 class="mb-0">${t('raceResultModal.customPenalties')}</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="add-custom-penalty">${t('raceResultModal.add')}</button>
               </div>
               <div id="custom-penalties"></div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="save-race-result">Save Result</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${t('raceResultModal.cancel')}</button>
+          <button type="button" class="btn btn-primary" id="save-race-result">${t('raceResultModal.saveResult')}</button>
         </div>
       </div>
     </div>
@@ -126,15 +127,15 @@ export function openRaceResultModal(options = {}) {
     row.className = 'row g-2 align-items-end mb-2 custom-penalty-row';
     row.innerHTML = `
       <div class="col-md-5">
-        <label class="form-label">Name</label>
+        <label class="form-label">${t('raceResultModal.customName')}</label>
         <input type="text" class="form-control custom-name" value="${penalty.penalty_name || ''}">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Points</label>
+        <label class="form-label">${t('raceResultModal.customPoints')}</label>
         <input type="number" class="form-control custom-points" value="${penalty.point_deduction || ''}">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Count</label>
+        <label class="form-label">${t('raceResultModal.customCount')}</label>
         <input type="number" min="1" class="form-control custom-count" value="${penalty.count || ''}">
       </div>
       <div class="col-md-1">
@@ -169,23 +170,23 @@ export function openRaceResultModal(options = {}) {
     [driverField, finishField, gridField, bestLapField].forEach(clearFieldInvalid);
     let hasError = false;
     if (!isRequired(driverId)) {
-      setFieldInvalid(driverField, 'Driver is required.');
+      setFieldInvalid(driverField, t('validation.driverRequired'));
       hasError = true;
     }
     if (!isPositiveInteger(finishPosition)) {
-      setFieldInvalid(finishField, 'Finish position must be a positive number.');
+      setFieldInvalid(finishField, t('validation.finishPositionPositive'));
       hasError = true;
     }
     if (gridStart && !isPositiveInteger(gridStart)) {
-      setFieldInvalid(gridField, 'Grid start position must be a positive number.');
+      setFieldInvalid(gridField, t('validation.gridStartPositive'));
       hasError = true;
     }
     if (bestLap && !isValidLapTime(bestLap)) {
-      setFieldInvalid(bestLapField, 'Best lap time format is invalid.');
+      setFieldInvalid(bestLapField, t('validation.bestLapInvalid'));
       hasError = true;
     }
     if (hasError) {
-      showNotification('Please fix the highlighted fields.', 'warning');
+      showNotification(t('notifications.pleaseFix'), 'warning');
       return;
     }
     

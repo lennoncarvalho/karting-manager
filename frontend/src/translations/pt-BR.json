@@ -1,0 +1,377 @@
+{
+  "app": {
+    "title": "Kartarados - Gerenciador de Campeonato"
+  },
+  "nav": {
+    "brandAria": "Ranking Kartarados",
+    "toggle": "Alternar navegação",
+    "rankings": "Ranking",
+    "adminLogin": "Login Admin",
+    "dashboard": "Painel",
+    "seasons": "Temporadas",
+    "drivers": "Pilotos",
+    "cups": "Copas",
+    "races": "Corridas",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "adminLabel": "Admin",
+    "language": "Idioma",
+    "languageEnglish": "Inglês",
+    "languagePortuguese": "Português (Brasil)",
+    "confirmLogout": "Tem certeza de que deseja sair?"
+  },
+  "common": {
+    "actions": {
+      "manage": "Gerenciar",
+      "create": "Criar",
+      "update": "Atualizar",
+      "delete": "Excluir",
+      "edit": "Editar",
+      "cancel": "Cancelar",
+      "add": "Adicionar",
+      "save": "Salvar",
+      "back": "Voltar",
+      "clear": "Limpar",
+      "confirm": "Confirmar",
+      "proceed": "Prosseguir",
+      "close": "Fechar"
+    },
+    "labels": {
+      "email": "Email",
+      "password": "Senha",
+      "name": "Nome",
+      "startDate": "Data de início",
+      "endDate": "Data de fim",
+      "season": "Temporada",
+      "cup": "Copa",
+      "race": "Corrida",
+      "location": "Local",
+      "dateTime": "Data e hora",
+      "driver": "Piloto",
+      "position": "Posição",
+      "grid": "Grid",
+      "bestLap": "Melhor volta",
+      "penalties": "Penalidades",
+      "disqualified": "Desclassificado",
+      "comments": "Comentários",
+      "weight": "Peso",
+      "nickname": "Apelido",
+      "birthDate": "Data de nascimento",
+      "sex": "Sexo",
+      "bloodType": "Tipo sanguineo",
+      "picture": "Foto",
+      "accent": "Cor de destaque",
+      "actions": "Ações",
+      "totalPoints": "Pontos totais",
+      "bestPosition": "Melhor posição",
+      "ranking": "Ranking"
+    },
+    "status": {
+      "loadingSeasons": "Carregando temporadas...",
+      "loadingDrivers": "Carregando pilotos...",
+      "loadingCups": "Carregando copas...",
+      "loadingRaces": "Carregando corridas...",
+      "loadingResults": "Carregando resultados...",
+      "loadingRankings": "Carregando ranking...",
+      "creating": "Criando...",
+      "updating": "Atualizando..."
+    },
+    "misc": {
+      "unknown": "Desconhecido",
+      "select": "Selecionar",
+      "allSeasons": "Todas as temporadas",
+      "allCups": "Todas as copas",
+      "noCup": "Sem copa",
+      "yes": "Sim",
+      "no": "Não"
+    },
+    "modalTitle": "Modal",
+    "errorTitle": "Erro"
+  },
+  "notifications": {
+    "loggedOut": "Saiu com sucesso.",
+    "pleaseFix": "Corrija os campos destacados.",
+    "welcomeBack": "Bem-vindo de volta!",
+    "passwordUpdated": "Senha atualizada.",
+    "adminCreated": "Admin criado com sucesso.",
+    "onlyFirstAdmin": "Apenas o primeiro admin pode criar novos admins.",
+    "seasonCreated": "Temporada criada.",
+    "seasonUpdated": "Temporada atualizada.",
+    "seasonDeleted": "Temporada excluída.",
+    "driverCreated": "Piloto criado.",
+    "driverUpdated": "Piloto atualizado.",
+    "driverDeleted": "Piloto excluído.",
+    "cupCreated": "Copa criada.",
+    "cupUpdated": "Copa atualizada.",
+    "cupDeleted": "Copa excluída.",
+    "raceCreated": "Corrida criada.",
+    "raceUpdated": "Corrida atualizada.",
+    "raceDeleted": "Corrida excluída.",
+    "raceResultCreated": "Resultado da corrida criado.",
+    "raceResultUpdated": "Resultado da corrida atualizado.",
+    "raceResultDeleted": "Resultado da corrida excluído."
+  },
+  "errors": {
+    "routeLoad": "Erro ao carregar página: {{message}}",
+    "raceIdMissing": "ID da corrida não informado.",
+    "raceNotFound": "Corrida não encontrada",
+    "raceLoadFailed": "Não foi possível carregar os detalhes da corrida.",
+    "uploadFailed": "Falha ao enviar imagem."
+  },
+  "validation": {
+    "emailRequired": "Email obrigatório.",
+    "passwordRequired": "Senha obrigatória.",
+    "validEmailRequired": "Email válido obrigatório.",
+    "tempPasswordRequired": "Senha temporária obrigatória.",
+    "newPasswordRequired": "Nova senha obrigatória.",
+    "passwordsMustMatch": "As senhas devem coincidir.",
+    "seasonNameRequired": "Nome da temporada obrigatório.",
+    "startDateRequired": "Data de início obrigatória.",
+    "endDateAfterStart": "Data de fim deve ser após o início.",
+    "accentColorRequired": "Cor de destaque obrigatória.",
+    "accentColorValid": "Cor de destaque deve ser válida.",
+    "driverNameRequired": "Nome do piloto obrigatório.",
+    "weightMustBeNumber": "Peso deve ser um número.",
+    "emailExists": "Email já existe.",
+    "seasonRequired": "Temporada obrigatória.",
+    "cupNameRequired": "Nome da copa obrigatório.",
+    "cupDatesWithinSeason": "Datas da copa devem estar dentro da temporada.",
+    "raceNameRequired": "Nome da corrida obrigatório.",
+    "locationRequired": "Local obrigatório.",
+    "dateTimeRequired": "Data e hora obrigatórias.",
+    "cupBelongsSeason": "A copa deve pertencer à temporada selecionada.",
+    "driverRequired": "Piloto obrigatório.",
+    "finishPositionRequired": "Posição final obrigatória.",
+    "finishPositionPositive": "Posição final deve ser um número positivo.",
+    "gridStartPositive": "Posição de largada deve ser um número positivo.",
+    "bestLapInvalid": "Formato de melhor volta inválido."
+  },
+  "login": {
+    "title": "Login Admin",
+    "signIn": "Entrar",
+    "signingIn": "Entrando..."
+  },
+  "adminDashboard": {
+    "title": "Painel Admin",
+    "subtitle": "Gerencie temporadas, pilotos, copas e corridas.",
+    "cards": {
+      "races": {
+        "title": "Corridas",
+        "description": "Crie corridas e atribua-as às copas."
+      },
+      "drivers": {
+        "title": "Pilotos",
+        "description": "Crie perfis de pilotos e envie fotos."
+      },
+      "cups": {
+        "title": "Copas",
+        "description": "Séries opcionais de copas dentro de cada temporada."
+      },
+      "seasons": {
+        "title": "Temporadas",
+        "description": "Configure campeonatos anuais e cores de destaque."
+      }
+    },
+    "changePassword": {
+      "title": "Alterar sua senha",
+      "newPassword": "Nova senha",
+      "confirmPassword": "Confirmar senha",
+      "submit": "Atualizar senha",
+      "updating": "Atualizando..."
+    },
+    "inviteAdmin": {
+      "title": "Convidar admin",
+      "tempPassword": "Senha temporária",
+      "submit": "Convidar admin",
+      "creating": "Criando...",
+      "noteOnlyFirst": "Apenas o primeiro admin pode criar novas contas de admin.",
+      "noteInfo": "Novos admins receberão a senha temporária que você informar."
+    }
+  },
+  "seasonManagement": {
+    "title": "Temporadas",
+    "form": {
+      "createTitle": "Criar temporada",
+      "editTitle": "Editar temporada",
+      "availableSeason": "Temporada disponível",
+      "availableHelp": "Apenas temporadas disponíveis aparecem no ranking público."
+    },
+    "list": {
+      "title": "Temporadas existentes",
+      "empty": "Nenhuma temporada criada ainda."
+    },
+    "table": {
+      "name": "Nome",
+      "start": "Inicio",
+      "end": "Fim",
+      "accent": "Cor de destaque",
+      "actions": "Ações"
+    },
+    "confirmDelete": "Excluir esta temporada? Isso não pode ser desfeito."
+  },
+  "driverManagement": {
+    "title": "Pilotos",
+    "form": {
+      "createTitle": "Criar piloto",
+      "editTitle": "Editar piloto",
+      "fullName": "Nome completo",
+      "nickname": "Apelido",
+      "birthDate": "Data de nascimento",
+      "sex": "Sexo",
+      "sexSelect": "Selecionar",
+      "sexMale": "Masculino",
+      "sexFemale": "Feminino",
+      "sexOther": "Outro",
+      "bloodType": "Tipo sanguíneo",
+      "bloodPlaceholder": "O+",
+      "weightPlaceholder": "kg",
+      "pictureHelp": "Envie uma foto de perfil (opcional)."
+    },
+    "list": {
+      "title": "Pilotos existentes",
+      "empty": "Nenhum piloto criado ainda."
+    },
+    "table": {
+      "driver": "Piloto",
+      "weight": "Peso",
+      "nickname": "Apelido",
+      "birthDate": "Data de nascimento",
+      "actions": "Ações"
+    },
+    "confirmDelete": "Tem certeza de que deseja excluir este piloto e todos os seus resultados? Isso não pode ser desfeito."
+  },
+  "cupManagement": {
+    "title": "Copas",
+    "form": {
+      "createTitle": "Criar copa",
+      "editTitle": "Editar copa",
+      "selectSeason": "Selecionar temporada"
+    },
+    "list": {
+      "title": "Copas existentes",
+      "empty": "Nenhuma copa criada ainda."
+    },
+    "table": {
+      "cup": "Copa",
+      "season": "Temporada",
+      "start": "Inicio",
+      "end": "Fim",
+      "actions": "Ações"
+    },
+    "confirmDelete": "Excluir esta copa? Isso não pode ser desfeito."
+  },
+  "raceManagement": {
+    "title": "Corridas",
+    "filters": {
+      "season": "Filtrar por temporada",
+      "cup": "Filtrar por copa"
+    },
+    "form": {
+      "createTitle": "Criar corrida",
+      "editTitle": "Editar corrida",
+      "cupOptional": "Copa (opcional)",
+      "raceDateTime": "Data e hora da corrida",
+      "affectsChampionship": "Afeta o campeonato"
+    },
+    "list": {
+      "title": "Corridas existentes",
+      "empty": "Nenhuma corrida encontrada."
+    },
+    "table": {
+      "race": "Corrida",
+      "season": "Temporada",
+      "cup": "Copa",
+      "date": "Data",
+      "actions": "Ações"
+    },
+    "confirmDelete": "Excluir esta corrida? Isso não pode ser desfeito."
+  },
+  "raceDetail": {
+    "title": "Detalhes da corrida",
+    "addResult": "Adicionar resultado",
+    "backToRaces": "Voltar para corridas",
+    "resultsTitle": "Resultados da corrida",
+    "loadingResults": "Carregando resultados...",
+    "noResults": "Nenhum resultado ainda.",
+    "info": {
+      "dateTime": "Data e hora",
+      "season": "Temporada",
+      "affectsChampionship": "Afeta o campeonato"
+    },
+    "table": {
+      "position": "Posição",
+      "driver": "Piloto",
+      "grid": "Grid",
+      "bestLap": "Melhor volta",
+      "penalties": "Penalidades",
+      "dq": "DQ",
+      "actions": "Ações"
+    },
+    "confirmDelete": "Excluir este resultado da corrida? Isso não pode ser desfeito."
+  },
+  "raceResultModal": {
+    "titleAdd": "Adicionar resultado da corrida",
+    "titleEdit": "Editar resultado da corrida",
+    "driver": "Piloto",
+    "selectDriver": "Selecionar piloto",
+    "finishPosition": "Posição final",
+    "gridStart": "Largada",
+    "bestLapTime": "Melhor tempo de volta",
+    "bestLapPlaceholder": "MM:SS.mmm",
+    "disqualified": "Desclassificado",
+    "comments": "Comentários",
+    "standardPenalties": "Penalidades padrao",
+    "customPenalties": "Penalidades personalizadas",
+    "add": "Adicionar",
+    "cancel": "Cancelar",
+    "saveResult": "Salvar resultado",
+    "customName": "Nome",
+    "customPoints": "Pontos",
+    "customCount": "Quantidade",
+    "penalties": {
+      "disqualification": "Desclassificacao",
+      "coneTireWarning": "Advertencia de cone/pneu",
+      "raceDirectionWarning": "Advertencia da direcao de prova",
+      "stopAndGo": "Stop and Go",
+      "missingClubShirt": "Falta de camisa do clube"
+    }
+  },
+  "publicRankings": {
+    "title": "Ranking de pilotos:",
+    "seasonLabel": "Temporada",
+    "noRacesOrResults": "Nenhuma corrida ou resultado disponível ainda.",
+    "noAvailableSeasons": "Nenhuma temporada disponível",
+    "noAvailableSeasonsYet": "Nenhuma temporada disponível ainda.",
+    "noActiveSeasonFound": "Nenhuma temporada ativa encontrada.",
+    "overallChampionship": "Campeonato geral",
+    "penalties": "Penalidades",
+    "noResultsTab": "Nenhum resultado para esta aba ainda.",
+    "table": {
+      "position": "#",
+      "driver": "Piloto",
+      "totalPoints": "Pontos totais",
+      "penalties": "Penalidades",
+      "bestPosition": "Melhor posição"
+    }
+  },
+  "relative": {
+    "inMinute_one": "em {{count}} minuto",
+    "inMinute_other": "em {{count}} minutos",
+    "minuteAgo_one": "ha {{count}} minuto",
+    "minuteAgo_other": "ha {{count}} minutos",
+    "inHour_one": "em {{count}} hora",
+    "inHour_other": "em {{count}} horas",
+    "hourAgo_one": "ha {{count}} hora",
+    "hourAgo_other": "ha {{count}} horas",
+    "inDay_one": "em {{count}} dia",
+    "inDay_other": "em {{count}} dias",
+    "dayAgo_one": "ha {{count}} dia",
+    "dayAgo_other": "ha {{count}} dias"
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kilobytes": "KB",
+    "megabytes": "MB",
+    "gigabytes": "GB"
+  }
+}

@@ -3,6 +3,8 @@
  * Utility functions used throughout the application
  */
 
+import { t } from '../services/i18n.js';
+
 /**
  * Debounce function to limit function calls
  * @param {Function} func - Function to debounce
@@ -96,7 +98,7 @@ export function showNotification(message, type = 'info', duration = 3000) {
   
   notification.innerHTML = `
     ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="${t('common.actions.close')}"></button>
   `;
   
   document.body.appendChild(notification);
@@ -166,15 +168,15 @@ export function showConfirmation(message) {
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Confirm Action</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">${t('common.actions.confirm')}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="${t('common.actions.close')}"></button>
           </div>
           <div class="modal-body">
             <p class="mb-0">${message}</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-cancel>Cancel</button>
-            <button type="button" class="btn btn-danger" data-confirm>Proceed</button>
+            <button type="button" class="btn btn-outline-secondary" data-cancel>${t('common.actions.cancel')}</button>
+            <button type="button" class="btn btn-danger" data-confirm>${t('common.actions.proceed')}</button>
           </div>
         </div>
       </div>
@@ -217,10 +219,10 @@ export function showConfirmation(message) {
  * @returns {string} Formatted file size
  */
 export function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return `0 ${t('units.bytes')}`;
   
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = [t('units.bytes'), t('units.kilobytes'), t('units.megabytes'), t('units.gigabytes')];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];

@@ -8,6 +8,7 @@ import { calculateRankings, calculatePenaltyRankings } from '../services/points.
 import { applySeasonTheme, getStoredSeasonId, resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { showNotification } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
+import { t } from '../services/i18n.js';
 
 const PublicRankings = {
   async render(container) {
@@ -17,10 +18,10 @@ const PublicRankings = {
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-3">
-        <div class="h3 mb-1">Driver Rankings: </div>
+        <div class="h3 mb-1">${t('publicRankings.title')}</div>
         <div class="d-flex w-auto">
-          <select class="form-select form-select-sm" id="season-name" aria-label="Season">
-            <option value="">Loading seasons...</option>
+          <select class="form-select form-select-sm" id="season-name" aria-label="${t('publicRankings.seasonLabel')}">
+            <option value="">${t('common.status.loadingSeasons')}</option>
           </select>
         </div>
       </div>
@@ -36,14 +37,14 @@ const PublicRankings = {
     const renderLoading = () => {
       tabs.innerHTML = '';
       content.innerHTML = `
-        <div class="d-flex align-items-center gap-2 text-muted">
+        <div class="d-flex align-items-center gap-2">
           <div class="spinner-border spinner-border-sm" role="status"></div>
-          <span>Loading rankings...</span>
+          <span>${t('common.status.loadingRankings')}</span>
         </div>
       `;
     };
     
-    const renderEmpty = (message = 'No races or results available yet.') => {
+    const renderEmpty = (message = t('publicRankings.noRacesOrResults')) => {
       tabs.innerHTML = '';
       content.innerHTML = `
         <div class="alert alert-info">${message}</div>
@@ -57,9 +58,9 @@ const PublicRankings = {
         filters: [{ column: 'is_ongoing', operator: 'eq', value: true }]
       });
       if (!seasons.length) {
-        seasonSelect.innerHTML = '<option value="">No available seasons</option>';
+        seasonSelect.innerHTML = `<option value="">${t('publicRankings.noAvailableSeasons')}</option>`;
         seasonSelect.disabled = true;
-        renderEmpty('No available seasons yet.');
+        renderEmpty(t('publicRankings.noAvailableSeasonsYet'));
         return;
       }
       
@@ -96,16 +97,16 @@ const PublicRankings = {
         }
         
       const overallRaces = races.filter(race => race.affects_championship !== false);
-      const sections = [
+        const sections = [
         {
           id: 'overall',
-          label: 'Overall Championship',
+          label: t('publicRankings.overallChampionship'),
           races: overallRaces,
           ranking: 'points'
         },
         {
           id: 'penalties',
-          label: 'Penalties',
+          label: t('publicRankings.penalties'),
           races: overallRaces,
           ranking: 'penalties'
         },
@@ -136,7 +137,7 @@ const PublicRankings = {
           if (!section.races.length || !sectionResults.length) {
             return `
               <div class="tab-pane fade ${index === 0 ? 'show active' : ''}" id="${section.id}" role="tabpanel">
-                <div class="alert alert-info">No results for this tab yet.</div>
+                <div class="alert alert-info">${t('publicRankings.noResultsTab')}</div>
               </div>
             `;
           }
@@ -147,11 +148,11 @@ const PublicRankings = {
                 <table class="table table-striped align-middle">
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Driver</th>
-                    <th>Total Points</th>
-                    <th>Penalties</th>
-                    <th>Best Position</th>
+                      <th>${t('publicRankings.table.position')}</th>
+                      <th>${t('publicRankings.table.driver')}</th>
+                    <th>${t('publicRankings.table.totalPoints')}</th>
+                    <th>${t('publicRankings.table.penalties')}</th>
+                    <th>${t('publicRankings.table.bestPosition')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -189,9 +190,9 @@ const PublicRankings = {
           selectedSeason = await resolveSelectedSeason(seasons);
         }
         if (!selectedSeason) {
-          seasonSelect.innerHTML = '<option value="">No active season found</option>';
+          seasonSelect.innerHTML = `<option value="">${t('publicRankings.noActiveSeasonFound')}</option>`;
           seasonSelect.disabled = true;
-          renderEmpty('No active season found.');
+          renderEmpty(t('publicRankings.noActiveSeasonFound'));
           return;
         }
         seasonSelect.value = String(selectedSeason.id);

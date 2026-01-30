@@ -3,6 +3,8 @@
  * Bootstrap navbar with Formula 1 styling
  */
 
+import { changeLanguage, t } from '../services/i18n.js';
+
 /**
  * Render navigation bar
  * @param {Object} options - Navigation options
@@ -12,7 +14,7 @@
  * @returns {HTMLElement} Navigation element
  */
 export function renderNavigation(options = {}) {
-  const { isAuthenticated = false, currentUserEmail = '', onLogout = null } = options;
+  const { isAuthenticated = false, currentUserEmail = '', onLogout = null, currentLanguage = 'pt-BR' } = options;
   
   const nav = document.createElement('nav');
   nav.className = 'navbar navbar-expand-lg navbar-dark';
@@ -20,53 +22,57 @@ export function renderNavigation(options = {}) {
   nav.setAttribute('aria-label', 'Main navigation');
   
   nav.innerHTML = `
-    <div class="container-fluid py-0">
-      <a class="navbar-brand" href="#/rankings" aria-label="Kartarados Rankings">
+    <div class="container-fluid py-0 gap-3">
+      <a href="#/rankings" aria-label="${t('nav.brandAria')}">
         <img src="src/assets/icons/kartarados_3grays.png" alt="Kartarados Logo" height="80px">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              aria-controls="navbarNav" aria-expanded="false" aria-label="${t('nav.toggle')}">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-lg-auto">
+        <ul class="navbar-nav me-lg-auto">
           ${!isAuthenticated ? `
             <li class="nav-item">
-              <a class="nav-link" href="#/rankings" aria-current="page">Rankings</a>
+              <a class="nav-link" href="#/rankings" aria-current="page">${t('nav.rankings')}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#/login">Admin Login</a>
+              <a class="nav-link" href="#/login">${t('nav.adminLogin')}</a>
             </li>
           ` : `
             <li class="nav-item">
-              <a class="nav-link" href="#/admin" aria-current="page">Dashboard</a>
+              <a class="nav-link" href="#/admin/seasons">${t('nav.seasons')}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#/admin/seasons">Seasons</a>
+              <a class="nav-link" href="#/admin/drivers">${t('nav.drivers')}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#/admin/drivers">Drivers</a>
+              <a class="nav-link" href="#/admin/cups">${t('nav.cups')}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#/admin/cups">Cups</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#/admin/races">Races</a>
+              <a class="nav-link" href="#/admin/races">${t('nav.races')}</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
                  data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-person-circle me-1"></i>
-                ${currentUserEmail || 'Admin'}
+                ${currentUserEmail || t('nav.adminLabel')}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#/admin/settings">Settings</a></li>
+                <li><a class="dropdown-item" href="#/admin/settings">${t('nav.settings')}</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" id="logout-link">Logout</a></li>
+                <li><a class="dropdown-item" href="#" id="logout-link">${t('nav.logout')}</a></li>
               </ul>
             </li>
           `}
         </ul>
+        <div class="d-flex align-items-center ms-lg-auto mt-2 mt-lg-0">
+          <label class="text-nowrap me-2 small text-uppercase" for="language-switcher">${t('nav.language')}</label>
+          <select class="form-select form-select-sm" id="language-switcher" aria-label="${t('nav.language')}">
+            <option value="pt-BR">${t('nav.languagePortuguese')}</option>
+            <option value="en">${t('nav.languageEnglish')}</option>
+          </select>
+        </div>
       </div>
     </div>
   `;
@@ -77,12 +83,20 @@ export function renderNavigation(options = {}) {
     if (logoutLink) {
       logoutLink.addEventListener('click', async (e) => {
         e.preventDefault();
-        if (window.confirm('Are you sure you want to logout?')) {
+        if (window.confirm(t('nav.confirmLogout'))) {
           await onLogout();
           window.location.hash = '/';
         }
       });
     }
+  }
+
+  const languageSelect = nav.querySelector('#language-switcher');
+  if (languageSelect) {
+    languageSelect.value = currentLanguage;
+    languageSelect.addEventListener('change', async (event) => {
+      await changeLanguage(event.target.value);
+    });
   }
 
   const collapseElement = nav.querySelector('#navbarNav');

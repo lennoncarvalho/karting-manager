@@ -6,6 +6,7 @@
 import { login } from '../services/auth.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { t } from '../services/i18n.js';
 
 const LoginPage = {
   async render(container) {
@@ -18,22 +19,22 @@ const LoginPage = {
         <div class="col-md-6 col-lg-5">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h1 class="h5 mb-0">Admin Login</h1>
+              <h1 class="h5 mb-0">${t('login.title')}</h1>
             </div>
             <div class="card-body">
               <form id="login-form" novalidate>
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
+                  <label for="email" class="form-label">${t('common.labels.email')}</label>
                   <input type="email" class="form-control" id="email" name="email" required>
-                  <div class="invalid-feedback">Email is required.</div>
+                  <div class="invalid-feedback">${t('validation.emailRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
+                  <label for="password" class="form-label">${t('common.labels.password')}</label>
                   <input type="password" class="form-control" id="password" name="password" required>
-                  <div class="invalid-feedback">Password is required.</div>
+                  <div class="invalid-feedback">${t('validation.passwordRequired')}</div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100" id="login-button">
-                  Sign in
+                  ${t('login.signIn')}
                 </button>
               </form>
             </div>
@@ -59,30 +60,30 @@ const LoginPage = {
       
       let hasError = false;
       if (!isRequired(email)) {
-        setFieldInvalid(emailInput, 'Email is required.');
+        setFieldInvalid(emailInput, t('validation.emailRequired'));
         hasError = true;
       }
       if (!isRequired(password)) {
-        setFieldInvalid(passwordInput, 'Password is required.');
+        setFieldInvalid(passwordInput, t('validation.passwordRequired'));
         hasError = true;
       }
       if (hasError) {
-        showNotification('Please fix the highlighted fields.', 'warning');
+        showNotification(t('notifications.pleaseFix'), 'warning');
         return;
       }
       
       button.disabled = true;
-      button.textContent = 'Signing in...';
+      button.textContent = t('login.signingIn');
       
       try {
         await login(email, password);
-        showNotification('Welcome back!', 'success');
+        showNotification(t('notifications.welcomeBack'), 'success');
         window.router.navigate('/admin');
       } catch (error) {
         showNotification(error.message, 'error');
       } finally {
         button.disabled = false;
-        button.textContent = 'Sign in';
+        button.textContent = t('login.signIn');
       }
     });
   }

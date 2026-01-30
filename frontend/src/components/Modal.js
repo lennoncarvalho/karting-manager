@@ -3,6 +3,8 @@
  * Bootstrap modal wrapper for consistent modal usage
  */
 
+import { t } from '../services/i18n.js';
+
 /**
  * Create and show a Bootstrap modal
  * @param {Object} options - Modal options
@@ -15,7 +17,7 @@
  */
 export function showModal(options = {}) {
   const {
-    title = 'Modal',
+    title = t('common.modalTitle'),
     body = '',
     buttons = [],
     onClose = null,
@@ -138,17 +140,17 @@ export function hideModal(modal) {
  */
 export function showConfirmationModal(message, onConfirm, onCancel = null) {
   return showModal({
-    title: 'Confirm Action',
+    title: t('common.actions.confirm'),
     body: `<p>${message}</p>`,
     buttons: [
       {
-        label: 'Cancel',
+        label: t('common.actions.cancel'),
         class: 'btn-secondary',
         dataBsDismiss: true,
         onClick: onCancel || (() => {})
       },
       {
-        label: 'Confirm',
+        label: t('common.actions.confirm'),
         class: 'btn-primary',
         onClick: (e, modal) => {
           hideModal(modal);
@@ -168,11 +170,11 @@ export function showConfirmationModal(message, onConfirm, onCancel = null) {
  */
 export function showErrorModal(message) {
   return showModal({
-    title: 'Error',
+    title: t('common.errorTitle'),
     body: `<div class="alert alert-danger">${message}</div>`,
     buttons: [
       {
-        label: 'Close',
+        label: t('common.actions.close'),
         class: 'btn-primary',
         dataBsDismiss: true
       }

@@ -6,6 +6,7 @@
 import { listSeasons, createSeason, updateSeason, deleteSeason } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidHexColor } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { t } from '../services/i18n.js';
 
 const SeasonManagement = {
   async render(container) {
@@ -15,47 +16,47 @@ const SeasonManagement = {
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
-        <h1 class="h3 mb-0">Seasons</h1>
+        <h1 class="h3 mb-0">${t('seasonManagement.title')}</h1>
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0" id="season-form-title">Create Season</h2>
+              <h2 class="h6 mb-0" id="season-form-title">${t('seasonManagement.form.createTitle')}</h2>
             </div>
             <div class="card-body">
               <form id="season-form" novalidate>
                 <input type="hidden" id="season-id">
                 <div class="mb-3">
-                  <label class="form-label" for="season-name">Name</label>
+                  <label class="form-label" for="season-name">${t('common.labels.name')}</label>
                   <input type="text" class="form-control" id="season-name" required>
-                  <div class="invalid-feedback">Season name is required.</div>
+                  <div class="invalid-feedback">${t('validation.seasonNameRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="season-start">Start Date</label>
+                  <label class="form-label" for="season-start">${t('common.labels.startDate')}</label>
                   <input type="date" class="form-control" id="season-start" required>
-                  <div class="invalid-feedback">Start date is required.</div>
+                  <div class="invalid-feedback">${t('validation.startDateRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="season-end">End Date</label>
+                  <label class="form-label" for="season-end">${t('common.labels.endDate')}</label>
                   <input type="date" class="form-control" id="season-end" required>
-                  <div class="invalid-feedback">End date must be after start date.</div>
+                  <div class="invalid-feedback">${t('validation.endDateAfterStart')}</div>
                 </div>
                 <div class="mb-3">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="season-ongoing">
-                    <label class="form-check-label" for="season-ongoing">Available season</label>
+                    <label class="form-check-label" for="season-ongoing">${t('seasonManagement.form.availableSeason')}</label>
                   </div>
-                  <div class="form-text">Only available seasons appear in public rankings.</div>
+                  <div class="form-text">${t('seasonManagement.form.availableHelp')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="season-color">Accent Color</label>
+                  <label class="form-label" for="season-color">${t('common.labels.accent')}</label>
                   <input type="color" class="form-control form-control-color" id="season-color" value="#000000" required>
-                  <div class="invalid-feedback">Accent color is required.</div>
+                  <div class="invalid-feedback">${t('validation.accentColorRequired')}</div>
                 </div>
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="season-submit">Create</button>
-                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="season-cancel">Cancel</button>
+                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="season-submit">${t('common.actions.create')}</button>
+                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="season-cancel">${t('common.actions.cancel')}</button>
                 </div>
               </form>
             </div>
@@ -64,26 +65,26 @@ const SeasonManagement = {
         <div class="col-lg-8">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0">Existing Seasons</h2>
+              <h2 class="h6 mb-0">${t('seasonManagement.list.title')}</h2>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-striped align-middle">
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Start</th>
-                      <th>End</th>
-                      <th>Accent</th>
-                      <th class="text-end">Actions</th>
+                      <th>${t('seasonManagement.table.name')}</th>
+                      <th>${t('seasonManagement.table.start')}</th>
+                      <th>${t('seasonManagement.table.end')}</th>
+                      <th>${t('seasonManagement.table.accent')}</th>
+                      <th class="text-end">${t('seasonManagement.table.actions')}</th>
                     </tr>
                   </thead>
                   <tbody id="season-table-body">
                     <tr>
-                      <td colspan="5" class="text-center text-muted">
+                      <td colspan="5" class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-2">
                           <div class="spinner-border spinner-border-sm" role="status"></div>
-                          <span>Loading seasons...</span>
+                          <span>${t('common.status.loadingSeasons')}</span>
                         </div>
                       </td>
                     </tr>
@@ -115,8 +116,8 @@ const SeasonManagement = {
       form.querySelector('#season-id').value = '';
       form.querySelector('#season-color').value = '#000000';
       form.querySelector('#season-ongoing').checked = false;
-      formTitle.textContent = 'Create Season';
-      submitButton.textContent = 'Create';
+      formTitle.textContent = t('seasonManagement.form.createTitle');
+      submitButton.textContent = t('common.actions.create');
       cancelButton.classList.add('d-none');
     };
     
@@ -124,7 +125,7 @@ const SeasonManagement = {
       if (!seasons.length) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center text-muted">No seasons created yet.</td>
+            <td colspan="5" class="text-center">${t('seasonManagement.list.empty')}</td>
           </tr>
         `;
         return;
@@ -140,8 +141,8 @@ const SeasonManagement = {
           </td>
           <td class="text-end">
             <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${season.id}">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${season.id}">Delete</button>
+              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${season.id}">${t('common.actions.edit')}</button>
+              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${season.id}">${t('common.actions.delete')}</button>
             </div>
           </td>
         </tr>
@@ -175,23 +176,23 @@ const SeasonManagement = {
       [nameInput, startInput, endInput, colorInput].forEach(clearFieldInvalid);
       let hasError = false;
       if (!isRequired(payload.name)) {
-        setFieldInvalid(nameInput, 'Season name is required.');
+        setFieldInvalid(nameInput, t('validation.seasonNameRequired'));
         hasError = true;
       }
       if (!isRequired(payload.start_date)) {
-        setFieldInvalid(startInput, 'Start date is required.');
+        setFieldInvalid(startInput, t('validation.startDateRequired'));
         hasError = true;
       }
       if (!isRequired(payload.end_date) || !isValidDateRange(payload.start_date, payload.end_date)) {
-        setFieldInvalid(endInput, 'End date must be after start date.');
+        setFieldInvalid(endInput, t('validation.endDateAfterStart'));
         hasError = true;
       }
       if (!isValidHexColor(payload.accent_color)) {
-        setFieldInvalid(colorInput, 'Accent color must be valid.');
+        setFieldInvalid(colorInput, t('validation.accentColorValid'));
         hasError = true;
       }
       if (hasError) {
-        showNotification('Please fix the highlighted fields.', 'warning');
+        showNotification(t('notifications.pleaseFix'), 'warning');
         return;
       }
       
@@ -199,10 +200,10 @@ const SeasonManagement = {
       try {
         if (id) {
           await updateSeason(id, payload);
-          showNotification('Season updated.', 'success');
+          showNotification(t('notifications.seasonUpdated'), 'success');
         } else {
           await createSeason(payload);
-          showNotification('Season created.', 'success');
+          showNotification(t('notifications.seasonCreated'), 'success');
         }
         resetForm();
         await loadSeasons();
@@ -234,21 +235,21 @@ const SeasonManagement = {
         form.querySelector('#season-end').value = season.end_date;
         form.querySelector('#season-color').value = season.accent_color;
         form.querySelector('#season-ongoing').checked = !!season.is_ongoing;
-        formTitle.textContent = 'Edit Season';
-        submitButton.textContent = 'Update';
+        formTitle.textContent = t('seasonManagement.form.editTitle');
+        submitButton.textContent = t('common.actions.update');
         cancelButton.classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
       if (action === 'delete') {
-        const confirmed = await showConfirmation('Delete this season? This cannot be undone.');
+        const confirmed = await showConfirmation(t('seasonManagement.confirmDelete'));
         if (!confirmed) {
           return;
         }
         try {
           await deleteSeason(id);
-          showNotification('Season deleted.', 'success');
+          showNotification(t('notifications.seasonDeleted'), 'success');
           await loadSeasons();
         } catch (error) {
           showNotification(error.message, 'error');

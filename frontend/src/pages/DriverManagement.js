@@ -7,6 +7,7 @@ import { listDrivers, createDriver, updateDriver, deleteDriver, getSupabaseClien
 import { isRequired, isValidEmail } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
+import { t } from '../services/i18n.js';
 
 const DriverManagement = {
   async render(container) {
@@ -16,60 +17,60 @@ const DriverManagement = {
     main.className = 'container mt-4';
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
-        <h1 class="h3 mb-0">Drivers</h1>
+        <h1 class="h3 mb-0">${t('driverManagement.title')}</h1>
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0" id="driver-form-title">Create Driver</h2>
+              <h2 class="h6 mb-0" id="driver-form-title">${t('driverManagement.form.createTitle')}</h2>
             </div>
             <div class="card-body">
               <form id="driver-form" novalidate>
                 <input type="hidden" id="driver-id">
                 <div class="mb-3">
-                  <label class="form-label" for="driver-email">Email</label>
+                  <label class="form-label" for="driver-email">${t('common.labels.email')}</label>
                   <input type="email" class="form-control" id="driver-email" required>
-                  <div class="invalid-feedback">Email is required.</div>
+                  <div class="invalid-feedback">${t('validation.emailRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-name">Full Name</label>
+                  <label class="form-label" for="driver-name">${t('driverManagement.form.fullName')}</label>
                   <input type="text" class="form-control" id="driver-name" required>
-                  <div class="invalid-feedback">Driver name is required.</div>
+                  <div class="invalid-feedback">${t('validation.driverNameRequired')}</div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-nickname">Nickname</label>
+                  <label class="form-label" for="driver-nickname">${t('driverManagement.form.nickname')}</label>
                   <input type="text" class="form-control" id="driver-nickname">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-birthdate">Birth Date</label>
+                  <label class="form-label" for="driver-birthdate">${t('driverManagement.form.birthDate')}</label>
                   <input type="date" class="form-control" id="driver-birthdate">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-sex">Sex</label>
+                  <label class="form-label" for="driver-sex">${t('driverManagement.form.sex')}</label>
                   <select class="form-select" id="driver-sex">
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="">${t('driverManagement.form.sexSelect')}</option>
+                    <option value="Male">${t('driverManagement.form.sexMale')}</option>
+                    <option value="Female">${t('driverManagement.form.sexFemale')}</option>
+                    <option value="Other">${t('driverManagement.form.sexOther')}</option>
                   </select>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-blood">Blood Type</label>
-                  <input type="text" class="form-control" id="driver-blood" placeholder="O+">
+                  <label class="form-label" for="driver-blood">${t('driverManagement.form.bloodType')}</label>
+                  <input type="text" class="form-control" id="driver-blood" placeholder="${t('driverManagement.form.bloodPlaceholder')}">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-weight">Weight</label>
-                  <input type="number" class="form-control" id="driver-weight" min="0" step="0.1" placeholder="kg">
+                  <label class="form-label" for="driver-weight">${t('common.labels.weight')}</label>
+                  <input type="number" class="form-control" id="driver-weight" min="0" step="0.1" placeholder="${t('driverManagement.form.weightPlaceholder')}">
                 </div>
                 <div class="mb-3">
-                  <label class="form-label" for="driver-picture">Picture</label>
+                  <label class="form-label" for="driver-picture">${t('common.labels.picture')}</label>
                   <input type="file" class="form-control" id="driver-picture" accept="image/*">
-                  <div class="form-text">Upload a profile picture (optional).</div>
+                  <div class="form-text">${t('driverManagement.form.pictureHelp')}</div>
                 </div>
                 <div class="d-flex flex-column flex-sm-row gap-2">
-                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="driver-submit">Create</button>
-                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="driver-cancel">Cancel</button>
+                  <button type="submit" class="btn btn-primary w-100 w-sm-auto flex-sm-grow-1" id="driver-submit">${t('common.actions.create')}</button>
+                  <button type="button" class="btn btn-outline-secondary d-none w-100 w-sm-auto" id="driver-cancel">${t('common.actions.cancel')}</button>
                 </div>
               </form>
             </div>
@@ -78,26 +79,26 @@ const DriverManagement = {
         <div class="col-lg-8">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0">Existing Drivers</h2>
+              <h2 class="h6 mb-0">${t('driverManagement.list.title')}</h2>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-striped align-middle">
                   <thead>
                     <tr>
-                      <th>Driver</th>
-                      <th>Weight</th>
-                      <th>Nickname</th>
-                      <th>Birth Date</th>
-                      <th class="text-end">Actions</th>
+                      <th>${t('driverManagement.table.driver')}</th>
+                      <th>${t('driverManagement.table.weight')}</th>
+                      <th>${t('driverManagement.table.nickname')}</th>
+                      <th>${t('driverManagement.table.birthDate')}</th>
+                      <th class="text-end">${t('driverManagement.table.actions')}</th>
                     </tr>
                   </thead>
                   <tbody id="driver-table-body">
                     <tr>
-                      <td colspan="5" class="text-center text-muted">
+                      <td colspan="5" class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-2">
                           <div class="spinner-border spinner-border-sm" role="status"></div>
-                          <span>Loading drivers...</span>
+                          <span>${t('common.status.loadingDrivers')}</span>
                         </div>
                       </td>
                     </tr>
@@ -127,8 +128,8 @@ const DriverManagement = {
       form.reset();
       form.querySelector('#driver-id').value = '';
       form.querySelector('#driver-email').disabled = false;
-      formTitle.textContent = 'Create Driver';
-      submitButton.textContent = 'Create';
+      formTitle.textContent = t('driverManagement.form.createTitle');
+      submitButton.textContent = t('common.actions.create');
       cancelButton.classList.add('d-none');
     };
     
@@ -136,7 +137,7 @@ const DriverManagement = {
       if (!drivers.length) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center text-muted">No drivers created yet.</td>
+            <td colspan="5" class="text-center">${t('driverManagement.list.empty')}</td>
           </tr>
         `;
         return;
@@ -161,8 +162,8 @@ const DriverManagement = {
           <td>${driver.birth_date || '-'}</td>
           <td class="text-end">
             <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
-              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${driver.id}">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${driver.id}">Delete</button>
+              <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${driver.id}">${t('common.actions.edit')}</button>
+              <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${driver.id}">${t('common.actions.delete')}</button>
             </div>
           </td>
         </tr>
@@ -194,7 +195,7 @@ const DriverManagement = {
         .upload(fileName, file);
       
       if (error) {
-        throw new Error(error.message || 'Failed to upload image.');
+        throw new Error(error.message || t('errors.uploadFailed'));
       }
       
       const { data: publicData } = supabase.storage
@@ -220,28 +221,28 @@ const DriverManagement = {
       [emailInput, nameInput, weightInput].forEach(clearFieldInvalid);
       let hasError = false;
       if (!isRequired(email) || !isValidEmail(email)) {
-        setFieldInvalid(emailInput, 'Valid email is required.');
+        setFieldInvalid(emailInput, t('validation.validEmailRequired'));
         hasError = true;
       }
       if (!isRequired(name)) {
-        setFieldInvalid(nameInput, 'Driver name is required.');
+        setFieldInvalid(nameInput, t('validation.driverNameRequired'));
         hasError = true;
       }
       if (weightValue && Number.isNaN(weight)) {
-        setFieldInvalid(weightInput, 'Weight must be a number.');
+        setFieldInvalid(weightInput, t('validation.weightMustBeNumber'));
         hasError = true;
       }
       if (!id && drivers.some(driver => driver.email.toLowerCase() === email.toLowerCase())) {
-        setFieldInvalid(emailInput, 'Email already exists.');
+        setFieldInvalid(emailInput, t('validation.emailExists'));
         hasError = true;
       }
       if (hasError) {
-        showNotification('Please fix the highlighted fields.', 'warning');
+        showNotification(t('notifications.pleaseFix'), 'warning');
         return;
       }
       
       submitButton.disabled = true;
-      submitButton.textContent = id ? 'Updating...' : 'Creating...';
+      submitButton.textContent = id ? t('common.status.updating') : t('common.status.creating');
       
       try {
         let pictureUrl = null;
@@ -265,10 +266,10 @@ const DriverManagement = {
             delete payload.picture_url;
           }
           await updateDriver(id, payload);
-          showNotification('Driver updated.', 'success');
+          showNotification(t('notifications.driverUpdated'), 'success');
         } else {
           await createDriver(payload);
-          showNotification('Driver created.', 'success');
+          showNotification(t('notifications.driverCreated'), 'success');
         }
         
         resetForm();
@@ -277,7 +278,7 @@ const DriverManagement = {
         showNotification(error.message, 'error');
       } finally {
         submitButton.disabled = false;
-        submitButton.textContent = id ? 'Update' : 'Create';
+        submitButton.textContent = id ? t('common.actions.update') : t('common.actions.create');
       }
     });
     
@@ -304,21 +305,21 @@ const DriverManagement = {
         form.querySelector('#driver-sex').value = driver.sex || '';
         form.querySelector('#driver-blood').value = driver.blood_type || '';
         form.querySelector('#driver-weight').value = driver.weight || '';
-        formTitle.textContent = 'Edit Driver';
-        submitButton.textContent = 'Update';
+        formTitle.textContent = t('driverManagement.form.editTitle');
+        submitButton.textContent = t('common.actions.update');
         cancelButton.classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
       if (action === 'delete') {
-        const confirmed = await showConfirmation('Are you sure you want to exclude this driver and all his race results? This cannot be undone.');
+        const confirmed = await showConfirmation(t('driverManagement.confirmDelete'));
         if (!confirmed) {
           return;
         }
         try {
           await deleteDriver(id);
-          showNotification('Driver deleted.', 'success');
+          showNotification(t('notifications.driverDeleted'), 'success');
           await loadDrivers();
         } catch (error) {
           showNotification(error.message, 'error');

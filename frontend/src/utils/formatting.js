@@ -3,6 +3,8 @@
  * Date, time, and data formatting functions
  */
 
+import { t } from '../services/i18n.js';
+
 /**
  * Format date for display (YYYY-MM-DD)
  * @param {string|Date} date - Date to format
@@ -112,14 +114,19 @@ export function formatRelativeTime(date) {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     if (Math.abs(diffHours) < 1) {
       const diffMins = Math.floor(diffMs / (1000 * 60));
-      return diffMins > 0 ? `in ${diffMins} minute${diffMins > 1 ? 's' : ''}` : `${Math.abs(diffMins)} minute${Math.abs(diffMins) > 1 ? 's' : ''} ago`;
+      if (diffMins > 0) {
+        return t('relative.inMinute', { count: diffMins });
+      }
+      return t('relative.minuteAgo', { count: Math.abs(diffMins) });
     }
-    return diffHours > 0 ? `in ${diffHours} hour${diffHours > 1 ? 's' : ''}` : `${Math.abs(diffHours)} hour${Math.abs(diffHours) > 1 ? 's' : ''} ago`;
+    if (diffHours > 0) {
+      return t('relative.inHour', { count: diffHours });
+    }
+    return t('relative.hourAgo', { count: Math.abs(diffHours) });
   }
   
   if (diffDays > 0) {
-    return `in ${diffDays} day${diffDays > 1 ? 's' : ''}`;
-  } else {
-    return `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''} ago`;
+    return t('relative.inDay', { count: diffDays });
   }
+  return t('relative.dayAgo', { count: Math.abs(diffDays) });
 }
