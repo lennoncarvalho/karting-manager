@@ -4,7 +4,7 @@
  */
 
 import { listCups, listRaces, listRaceResultsByRaceIds, listSeasons } from '../services/api.js';
-import { calculateRankings } from '../services/points.js';
+import { calculateRankings, calculatePenaltyRankings } from '../services/points.js';
 import { applySeasonTheme, getStoredSeasonId, resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { showNotification } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
@@ -95,18 +95,27 @@ const PublicRankings = {
           return;
         }
         
-        const sections = [
-          {
-            id: 'overall',
-            label: 'Overall Championship',
-            races: races.filter(race => race.affects_championship !== false)
-          },
-          ...cups.map(cup => ({
-            id: `cup-${cup.id}`,
-            label: cup.name,
-            races: races.filter(race => race.cup_id === cup.id)
-          }))
-        ];
+      const overallRaces = races.filter(race => race.affects_championship !== false);
+      const sections = [
+        {
+          id: 'overall',
+          label: 'Overall Championship',
+          races: overallRaces,
+          ranking: 'points'
+        },
+        {
+          id: 'penalties',
+          label: 'Penalties',
+          races: overallRaces,
+          ranking: 'penalties'
+        },
+        ...cups.map(cup => ({
+          id: `cup-${cup.id}`,
+          label: cup.name,
+          races: races.filter(race => race.cup_id === cup.id),
+          ranking: 'points'
+        }))
+      ];
         
         tabs.innerHTML = sections.map((section, index) => `
           <li class="nav-item" role="presentation">
@@ -118,7 +127,9 @@ const PublicRankings = {
         
         content.innerHTML = sections.map((section, index) => {
           const sectionResults = raceResults.filter(result => section.races.some(race => race.id === result.race_id));
-          const rankings = calculateRankings(section.races, sectionResults, {
+        const rankings = section.ranking === 'penalties'
+          ? calculatePenaltyRankings(section.races, sectionResults, { type: 'overall' })
+          : calculateRankings(section.races, sectionResults, {
             type: section.id === 'overall' ? 'overall' : 'cup'
           });
           
@@ -138,8 +149,9 @@ const PublicRankings = {
                     <tr>
                       <th>#</th>
                       <th>Driver</th>
-                      <th>Best Position</th>
-                      <th>Total Points</th>
+                    <th>Total Points</th>
+                    <th>Penalties</th>
+                    <th>Best Position</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -158,8 +170,9 @@ const PublicRankings = {
                             <span>${driver.name}</span>
                           </div>
                         </td>
-                        <td>${driver.bestPosition || '-'}</td>
-                        <td class="fw-semibold">${driver.totalPoints}</td>
+                      <td class="fw-semibold">${driver.totalPoints}</td>
+                      <td>${driver.penalties || 0}</td>
+                      <td>${driver.bestPosition || '-'}</td>
                       </tr>
                     `).join('')}
                   </tbody>

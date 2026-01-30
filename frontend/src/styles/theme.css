@@ -49,7 +49,6 @@
 
 .nav-tabs .nav-link:hover {
   border-color: var(--season-accent);
-  color: var(--season-accent);
 }
 
 /* Progress bars */

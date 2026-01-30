@@ -137,6 +137,8 @@ export function calculateRankings(races, raceResults, options = {}) {
           poles: 0,
           fastestLaps: 0,
           penalties: 0,
+          firstPenaltyAt: null,
+          firstPenaltyFinish: null,
           reachedAt: null,
           racePoints: [],
           disqualifiedCount: 0,
@@ -162,6 +164,14 @@ export function calculateRankings(races, raceResults, options = {}) {
         }
         return sum + (points * count);
       }, 0);
+      
+      if (penalties !== 0 && race.race_datetime) {
+        const penaltyTime = new Date(race.race_datetime).getTime();
+        if (stats.firstPenaltyAt === null || penaltyTime < stats.firstPenaltyAt) {
+          stats.firstPenaltyAt = penaltyTime;
+          stats.firstPenaltyFinish = finishPosition || null;
+        }
+      }
       
       const ledger = driverRacePoints.get(driverId);
       ledger.basePoints[raceIndex] += basePoints;
@@ -221,6 +231,28 @@ export function calculateRankings(races, raceResults, options = {}) {
     if (b.fastestLaps !== a.fastestLaps) return b.fastestLaps - a.fastestLaps;
     if (a.penalties !== b.penalties) return b.penalties - a.penalties;
     if (a.reachedAt !== b.reachedAt) return a.reachedAt - b.reachedAt;
+    return 0;
+  });
+  
+  return rankings.map((entry, index) => ({
+    rank: index + 1,
+    ...entry
+  }));
+}
+
+export function calculatePenaltyRankings(races, raceResults, options = {}) {
+  const rankings = calculateRankings(races, raceResults, options);
+  
+  rankings.sort((a, b) => {
+    const aPenalty = a.penalties || 0;
+    const bPenalty = b.penalties || 0;
+    if (aPenalty !== bPenalty) return aPenalty - bPenalty;
+    const aFirst = a.firstPenaltyAt ?? Number.MAX_SAFE_INTEGER;
+    const bFirst = b.firstPenaltyAt ?? Number.MAX_SAFE_INTEGER;
+    if (aFirst !== bFirst) return aFirst - bFirst;
+    const aFinish = a.firstPenaltyFinish ?? Number.MAX_SAFE_INTEGER;
+    const bFinish = b.firstPenaltyFinish ?? Number.MAX_SAFE_INTEGER;
+    if (aFinish !== bFinish) return bFinish - aFinish;
     return 0;
   });
   

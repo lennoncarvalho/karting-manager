@@ -24,9 +24,9 @@ const AdminDashboard = {
         <div class="col-md-6 col-lg-3">
           <div class="card h-100 shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">Seasons</h5>
-              <p class="card-text">Set up yearly championships and accent colors.</p>
-              <a href="#/admin/seasons" class="btn btn-outline-primary btn-sm">Manage</a>
+              <h5 class="card-title">Races</h5>
+              <p class="card-text">Create races and assign them to cups.</p>
+              <a href="#/admin/races" class="btn btn-outline-primary btn-sm">Manage</a>
             </div>
           </div>
         </div>
@@ -51,9 +51,9 @@ const AdminDashboard = {
         <div class="col-md-6 col-lg-3">
           <div class="card h-100 shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">Races</h5>
-              <p class="card-text">Create races and assign them to cups.</p>
-              <a href="#/admin/races" class="btn btn-outline-primary btn-sm">Manage</a>
+              <h5 class="card-title">Seasons</h5>
+              <p class="card-text">Set up yearly championships and accent colors.</p>
+              <a href="#/admin/seasons" class="btn btn-outline-primary btn-sm">Manage</a>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ const AdminDashboard = {
         <div class="col-lg-6">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0">Change Password</h2>
+              <h2 class="h6 mb-0">Change Your Password</h2>
             </div>
             <div class="card-body">
               <form id="password-form" novalidate>
@@ -98,7 +98,7 @@ const AdminDashboard = {
                   <input type="password" class="form-control" id="admin-password" required>
                   <div class="invalid-feedback">Temporary password is required.</div>
                 </div>
-                <button type="submit" class="btn btn-outline-primary" id="admin-submit">Create Admin</button>
+                <button type="submit" class="btn btn-outline-primary" id="admin-submit">Invite Admin</button>
                 <div class="form-text mt-2" id="admin-note"></div>
               </form>
             </div>
