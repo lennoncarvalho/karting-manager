@@ -2,6 +2,7 @@
 // Get these values from: Supabase Dashboard → Settings → API
 export const SUPABASE_URL = '[SUPABASE_URL]';
 export const SUPABASE_ANON_KEY = '[SUPABASE_ANON_KEY]';
+export const APP_URL = 'https://karting-manager.pages.dev/';
 
 // CDN URLs for libraries
 export const CDN_URLS = {
