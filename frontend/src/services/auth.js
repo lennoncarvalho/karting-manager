@@ -184,13 +184,17 @@ export async function createAdmin(email, password) {
     }
     
     const supabase = getSupabaseClient();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session: originalSession } } = await supabase.auth.getSession();
     
-    if (!session) {
+    if (!originalSession) {
       throw new Error('Not authenticated');
     }
     
-    const currentUserId = session.user.id;
+    const currentUserId = originalSession.user.id;
+    const originalTokens = {
+      access_token: originalSession.access_token,
+      refresh_token: originalSession.refresh_token
+    };
     
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -204,11 +208,13 @@ export async function createAdmin(email, password) {
       throw signUpError;
     }
     
-    if (session && session.access_token && session.refresh_token) {
-      await supabase.auth.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token
-      });
+    if (originalTokens.access_token && originalTokens.refresh_token) {
+      await supabase.auth.setSession(originalTokens);
+    }
+    
+    const { data: { session: restoredSession } } = await supabase.auth.getSession();
+    if (!restoredSession || restoredSession.user.id !== currentUserId) {
+      throw new Error('Admin session could not be restored.');
     }
     
     const newUserId = signUpData.user ? signUpData.user.id : null;
