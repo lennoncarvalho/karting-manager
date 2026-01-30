@@ -7,6 +7,7 @@
  */
 
 import { getSupabaseClient, handleApiError } from './api.js';
+import { APP_URL } from '../config.js';
 
 /**
  * Login admin user with email and password
@@ -193,7 +194,10 @@ export async function createAdmin(email, password) {
     
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        emailRedirectTo: APP_URL
+      }
     });
     
     if (signUpError) {
