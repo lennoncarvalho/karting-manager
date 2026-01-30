@@ -59,6 +59,10 @@ const DriverManagement = {
                   <input type="text" class="form-control" id="driver-blood" placeholder="O+">
                 </div>
                 <div class="mb-3">
+                  <label class="form-label" for="driver-weight">Weight</label>
+                  <input type="number" class="form-control" id="driver-weight" min="0" step="0.1" placeholder="kg">
+                </div>
+                <div class="mb-3">
                   <label class="form-label" for="driver-picture">Picture</label>
                   <input type="file" class="form-control" id="driver-picture" accept="image/*">
                   <div class="form-text">Upload a profile picture (optional).</div>
@@ -82,7 +86,7 @@ const DriverManagement = {
                   <thead>
                     <tr>
                       <th>Driver</th>
-                      <th>Email</th>
+                      <th>Weight</th>
                       <th>Nickname</th>
                       <th>Birth Date</th>
                       <th class="text-end">Actions</th>
@@ -115,6 +119,7 @@ const DriverManagement = {
     const tableBody = main.querySelector('#driver-table-body');
     const emailInput = main.querySelector('#driver-email');
     const nameInput = main.querySelector('#driver-name');
+    const weightInput = main.querySelector('#driver-weight');
     
     let drivers = [];
     
@@ -151,7 +156,7 @@ const DriverManagement = {
               <span>${driver.name}</span>
             </div>
           </td>
-          <td>${driver.email}</td>
+          <td>${driver.weight !== null && driver.weight !== undefined ? driver.weight : '-'}</td>
           <td>${driver.nickname || '-'}</td>
           <td>${driver.birth_date || '-'}</td>
           <td class="text-end">
@@ -208,9 +213,11 @@ const DriverManagement = {
       const birthDate = form.querySelector('#driver-birthdate').value;
       const sex = form.querySelector('#driver-sex').value;
       const bloodType = form.querySelector('#driver-blood').value.trim();
+      const weightValue = form.querySelector('#driver-weight').value;
+      const weight = weightValue ? Number(weightValue) : null;
       const pictureFile = form.querySelector('#driver-picture').files[0];
       
-      [emailInput, nameInput].forEach(clearFieldInvalid);
+      [emailInput, nameInput, weightInput].forEach(clearFieldInvalid);
       let hasError = false;
       if (!isRequired(email) || !isValidEmail(email)) {
         setFieldInvalid(emailInput, 'Valid email is required.');
@@ -218,6 +225,10 @@ const DriverManagement = {
       }
       if (!isRequired(name)) {
         setFieldInvalid(nameInput, 'Driver name is required.');
+        hasError = true;
+      }
+      if (weightValue && Number.isNaN(weight)) {
+        setFieldInvalid(weightInput, 'Weight must be a number.');
         hasError = true;
       }
       if (!id && drivers.some(driver => driver.email.toLowerCase() === email.toLowerCase())) {
@@ -245,6 +256,7 @@ const DriverManagement = {
           birth_date: birthDate || null,
           sex: sex || null,
           blood_type: bloodType || null,
+          weight: weight,
           picture_url: pictureUrl || null
         };
         
@@ -291,6 +303,7 @@ const DriverManagement = {
         form.querySelector('#driver-birthdate').value = driver.birth_date || '';
         form.querySelector('#driver-sex').value = driver.sex || '';
         form.querySelector('#driver-blood').value = driver.blood_type || '';
+        form.querySelector('#driver-weight').value = driver.weight || '';
         formTitle.textContent = 'Edit Driver';
         submitButton.textContent = 'Update';
         cancelButton.classList.remove('d-none');
@@ -299,7 +312,7 @@ const DriverManagement = {
       }
       
       if (action === 'delete') {
-        const confirmed = await showConfirmation('Delete this driver? This cannot be undone.');
+        const confirmed = await showConfirmation('Are you sure you want to exclude this driver and all his race results? This cannot be undone.');
         if (!confirmed) {
           return;
         }

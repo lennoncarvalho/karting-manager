@@ -150,8 +150,64 @@ export function clearFieldInvalid(field) {
  */
 export function showConfirmation(message) {
   return new Promise((resolve) => {
-    const confirmed = window.confirm(message);
-    resolve(confirmed);
+    const bootstrap = window.bootstrap;
+    if (!bootstrap || !bootstrap.Modal) {
+      resolve(window.confirm(message));
+      return;
+    }
+    
+    const modalId = `confirm-modal-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = modalId;
+    modal.tabIndex = -1;
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Action</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">${message}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-cancel>Cancel</button>
+            <button type="button" class="btn btn-danger" data-confirm>Proceed</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    const modalInstance = new bootstrap.Modal(modal, { backdrop: 'static', keyboard: false });
+    const confirmButton = modal.querySelector('[data-confirm]');
+    const cancelButton = modal.querySelector('[data-cancel]');
+    let resolved = false;
+    
+    const finalize = (result) => {
+      if (resolved) return;
+      resolved = true;
+      modalInstance.hide();
+      modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+        resolve(result);
+      }, { once: true });
+    };
+    
+    confirmButton.addEventListener('click', () => finalize(true));
+    cancelButton.addEventListener('click', () => finalize(false));
+    modal.addEventListener('hidden.bs.modal', () => {
+      if (!resolved) {
+        resolved = true;
+        modal.remove();
+        resolve(false);
+      }
+    }, { once: true });
+    
+    modalInstance.show();
   });
 }
 
