@@ -17,7 +17,6 @@ const DriverManagement = {
     main.innerHTML = `
       <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
         <h1 class="h3 mb-0">Drivers</h1>
-        <a href="#/admin" class="btn btn-outline-secondary btn-sm w-100 w-sm-auto">Back to Dashboard</a>
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
