@@ -20,10 +20,9 @@ export function renderNavigation(options = {}) {
   nav.setAttribute('aria-label', 'Main navigation');
   
   nav.innerHTML = `
-    <div class="container-fluid">
+    <div class="container-fluid py-0">
       <a class="navbar-brand" href="#/rankings" aria-label="Kartarados Rankings">
-        <i class="bi bi-speedometer2 me-2"></i>
-        Kartarados
+        <img src="src/assets/icons/kartarados_3grays.png" alt="Kartarados Logo" height="80px">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
               aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

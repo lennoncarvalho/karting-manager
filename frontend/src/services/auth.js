@@ -221,24 +221,7 @@ export async function createAdmin(email, password) {
     if (!newUserId) {
       throw new Error('Admin user was created but missing user ID.');
     }
-    
-    const { data: adminData, error: adminError } = await supabase
-      .from('admins')
-      .insert([
-        {
-          id: newUserId,
-          email,
-          is_first_admin: false,
-          created_by: currentUserId
-        }
-      ])
-      .select('*')
-      .single();
-    
-    if (adminError) {
-      throw adminError;
-    }
-    
+
     return adminData;
   } catch (error) {
     throw new Error(handleApiError(error));
