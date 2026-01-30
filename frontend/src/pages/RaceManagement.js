@@ -6,6 +6,7 @@
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { resolveSelectedSeason } from '../services/theme.js';
 
 const RaceManagement = {
   async render(container) {
@@ -226,7 +227,16 @@ const RaceManagement = {
         seasons = await listSeasons({ order: { column: 'start_date', ascending: true } });
         cups = await listCups({ order: { column: 'start_date', ascending: true } });
         renderSeasonOptions();
-        renderFilterCupOptions('');
+        const selectedSeason = await resolveSelectedSeason(seasons);
+        if (selectedSeason) {
+          const selectedId = String(selectedSeason.id);
+          if (seasons.some(season => String(season.id) === selectedId)) {
+            seasonSelect.value = selectedId;
+            renderCupOptions(selectedId);
+            filterSeasonSelect.value = selectedId;
+          }
+        }
+        renderFilterCupOptions(filterSeasonSelect.value || '');
         await loadRaces();
         renderTable();
       } catch (error) {

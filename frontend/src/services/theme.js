@@ -8,6 +8,7 @@ import { isValidHexColor } from '../utils/validation.js';
 
 const SEASON_ACCENT_KEY = 'seasonAccent';
 const SEASON_ACCENT_SEASON_KEY = 'seasonAccentSeasonId';
+const SELECTED_SEASON_KEY = 'selectedSeasonId';
 
 function readStorage(key) {
   try {
@@ -59,6 +60,36 @@ export function applySeasonTheme(season) {
     setSeasonAccent(season.accent_color);
     cacheSeasonAccent(season);
   }
+}
+
+export function getStoredSeasonId() {
+  const stored = readStorage(SELECTED_SEASON_KEY);
+  return stored ? String(stored) : null;
+}
+
+export function setStoredSeasonId(seasonId) {
+  if (seasonId === undefined || seasonId === null) {
+    return;
+  }
+  writeStorage(SELECTED_SEASON_KEY, String(seasonId));
+}
+
+export async function resolveSelectedSeason(seasons) {
+  const storedId = getStoredSeasonId();
+  if (storedId) {
+    const matched = seasons.find(season => String(season.id) === storedId);
+    if (matched) {
+      return matched;
+    }
+  }
+  const activeSeason = await getActiveSeason();
+  if (activeSeason) {
+    const matched = seasons.find(season => String(season.id) === String(activeSeason.id));
+    if (matched) {
+      return matched;
+    }
+  }
+  return null;
 }
 
 /**

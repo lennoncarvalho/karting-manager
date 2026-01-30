@@ -6,6 +6,7 @@
 import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { resolveSelectedSeason } from '../services/theme.js';
 
 const CupManagement = {
   async render(container) {
@@ -153,6 +154,13 @@ const CupManagement = {
         seasons = await listSeasons({ order: { column: 'start_date', ascending: true } });
         cups = await listCups({ order: { column: 'start_date', ascending: true } });
         renderSeasonOptions();
+        const selectedSeason = await resolveSelectedSeason(seasons);
+        if (selectedSeason) {
+          const selectedId = String(selectedSeason.id);
+          if (seasons.some(season => String(season.id) === selectedId)) {
+            seasonSelect.value = selectedId;
+          }
+        }
         renderTable();
       } catch (error) {
         tableBody.innerHTML = `

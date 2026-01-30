@@ -45,9 +45,9 @@ const SeasonManagement = {
                 <div class="mb-3">
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="season-ongoing">
-                    <label class="form-check-label" for="season-ongoing">Ongoing season</label>
+                    <label class="form-check-label" for="season-ongoing">Available season</label>
                   </div>
-                  <div class="form-text">Marked seasons are preferred on the public rankings page.</div>
+                  <div class="form-text">Only available seasons appear in public rankings.</div>
                 </div>
                 <div class="mb-3">
                   <label class="form-label" for="season-color">Accent Color</label>

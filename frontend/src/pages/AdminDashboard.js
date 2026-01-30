@@ -19,7 +19,6 @@ const AdminDashboard = {
           <h1 class="h3 mb-1">Admin Dashboard</h1>
           <p class="h6 mb-0">Manage seasons, drivers, cups, and races.</p>
         </div>
-        <a href="#/admin/seasons" class="btn btn-primary w-100 w-md-auto">Create Season</a>
       </div>
       <div class="row g-3">
         <div class="col-md-6 col-lg-3">
@@ -85,7 +84,7 @@ const AdminDashboard = {
         <div class="col-lg-6">
           <div class="card shadow-sm">
             <div class="card-header text-white">
-              <h2 class="h6 mb-0">Create Admin</h2>
+              <h2 class="h6 mb-0">Invite Admin</h2>
             </div>
             <div class="card-body">
               <form id="admin-form" novalidate>
