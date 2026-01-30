@@ -2,7 +2,7 @@
 
 **Feature Branch**: `005-penalty-rankings`  
 **Created**: 2026-01-30  
-**Status**: Draft  
+**Status**: Done  
 **Input**: User description: "On the public rankings page, add a new ranking tab for the drivers penalties. The drivers are ranked from top(most penalties) to bottom. If there is a tie, the topmost driver will be the one that got the penalty before the other, that can be based on race result date. If they also tie at the same race result, the driver that finished after the other is considered the first on the penalty ranking. Also, add a penalties colum to all the tables on the drivers ranking page. Make sure that the \"Total Points\" column is always the first one after the driver name."
 
 ## User Scenarios & Testing *(mandatory)*

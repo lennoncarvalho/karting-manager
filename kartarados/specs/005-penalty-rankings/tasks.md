@@ -48,4 +48,4 @@ description: "Task list for penalty rankings tab"
 
 ## Phase N: Polish & Cross-Cutting Concerns
 
-- [ ] T005 [P] Spot-check the rankings tabs and table layout on mobile.
+- [x] T005 [P] Spot-check the rankings tabs and table layout on mobile.

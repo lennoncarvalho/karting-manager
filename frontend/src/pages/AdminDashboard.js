@@ -196,7 +196,7 @@ const AdminDashboard = {
         showNotification(error.message, 'error');
       } finally {
         adminSubmit.disabled = false;
-        adminSubmit.textContent = 'Create Admin';
+        adminSubmit.textContent = 'Invite Admin';
       }
     });
   }
