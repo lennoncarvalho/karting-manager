@@ -75,6 +75,9 @@ export function setStoredSeasonId(seasonId) {
 }
 
 export async function resolveSelectedSeason(seasons) {
+  if (!Array.isArray(seasons) || seasons.length === 0) {
+    return null;
+  }
   const storedId = getStoredSeasonId();
   if (storedId) {
     const matched = seasons.find(season => String(season.id) === storedId);
@@ -82,14 +85,20 @@ export async function resolveSelectedSeason(seasons) {
       return matched;
     }
   }
-  const activeSeason = await getActiveSeason();
-  if (activeSeason) {
-    const matched = seasons.find(season => String(season.id) === String(activeSeason.id));
-    if (matched) {
-      return matched;
-    }
+  const ongoingSeasons = seasons.filter(season => season && season.is_ongoing);
+  if (!ongoingSeasons.length) {
+    return null;
   }
-  return null;
+  return ongoingSeasons
+    .slice()
+    .sort((left, right) => {
+      const leftDate = Date.parse(left.start_date || left.end_date || '') || 0;
+      const rightDate = Date.parse(right.start_date || right.end_date || '') || 0;
+      if (leftDate !== rightDate) {
+        return rightDate - leftDate;
+      }
+      return String(right.id).localeCompare(String(left.id));
+    })[0];
 }
 
 /**

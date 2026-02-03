@@ -174,10 +174,3 @@
   background-color: var(--season-accent, #000000);
   color: #fff;
 }
-
-/* Improve muted/secondary text legibility on dark backgrounds */
-.text-muted,
-.text-secondary,
-.text-body-secondary {
-  text-shadow: 0 0 1px #fff;
-}

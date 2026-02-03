@@ -5,7 +5,7 @@
 
 import { listCups, listRaces, listRaceResultsByRaceIds, listSeasons } from '../services/api.js';
 import { calculateRankings, calculatePenaltyRankings } from '../services/points.js';
-import { applySeasonTheme, getStoredSeasonId, resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
+import { applySeasonTheme, resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { showNotification } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { t } from '../services/i18n.js';
@@ -184,8 +184,8 @@ const PublicRankings = {
         }).join('');
       };
       
-      const selectSeason = async (seasonId, { persist = false } = {}) => {
-        let selectedSeason = findSeasonById(seasonId);
+      const selectSeason = async (seasonId) => {
+        let selectedSeason = seasonId ? findSeasonById(seasonId) : null;
         if (!selectedSeason) {
           selectedSeason = await resolveSelectedSeason(seasons);
         }
@@ -197,17 +197,15 @@ const PublicRankings = {
         }
         seasonSelect.value = String(selectedSeason.id);
         seasonSelect.disabled = false;
-        if (persist) {
-          setStoredSeasonId(selectedSeason.id);
-        }
         await renderRankingsForSeason(selectedSeason);
       };
       
       renderSeasonOptions();
-      await selectSeason(getStoredSeasonId());
+      await selectSeason();
       
       seasonSelect.addEventListener('change', async (event) => {
-        await selectSeason(event.target.value, { persist: true });
+        setStoredSeasonId(event.target.value);
+        await selectSeason(event.target.value);
       });
     } catch (error) {
       showNotification(error.message, 'error');

@@ -26,24 +26,10 @@ export async function login(email, password) {
     if (error) {
       throw error;
     }
-    
-    // Verify user is an admin
-    const { data: adminData, error: adminError } = await supabase
-      .from('admins')
-      .select('id, email, is_first_admin')
-      .eq('id', data.user.id)
-      .single();
-    
-    if (adminError || !adminData) {
-      // Logout if not an admin
-      await supabase.auth.signOut();
-      throw new Error('Access denied: Admin account required');
-    }
-    
+
     return {
       user: data.user,
-      session: data.session,
-      isFirstAdmin: adminData.is_first_admin
+      session: data.session
     };
   } catch (error) {
     throw new Error(handleApiError(error));
@@ -125,31 +111,6 @@ export async function isAuthenticated() {
  * Check if current user is first admin
  * @returns {Promise<boolean>}
  */
-export async function isFirstAdmin() {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return false;
-    }
-    
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from('admins')
-      .select('is_first_admin')
-      .eq('id', user.id)
-      .single();
-    
-    if (error || !data) {
-      return false;
-    }
-    
-    return data.is_first_admin === true;
-  } catch (error) {
-    console.error('Error checking first admin:', error);
-    return false;
-  }
-}
-
 /**
  * Change current user's password
  * @param {string} newPassword - New password
@@ -178,11 +139,6 @@ export async function changePassword(newPassword) {
  */
 export async function createAdmin(email, password) {
   try {
-    const isFirst = await isFirstAdmin();
-    if (!isFirst) {
-      throw new Error('Only the first admin can create new admin accounts');
-    }
-    
     const supabase = getSupabaseClient();
     const { data: { session: originalSession } } = await supabase.auth.getSession();
     
@@ -222,7 +178,7 @@ export async function createAdmin(email, password) {
       throw new Error('Admin user was created but missing user ID.');
     }
 
-    return adminData;
+    return signUpData.user;
   } catch (error) {
     throw new Error(handleApiError(error));
   }

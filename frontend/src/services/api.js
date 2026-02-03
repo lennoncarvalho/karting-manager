@@ -103,13 +103,122 @@ export async function queryTable(table, options = {}) {
 /**
  * Seasons CRUD
  */
+const SEASONS_CACHE_KEY = 'seasonsCache';
+const SEASONS_CACHE_BY_ID_KEY = 'seasonsCacheById';
+
+function readStorageJson(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeStorageJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // Ignore storage errors (private mode, quota, etc.).
+  }
+}
+
+function readSeasonsListCache() {
+  const data = readStorageJson(SEASONS_CACHE_KEY);
+  return Array.isArray(data) ? data : null;
+}
+
+function sortSeasonsByEndDate(list) {
+  return [...list].sort((left, right) => {
+    const leftDate = left && left.end_date ? left.end_date : '';
+    const rightDate = right && right.end_date ? right.end_date : '';
+    return rightDate.localeCompare(leftDate);
+  });
+}
+
+function writeSeasonsListCache(list) {
+  writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(list));
+}
+
+function writeSeasonsByIdCache(cache) {
+  writeStorageJson(SEASONS_CACHE_BY_ID_KEY, cache);
+}
+
+function cacheSeasonById(season) {
+  if (!season || season.id === undefined || season.id === null) return;
+  const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
+  cache[String(season.id)] = season;
+  writeSeasonsByIdCache(cache);
+}
+
+function cacheSeasonsById(seasons) {
+  if (!Array.isArray(seasons)) return;
+  const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
+  seasons.forEach(season => {
+    if (season && season.id !== undefined && season.id !== null) {
+      cache[String(season.id)] = season;
+    }
+  });
+  writeSeasonsByIdCache(cache);
+}
+
+function upsertSeasonInListCache(season) {
+  const list = readSeasonsListCache();
+  if (!list || !season || season.id === undefined || season.id === null) return;
+  const targetId = String(season.id);
+  const updated = list.map(item => (String(item.id) === targetId ? season : item));
+  if (!updated.some(item => String(item.id) === targetId)) {
+    updated.push(season);
+  }
+  writeSeasonsListCache(updated);
+}
+
+function removeSeasonFromListCache(seasonId) {
+  const list = readSeasonsListCache();
+  if (!list) return;
+  const targetId = String(seasonId);
+  const updated = list.filter(item => String(item.id) !== targetId);
+  writeSeasonsListCache(updated);
+}
+
 export async function listSeasons(options = {}) {
-  return queryTable('seasons', {
+  const hasCustomQuery = !!(options.filters || options.limit || options.offset || options.order);
+  if (!hasCustomQuery) {
+    const cached = readSeasonsListCache();
+    if (cached) {
+      return cached;
+    }
+  }
+  const data = await queryTable('seasons', {
     order: options.order || { column: 'end_date', ascending: false },
     limit: options.limit,
     offset: options.offset,
     filters: options.filters
   });
+  if (!hasCustomQuery) {
+    writeSeasonsListCache(data);
+  }
+  cacheSeasonsById(data);
+  return data;
+}
+
+export async function getSeasonById(seasonId) {
+  if (seasonId === undefined || seasonId === null) return null;
+  const key = String(seasonId);
+  const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
+  if (cache[key]) {
+    return cache[key];
+  }
+  const data = await queryTable('seasons', {
+    filters: [{ column: 'id', operator: 'eq', value: seasonId }],
+    limit: 1
+  });
+  const season = data[0] || null;
+  if (season) {
+    cacheSeasonById(season);
+  }
+  return season;
 }
 
 export async function createSeason(payload) {
@@ -123,7 +232,8 @@ export async function createSeason(payload) {
   if (error) {
     throw new Error(handleApiError(error));
   }
-  
+  cacheSeasonById(data);
+  upsertSeasonInListCache(data);
   return data;
 }
 
@@ -139,7 +249,8 @@ export async function updateSeason(id, updates) {
   if (error) {
     throw new Error(handleApiError(error));
   }
-  
+  cacheSeasonById(data);
+  upsertSeasonInListCache(data);
   return data;
 }
 
@@ -153,6 +264,14 @@ export async function deleteSeason(id) {
   if (error) {
     throw new Error(handleApiError(error));
   }
+  try {
+    const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
+    delete cache[String(id)];
+    writeSeasonsByIdCache(cache);
+  } catch (error) {
+    // Ignore storage errors.
+  }
+  removeSeasonFromListCache(id);
 }
 
 /**

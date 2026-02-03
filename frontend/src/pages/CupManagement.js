@@ -6,7 +6,7 @@
 import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
-import { resolveSelectedSeason } from '../services/theme.js';
+import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
 
 const CupManagement = {
@@ -237,6 +237,12 @@ const CupManagement = {
     
     cancelButton.addEventListener('click', () => {
       resetForm();
+    });
+
+    seasonSelect.addEventListener('change', (event) => {
+      if (event.target.value) {
+        setStoredSeasonId(event.target.value);
+      }
     });
     
     tableBody.addEventListener('click', async (event) => {

@@ -13,7 +13,8 @@ import {
   createPenalties,
   deletePenaltiesByRaceResult,
   calculatePenaltyPoints,
-  queryTable
+  queryTable,
+  getSeasonById
 } from '../services/api.js';
 import { showNotification, showConfirmation } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
@@ -115,11 +116,8 @@ const RaceDetail = {
     const loadSeason = async () => {
       seasonName = '';
       if (!race || !race.season_id) return;
-      const data = await queryTable('seasons', {
-        filters: [{ column: 'id', operator: 'eq', value: race.season_id }],
-        limit: 1
-      });
-      seasonName = data[0] ? data[0].name : t('common.misc.unknown');
+      const season = await getSeasonById(race.season_id);
+      seasonName = season ? season.name : t('common.misc.unknown');
     };
     
     const renderRaceInfo = () => {

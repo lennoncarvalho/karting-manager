@@ -6,7 +6,7 @@
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
-import { resolveSelectedSeason } from '../services/theme.js';
+import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
 
 const RaceManagement = {
@@ -250,10 +250,16 @@ const RaceManagement = {
     
     seasonSelect.addEventListener('change', (event) => {
       renderCupOptions(event.target.value);
+      if (event.target.value) {
+        setStoredSeasonId(event.target.value);
+      }
     });
     
     filterSeasonSelect.addEventListener('change', async (event) => {
       renderFilterCupOptions(event.target.value);
+      if (event.target.value) {
+        setStoredSeasonId(event.target.value);
+      }
       await loadRaces();
       renderTable();
     });

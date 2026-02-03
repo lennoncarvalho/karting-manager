@@ -3,7 +3,7 @@
  * Navigation hub for admin actions
  */
 
-import { isFirstAdmin, changePassword, createAdmin } from '../services/auth.js';
+import { changePassword, createAdmin } from '../services/auth.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 import { t } from '../services/i18n.js';
@@ -121,13 +121,7 @@ const AdminDashboard = {
     const adminSubmit = main.querySelector('#admin-submit');
     const adminNote = main.querySelector('#admin-note');
     
-    const firstAdmin = await isFirstAdmin();
-    if (!firstAdmin) {
-      adminSubmit.disabled = true;
-      adminNote.textContent = t('adminDashboard.inviteAdmin.noteOnlyFirst');
-    } else {
-      adminNote.textContent = t('adminDashboard.inviteAdmin.noteInfo');
-    }
+    adminNote.textContent = t('adminDashboard.inviteAdmin.noteInfo');
     
     passwordForm.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -164,10 +158,6 @@ const AdminDashboard = {
     
     adminForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!firstAdmin) {
-        showNotification(t('notifications.onlyFirstAdmin'), 'warning');
-        return;
-      }
       clearFieldInvalid(adminEmailInput);
       clearFieldInvalid(adminPasswordInput);
       
