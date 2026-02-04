@@ -5,6 +5,7 @@
 
 import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
+import { formatDisplayDate } from '../utils/formatting.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
@@ -137,8 +138,8 @@ const CupManagement = {
         <tr>
           <td>${cup.name}</td>
           <td>${seasonMap[cup.season_id] ? seasonMap[cup.season_id].name : t('common.misc.unknown')}</td>
-          <td>${cup.start_date}</td>
-          <td>${cup.end_date}</td>
+          <td>${cup.start_date ? formatDisplayDate(cup.start_date) : '-'}</td>
+          <td>${cup.end_date ? formatDisplayDate(cup.end_date) : '-'}</td>
           <td class="text-end">
             <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
               <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${cup.id}">${t('common.actions.edit')}</button>

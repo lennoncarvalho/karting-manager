@@ -344,11 +344,17 @@
     "noAvailableSeasonsYet": "No available seasons yet.",
     "noActiveSeasonFound": "No active season found.",
     "overallChampionship": "Overall Championship",
+    "calendar": "Calendar",
     "penalties": "Penalties",
     "noResultsTab": "No results for this tab yet.",
     "table": {
       "position": "#",
       "driver": "Driver",
+      "raceDate": "Race Date",
+      "raceName": "Race",
+      "location": "Location",
+      "winner": "Winner",
+      "fastestLap": "Fastest lap",
       "totalPoints": "Total Points",
       "penalties": "Penalties",
       "bestPosition": "Best Position"

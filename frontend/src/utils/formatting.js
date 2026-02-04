@@ -3,7 +3,60 @@
  * Date, time, and data formatting functions
  */
 
-import { t } from '../services/i18n.js';
+import { t, getCurrentLanguage } from '../services/i18n.js';
+
+const dateTimeFormatterCache = new Map();
+
+function getDateTimeFormatter(locale, includeTime) {
+  const key = `${locale}-${includeTime ? 'datetime' : 'date'}`;
+  if (!dateTimeFormatterCache.has(key)) {
+    const options = {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    };
+    if (includeTime) {
+      options.hour = '2-digit';
+      options.minute = '2-digit';
+      options.hourCycle = 'h23';
+    }
+    dateTimeFormatterCache.set(key, new Intl.DateTimeFormat(locale, options));
+  }
+  return dateTimeFormatterCache.get(key);
+}
+
+function formatWithParts(value, includeTime) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const language = getCurrentLanguage();
+  const locale = language;
+  const formatter = getDateTimeFormatter(locale, includeTime);
+  const parts = formatter.formatToParts(d);
+  const partMap = {};
+  parts.forEach((part) => {
+    if (part.type !== 'literal') {
+      partMap[part.type] = part.value;
+    }
+  });
+  const day = partMap.day || '';
+  let month = partMap.month || '';
+  const year = partMap.year || '';
+  if (!day || !month || !year) {
+    return formatter.format(d).replace(',', '');
+  }
+  if (language === 'pt-BR' && month) {
+    month = month.replace('.', '');
+    month = month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
+  }
+  if (!includeTime) {
+    return `${day} ${month} ${year}`;
+  }
+  const hour = partMap.hour || '00';
+  const minute = partMap.minute || '00';
+  const suffix = language === 'pt-BR' ? 'h' : '';
+  return `${day} ${month} ${year} ${hour}:${minute}${suffix}`;
+}
 
 /**
  * Format date for display (YYYY-MM-DD)
@@ -23,20 +76,21 @@ export function formatDate(date) {
 }
 
 /**
- * Format datetime for display (YYYY-MM-DD HH:MM)
+ * Format date for display (DD Mon YYYY)
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date string
+ */
+export function formatDisplayDate(date) {
+  return formatWithParts(date, false);
+}
+
+/**
+ * Format datetime for display (DD Mon YYYY HH:MM)
  * @param {string|Date} datetime - Datetime to format
  * @returns {string} Formatted datetime string
  */
 export function formatDateTime(datetime) {
-  if (!datetime) return '';
-  const d = new Date(datetime);
-  if (isNaN(d.getTime())) return '';
-  
-  const dateStr = formatDate(d);
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  
-  return `${dateStr} ${hours}:${minutes}`;
+  return formatWithParts(datetime, true);
 }
 
 /**

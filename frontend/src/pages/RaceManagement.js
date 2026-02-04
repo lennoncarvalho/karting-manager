@@ -7,6 +7,7 @@ import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } 
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
+import { formatDateTime } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
 const RaceManagement = {
@@ -200,7 +201,7 @@ const RaceManagement = {
           </td>
           <td>${seasonMap[race.season_id] ? seasonMap[race.season_id].name : t('common.misc.unknown')}</td>
           <td>${race.cup_id ? (cupMap[race.cup_id] ? cupMap[race.cup_id].name : t('common.misc.unknown')) : '-'}</td>
-          <td>${race.race_datetime ? new Date(race.race_datetime).toLocaleString() : '-'}</td>
+          <td>${race.race_datetime ? formatDateTime(race.race_datetime) : '-'}</td>
           <td class="text-end">
             <div class="d-flex flex-column flex-md-row justify-content-end gap-2">
               <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${race.id}">${t('common.actions.edit')}</button>

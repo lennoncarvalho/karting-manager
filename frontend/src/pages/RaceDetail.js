@@ -18,6 +18,7 @@ import {
 } from '../services/api.js';
 import { showNotification, showConfirmation } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
+import { formatDateTime } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
 function getHashParam(name) {
@@ -133,7 +134,7 @@ const RaceDetail = {
       raceInfo.innerHTML = `
         <div class="col-md-4">
           <div class="small">${t('raceDetail.info.dateTime')}</div>
-          <div>${race.race_datetime ? new Date(race.race_datetime).toLocaleString() : '-'}</div>
+          <div>${race.race_datetime ? formatDateTime(race.race_datetime) : '-'}</div>
         </div>
         <div class="col-md-4">
           <div class="small">${t('raceDetail.info.season')}</div>

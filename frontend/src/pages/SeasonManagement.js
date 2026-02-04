@@ -6,6 +6,7 @@
 import { listSeasons, createSeason, updateSeason, deleteSeason } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidHexColor } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { formatDisplayDate } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
 const SeasonManagement = {
@@ -134,8 +135,8 @@ const SeasonManagement = {
       tableBody.innerHTML = seasons.map((season) => `
         <tr>
           <td>${season.name}</td>
-          <td>${season.start_date}</td>
-          <td>${season.end_date}</td>
+          <td>${season.start_date ? formatDisplayDate(season.start_date) : '-'}</td>
+          <td>${season.end_date ? formatDisplayDate(season.end_date) : '-'}</td>
           <td>
             <span class="badge" style="background-color:${season.accent_color}; color:#fff;">${season.accent_color}</span>
           </td>

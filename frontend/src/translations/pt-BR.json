@@ -344,11 +344,17 @@
     "noAvailableSeasonsYet": "Nenhuma temporada disponível ainda.",
     "noActiveSeasonFound": "Nenhuma temporada ativa encontrada.",
     "overallChampionship": "Campeonato geral",
+    "calendar": "Calendario",
     "penalties": "Penalidades",
     "noResultsTab": "Nenhum resultado para esta aba ainda.",
     "table": {
       "position": "#",
       "driver": "Piloto",
+      "raceDate": "Data da corrida",
+      "raceName": "Corrida",
+      "location": "Local",
+      "winner": "Vencedor",
+      "fastestLap": "Melhor volta",
       "totalPoints": "Pontos totais",
       "penalties": "Penalidades",
       "bestPosition": "Melhor posição"
