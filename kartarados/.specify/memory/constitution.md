@@ -41,6 +41,9 @@ User interfaces and interactions MUST maintain consistency across the entire app
 - **Interaction Patterns**: Similar actions MUST behave consistently across features; navigation patterns MUST be predictable and follow established conventions
 - **Visual Language**: Colors, typography, spacing, and iconography MUST follow the established visual language; deviations require explicit justification
 - **Error Handling**: Error messages MUST be user-friendly, actionable, and consistent in tone; error states MUST be clearly distinguishable from success states
+- **i18n**: The app uses the JS library i18next, all static strings MUST be localized
+- **Cache**: Always cache the results from API calls to avoid unnecessary network requests, and delete/update those accordingly
+
 
 **Rationale**: Consistent UX reduces cognitive load, accelerates user learning, and builds trust. Inconsistency creates confusion and erodes user confidence.
 
