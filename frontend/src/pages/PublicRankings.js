@@ -221,7 +221,9 @@ const PublicRankings = {
                         return `
                           <tr>
                             <td>${race.race_datetime ? formatDateTime(race.race_datetime) : '-'}</td>
-                            <td>${race.name || '-'}</td>
+                            <td>
+                              ${race.id ? `<a class="fw-semibold text-decoration-underline" href="#/admin/race?id=${race.id}">${race.name || '-'}</a>` : (race.name || '-')}
+                            </td>
                             <td>${race.location || '-'}</td>
                             <td>${renderDriverCell(winner)}</td>
                             <td>${renderDriverCell(fastest)}</td>

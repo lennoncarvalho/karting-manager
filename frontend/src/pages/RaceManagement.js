@@ -193,9 +193,9 @@ const RaceManagement = {
         <tr>
           <td>
             <div>
-              <span class="fw-semibold text-decoration-underline" role="button" tabindex="0" data-action="results" data-id="${race.id}" style="cursor: pointer;">
+              <a class="fw-semibold text-decoration-underline" href="#/admin/race?id=${race.id}">
                 ${race.name}
-              </span>
+              </a>
               <small class="d-block">${race.location}</small>
             </div>
           </td>
@@ -354,15 +354,6 @@ const RaceManagement = {
     });
     
     tableBody.addEventListener('click', async (event) => {
-      const resultsLink = event.target.closest('[data-action="results"]');
-      if (resultsLink) {
-        const raceId = resultsLink.dataset.id;
-        if (raceId) {
-          window.location.hash = `/admin/race?id=${raceId}`;
-        }
-        return;
-      }
-      
       const button = event.target.closest('button');
       if (!button) return;
       
