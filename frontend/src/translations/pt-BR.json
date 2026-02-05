@@ -337,7 +337,7 @@
     }
   },
   "publicRankings": {
-    "title": "Ranking de pilotos:",
+    "title": "Seletor de temporada:",
     "seasonLabel": "Temporada",
     "noRacesOrResults": "Nenhuma corrida ou resultado disponível ainda.",
     "noAvailableSeasons": "Nenhuma temporada disponível",

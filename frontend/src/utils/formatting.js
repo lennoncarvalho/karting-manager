@@ -6,6 +6,7 @@
 import { t, getCurrentLanguage } from '../services/i18n.js';
 
 const dateTimeFormatterCache = new Map();
+const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
 
 function getDateTimeFormatter(locale, includeTime) {
   const key = `${locale}-${includeTime ? 'datetime' : 'date'}`;
@@ -25,14 +26,44 @@ function getDateTimeFormatter(locale, includeTime) {
   return dateTimeFormatterCache.get(key);
 }
 
-function formatWithParts(value, includeTime) {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '';
+function hasTimezoneSuffix(value) {
+  return /[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
+}
+
+function hasTime(value) {
+  return /[T ]\d{2}:\d{2}/.test(value);
+}
+
+function parseDateValue(value, options = {}) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+  if (typeof value !== 'string') {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (options.dateOnlyAsLocal && dateOnlyPattern.test(trimmed)) {
+    const [year, month, day] = trimmed.split('-').map(Number);
+    if ([year, month, day].some(Number.isNaN)) return null;
+    return new Date(year, month - 1, day);
+  }
+  let normalized = trimmed;
+  if (options.assumeUtcWhenNoTz && hasTime(trimmed) && !hasTimezoneSuffix(trimmed)) {
+    normalized = trimmed.includes('T') ? `${trimmed}Z` : `${trimmed.replace(' ', 'T')}Z`;
+  }
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatWithParts(date, includeTime) {
+  if (!date) return '';
   const language = getCurrentLanguage();
   const locale = language;
   const formatter = getDateTimeFormatter(locale, includeTime);
-  const parts = formatter.formatToParts(d);
+  const parts = formatter.formatToParts(date);
   const partMap = {};
   parts.forEach((part) => {
     if (part.type !== 'literal') {
@@ -81,7 +112,8 @@ export function formatDate(date) {
  * @returns {string} Formatted date string
  */
 export function formatDisplayDate(date) {
-  return formatWithParts(date, false);
+  const parsed = parseDateValue(date, { dateOnlyAsLocal: true });
+  return formatWithParts(parsed, false);
 }
 
 /**
@@ -90,7 +122,8 @@ export function formatDisplayDate(date) {
  * @returns {string} Formatted datetime string
  */
 export function formatDateTime(datetime) {
-  return formatWithParts(datetime, true);
+  const parsed = parseDateValue(datetime, { assumeUtcWhenNoTz: true });
+  return formatWithParts(parsed, true);
 }
 
 /**
@@ -108,15 +141,26 @@ export function formatDateForInput(date) {
  * @returns {string} Formatted datetime for HTML datetime-local input
  */
 export function formatDateTimeForInput(datetime) {
-  if (!datetime) return '';
-  const d = new Date(datetime);
-  if (isNaN(d.getTime())) return '';
-  
-  const dateStr = formatDate(d);
+  const d = parseDateValue(datetime, { assumeUtcWhenNoTz: true });
+  if (!d) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
-  
-  return `${dateStr}T${hours}:${minutes}`;
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/**
+ * Format datetime for storage (ISO 8601 with Z)
+ * @param {string|Date} datetime - Datetime to format
+ * @returns {string} ISO datetime string in UTC
+ */
+export function formatDateTimeForStorage(datetime) {
+  if (!datetime) return '';
+  const d = parseDateValue(datetime);
+  if (!d) return '';
+  return d.toISOString();
 }
 
 /**

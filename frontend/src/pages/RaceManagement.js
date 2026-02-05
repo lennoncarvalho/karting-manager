@@ -7,7 +7,7 @@ import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } 
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
-import { formatDateTime } from '../utils/formatting.js';
+import { formatDateTime, formatDateTimeForInput, formatDateTimeForStorage } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
 const RaceManagement = {
@@ -327,7 +327,7 @@ const RaceManagement = {
           cup_id: cupId || null,
           name,
           location,
-          race_datetime: new Date(raceDateTime).toISOString(),
+          race_datetime: formatDateTimeForStorage(raceDateTime),
           affects_championship: affectsChampionship
         };
         
@@ -370,7 +370,7 @@ const RaceManagement = {
         form.querySelector('#race-name').value = race.name;
         form.querySelector('#race-location').value = race.location;
         form.querySelector('#race-datetime').value = race.race_datetime
-          ? new Date(race.race_datetime).toISOString().slice(0, 16)
+          ? formatDateTimeForInput(race.race_datetime)
           : '';
         form.querySelector('#race-affects').checked = race.affects_championship !== false;
         formTitle.textContent = t('raceManagement.form.editTitle');
