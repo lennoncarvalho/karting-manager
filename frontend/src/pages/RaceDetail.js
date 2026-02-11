@@ -4,6 +4,7 @@
  */
 
 import { openRaceResultModal } from '../components/RaceResultModal.js';
+import { openOcrImportModal } from '../components/OcrImportModal.js';
 import {
   listDrivers,
   listRaceResults,
@@ -19,6 +20,7 @@ import {
 import { showNotification, showConfirmation } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { formatDateTime } from '../utils/formatting.js';
+import { isValidLapTime } from '../utils/validation.js';
 import { t } from '../services/i18n.js';
 
 function getHashParam(name) {
@@ -52,6 +54,7 @@ const RaceDetail = {
         </div>
         <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
           <button class="btn btn-primary w-100 w-sm-auto" id="add-result">${t('raceDetail.addResult')}</button>
+          <button class="btn btn-outline-primary w-100 w-sm-auto" id="import-ocr">${t('raceDetail.importResults')}</button>
           <a href="#/admin/races" class="btn btn-outline-secondary w-100 w-sm-auto">${t('raceDetail.backToRaces')}</a>
         </div>
       </div>
@@ -101,6 +104,7 @@ const RaceDetail = {
     const raceInfo = main.querySelector('#race-info');
     const resultsTableBody = main.querySelector('#results-table-body');
     const addResultButton = main.querySelector('#add-result');
+    const importOcrButton = main.querySelector('#import-ocr');
     
     let race = null;
     let drivers = [];
@@ -238,12 +242,70 @@ const RaceDetail = {
         showNotification(error.message, 'error');
       }
     };
+
+    const handleOcrSave = async ({ mode, rows }) => {
+      if (!rows.length) {
+        showNotification(t('ocrImport.noValidRows'), 'warning');
+        return false;
+      }
+      try {
+        if (mode === 'race') {
+          if (results.length) {
+            showNotification(t('ocrImport.blockedRace'), 'warning');
+            return false;
+          }
+          await Promise.all(rows.map((row) => createRaceResult({
+            race_id: raceId,
+            driver_id: row.driverId,
+            finish_position: row.position,
+            grid_start_position: null,
+            best_lap_time: isValidLapTime(row.bestLapTime) ? row.bestLapTime : null,
+            is_disqualified: false,
+            comments: null
+          })));
+          showNotification(t('ocrImport.saveSuccessRace'), 'success');
+          window.location.reload();
+          return true;
+        }
+        if (mode === 'qualifying') {
+          if (!results.length) {
+            showNotification(t('ocrImport.blockedQualifying'), 'warning');
+            return false;
+          }
+          const resultMap = new Map(results.map((result) => [result.driver_id, result]));
+          const positionMap = new Map(rows.map((row) => [row.driverId, row.position]));
+          const updates = rows
+            .map((row) => resultMap.get(row.driverId))
+            .filter(Boolean)
+            .map((result) => updateRaceResult(result.id, { grid_start_position: positionMap.get(result.driver_id) }));
+          if (updates.length) {
+            await Promise.all(updates);
+          }
+          showNotification(t('ocrImport.saveSuccessQualifying'), 'success');
+          window.location.reload();
+          return true;
+        }
+        return false;
+      } catch (error) {
+        showNotification(error.message || t('ocrImport.saveFailure'), 'error');
+        return false;
+      }
+    };
     
     addResultButton.addEventListener('click', () => {
       openRaceResultModal({
         drivers,
         existingResults: results,
         onSave: handleSave
+      });
+    });
+
+    importOcrButton.addEventListener('click', () => {
+      openOcrImportModal({
+        raceId,
+        drivers,
+        existingResults: results,
+        onSave: handleOcrSave
       });
     });
     

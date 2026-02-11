@@ -1,8 +1,12 @@
 // Supabase Configuration
 // Get these values from: Supabase Dashboard → Settings → API
+export const APP_URL = 'https://karting-manager.pages.dev/';
+
 export const SUPABASE_URL = '[SUPABASE_URL]';
 export const SUPABASE_ANON_KEY = '[SUPABASE_ANON_KEY]';
-export const APP_URL = 'https://karting-manager.pages.dev/';
+
+export const AZURE_VISION_ENDPOINT = '[AZURE_VISION_ENDPOINT]';
+export const AZURE_VISION_KEY = '[AZURE_VISION_KEY]';
 
 // CDN URLs for libraries
 export const CDN_URLS = {
