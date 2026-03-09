@@ -18,8 +18,8 @@ const PublicRankings = {
     const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
-      <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-3">
-        <div class="h3 mb-1">${t('publicRankings.title')}</div>
+      <div class="d-flex gap-2 mb-3">
+        <div class="h5 mb-0">${t('publicRankings.title')}</div>
         <div class="d-flex w-auto">
           <select class="form-select form-select-sm" id="season-name" aria-label="${t('publicRankings.seasonLabel')}">
             <option value="">${t('common.status.loadingSeasons')}</option>
