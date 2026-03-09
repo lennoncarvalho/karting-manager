@@ -26,7 +26,7 @@ const PublicRankings = {
           </select>
         </div>
       </div>
-      <ul class="nav nav-tabs flex-nowrap mb-3" id="rankings-tabs" role="tablist"></ul>
+      <ul class="nav nav-tabs" id="rankings-tabs" role="tablist"></ul>
       <div class="tab-content" id="rankings-content"></div>
     `;
     container.appendChild(main);
@@ -205,7 +205,6 @@ const PublicRankings = {
                       <tr>
                         <th>${t('publicRankings.table.raceDate')}</th>
                         <th>${t('publicRankings.table.raceName')}</th>
-                        <th>${t('publicRankings.table.location')}</th>
                         <th>${t('publicRankings.table.winner')}</th>
                         <th>${t('publicRankings.table.fastestLap')}</th>
                       </tr>
@@ -223,8 +222,8 @@ const PublicRankings = {
                             <td>${race.race_datetime ? formatDateTime(race.race_datetime) : '-'}</td>
                             <td>
                               ${race.id ? `<a class="fw-semibold text-decoration-underline" href="#/admin/race?id=${race.id}">${race.name || '-'}</a>` : (race.name || '-')}
+                              <small>${race.location || '-'}</small>
                             </td>
-                            <td>${race.location || '-'}</td>
                             <td>${renderDriverCell(winner)}</td>
                             <td>${renderDriverCell(fastest)}</td>
                           </tr>
