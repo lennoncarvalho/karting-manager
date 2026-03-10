@@ -3,7 +3,7 @@
  * Bootstrap navbar with Formula 1 styling
  */
 
-import { changeLanguage, t } from '../services/i18n.js';
+import { t } from '../services/i18n.js';
 
 /**
  * Render navigation bar
@@ -14,7 +14,7 @@ import { changeLanguage, t } from '../services/i18n.js';
  * @returns {HTMLElement} Navigation element
  */
 export function renderNavigation(options = {}) {
-  const { isAuthenticated = false, currentUserEmail = '', onLogout = null, currentLanguage = 'pt-BR' } = options;
+  const { isAuthenticated = false, currentUserEmail = '', onLogout = null } = options;
   
   const nav = document.createElement('nav');
   nav.className = 'navbar navbar-expand-lg navbar-dark';
@@ -66,13 +66,6 @@ export function renderNavigation(options = {}) {
             </li>
           `}
         </ul>
-        <div class="d-flex align-items-center ms-lg-auto mt-2 mt-lg-0">
-          <label class="text-nowrap me-2 small text-uppercase" for="language-switcher">${t('nav.language')}</label>
-          <select class="form-select form-select-sm" id="language-switcher" aria-label="${t('nav.language')}">
-            <option value="pt-BR">${t('nav.languagePortuguese')}</option>
-            <option value="en">${t('nav.languageEnglish')}</option>
-          </select>
-        </div>
       </div>
     </div>
   `;
@@ -89,14 +82,6 @@ export function renderNavigation(options = {}) {
         }
       });
     }
-  }
-
-  const languageSelect = nav.querySelector('#language-switcher');
-  if (languageSelect) {
-    languageSelect.value = currentLanguage;
-    languageSelect.addEventListener('change', async (event) => {
-      await changeLanguage(event.target.value);
-    });
   }
 
   const collapseElement = nav.querySelector('#navbarNav');

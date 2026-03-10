@@ -426,5 +426,16 @@
     "kilobytes": "KB",
     "megabytes": "MB",
     "gigabytes": "GB"
+  },
+  "footer": {
+    "createdBy": "Created by Lennon Carvalho",
+    "license": "MIT License",
+    "copyright": "© {{year}} Lennon Carvalho",
+    "githubAria": "Visit GitHub repository",
+    "linkedinAria": "Visit creator's LinkedIn profile",
+    "licenseAria": "View MIT License",
+    "selectLanguage": "Language:",
+    "languagePortuguese": "Portuguese (Brazil)",
+    "languageEnglish": "English"
   }
 }

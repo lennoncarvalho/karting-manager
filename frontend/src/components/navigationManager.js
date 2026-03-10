@@ -6,16 +6,15 @@
 import { renderNavigation } from './Navigation.js';
 import { getCurrentUser, isAuthenticated, logout } from '../services/auth.js';
 import { showNotification } from '../utils/helpers.js';
-import { getCurrentLanguage, t } from '../services/i18n.js';
+import { t } from '../services/i18n.js';
 
 let navHost = null;
-let lastState = { isAuthenticated: null, email: null, language: null };
+let lastState = { isAuthenticated: null, email: null };
 
 function buildNavOptions(isAuth, email) {
   return {
     isAuthenticated: isAuth,
     currentUserEmail: email || '',
-    currentLanguage: getCurrentLanguage(),
     onLogout: async () => {
       await logout();
       showNotification(t('notifications.loggedOut'), 'success');
@@ -31,7 +30,7 @@ export function initNavigation(host) {
     return;
   }
   navHost.replaceChildren(renderNavigation(buildNavOptions(false, '')));
-  lastState = { isAuthenticated: false, email: '', language: getCurrentLanguage() };
+  lastState = { isAuthenticated: false, email: '' };
 }
 
 export async function syncNavigation() {
@@ -41,10 +40,9 @@ export async function syncNavigation() {
   const isAuth = await isAuthenticated();
   const user = isAuth ? await getCurrentUser() : null;
   const email = user && user.email ? user.email : '';
-  const language = getCurrentLanguage();
-  if (lastState.isAuthenticated === isAuth && lastState.email === email && lastState.language === language) {
+  if (lastState.isAuthenticated === isAuth && lastState.email === email) {
     return;
   }
   navHost.replaceChildren(renderNavigation(buildNavOptions(isAuth, email)));
-  lastState = { isAuthenticated: isAuth, email, language };
+  lastState = { isAuthenticated: isAuth, email };
 }

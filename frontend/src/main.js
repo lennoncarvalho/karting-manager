@@ -7,6 +7,7 @@ import { isAuthenticated } from './services/auth.js';
 import { showNotification } from './utils/helpers.js';
 import { applyThemeForActiveSeason } from './services/theme.js';
 import { initNavigation, syncNavigation } from './components/navigationManager.js';
+import { initFooter, syncFooter } from './components/footerManager.js';
 import { initI18n, onLanguageChanged, t } from './services/i18n.js';
 
 import LoginPage from './pages/LoginPage.js';
@@ -83,18 +84,29 @@ function ensureLayout() {
   if (!app) {
     return null;
   }
+
+  // Add flexbox classes to app container for sticky footer
+  app.className = 'd-flex flex-column min-vh-100';
+
   let navHost = app.querySelector('[data-app-nav]');
   let mainHost = app.querySelector('[data-app-main]');
-  if (!navHost || !mainHost) {
+  let footerHost = app.querySelector('[data-app-footer]');
+
+  if (!navHost || !mainHost || !footerHost) {
     app.innerHTML = '';
     navHost = document.createElement('div');
     navHost.dataset.appNav = '';
     mainHost = document.createElement('div');
     mainHost.dataset.appMain = '';
+    mainHost.className = 'flex-grow-1'; // Pushes footer to bottom
+    footerHost = document.createElement('div');
+    footerHost.dataset.appFooter = '';
+
     app.appendChild(navHost);
     app.appendChild(mainHost);
+    app.appendChild(footerHost);
   }
-  return { navHost, mainHost };
+  return { navHost, mainHost, footerHost };
 }
 
 function getMainContainer() {
@@ -231,6 +243,7 @@ async function startApp() {
   layout = ensureLayout();
   if (layout) {
     initNavigation(layout.navHost);
+    initFooter(layout.footerHost);
   }
   router = new Router();
   window.router = router;
@@ -238,6 +251,7 @@ async function startApp() {
   await router.refresh();
   onLanguageChanged(async () => {
     await syncNavigation();
+    await syncFooter();
     if (router) {
       await router.refresh();
     }
