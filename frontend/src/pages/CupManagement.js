@@ -7,7 +7,7 @@ import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../servi
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { formatDisplayDate } from '../utils/formatting.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
-import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
+import { getStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
 
 const CupManagement = {
@@ -152,15 +152,15 @@ const CupManagement = {
     
     const loadData = async () => {
       try {
-        seasons = await listSeasons({ order: { column: 'start_date', ascending: true } });
+        seasons = await listSeasons({
+          order: { column: 'start_date', ascending: true },
+          filters: [{ column: 'is_ongoing', operator: 'eq', value: true }]
+        });
         cups = await listCups({ order: { column: 'start_date', ascending: true } });
         renderSeasonOptions();
-        const selectedSeason = await resolveSelectedSeason(seasons);
-        if (selectedSeason) {
-          const selectedId = String(selectedSeason.id);
-          if (seasons.some(season => String(season.id) === selectedId)) {
-            seasonSelect.value = selectedId;
-          }
+        const storedSeasonId = getStoredSeasonId();
+        if (storedSeasonId && seasons.some(season => String(season.id) === storedSeasonId)) {
+          seasonSelect.value = storedSeasonId;
         }
         renderTable();
       } catch (error) {

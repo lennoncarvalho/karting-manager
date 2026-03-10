@@ -8,14 +8,20 @@
 
   <script>
     (function() {
-      var cachedAccent = null;
       try {
-        cachedAccent = localStorage.getItem('seasonAccent');
+        var selectedSeasonId = localStorage.getItem('selectedSeasonId');
+        if (selectedSeasonId) {
+          var seasonsCacheById = localStorage.getItem('seasonsCacheById');
+          if (seasonsCacheById) {
+            var cache = JSON.parse(seasonsCacheById);
+            var season = cache[selectedSeasonId];
+            if (season && season.accent_color && /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(season.accent_color)) {
+              document.documentElement.style.setProperty('--season-accent', season.accent_color);
+            }
+          }
+        }
       } catch (error) {
-        cachedAccent = null;
-      }
-      if (cachedAccent && /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(cachedAccent)) {
-        document.documentElement.style.setProperty('--season-accent', cachedAccent);
+        // Ignore errors in early script
       }
     })();
   </script>

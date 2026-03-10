@@ -5,7 +5,6 @@
 
 import { isAuthenticated } from './services/auth.js';
 import { showNotification } from './utils/helpers.js';
-import { applyThemeForActiveSeason } from './services/theme.js';
 import { initNavigation, syncNavigation } from './components/navigationManager.js';
 import { initFooter, syncFooter } from './components/footerManager.js';
 import { initI18n, onLanguageChanged, t } from './services/i18n.js';
@@ -257,7 +256,6 @@ async function startApp() {
     }
   });
   console.log('Kartarados Championship Manager initialized');
-  applyThemeForActiveSeason();
 }
 
 startApp();

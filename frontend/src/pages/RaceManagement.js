@@ -6,7 +6,7 @@
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
-import { resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
+import { getStoredSeasonId } from '../services/theme.js';
 import { formatDateTime, formatDateTimeForInput, formatDateTimeForStorage } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
@@ -225,17 +225,17 @@ const RaceManagement = {
     
     const loadData = async () => {
       try {
-        seasons = await listSeasons({ order: { column: 'start_date', ascending: true } });
+        seasons = await listSeasons({
+          order: { column: 'start_date', ascending: true },
+          filters: [{ column: 'is_ongoing', operator: 'eq', value: true }]
+        });
         cups = await listCups({ order: { column: 'start_date', ascending: true } });
         renderSeasonOptions();
-        const selectedSeason = await resolveSelectedSeason(seasons);
-        if (selectedSeason) {
-          const selectedId = String(selectedSeason.id);
-          if (seasons.some(season => String(season.id) === selectedId)) {
-            seasonSelect.value = selectedId;
-            renderCupOptions(selectedId);
-            filterSeasonSelect.value = selectedId;
-          }
+        const storedSeasonId = getStoredSeasonId();
+        if (storedSeasonId && seasons.some(season => String(season.id) === storedSeasonId)) {
+          seasonSelect.value = storedSeasonId;
+          renderCupOptions(storedSeasonId);
+          filterSeasonSelect.value = storedSeasonId;
         }
         renderFilterCupOptions(filterSeasonSelect.value || '');
         await loadRaces();

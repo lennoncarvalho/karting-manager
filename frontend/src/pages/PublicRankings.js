@@ -3,9 +3,9 @@
  * Displays driver rankings for active season
  */
 
-import { listCups, listRaces, listRaceResultsByRaceIds, listSeasons } from '../services/api.js';
+import { listCups, listRaces, listRaceResultsByRaceIds } from '../services/api.js';
 import { calculateRankings, calculatePenaltyRankings, parseLapTime } from '../services/points.js';
-import { applySeasonTheme, resolveSelectedSeason, setStoredSeasonId } from '../services/theme.js';
+import { initializeSeasonSelector } from '../components/seasonSelector.js';
 import { showNotification } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { formatDateTime } from '../utils/formatting.js';
@@ -54,42 +54,21 @@ const PublicRankings = {
     
     try {
       renderLoading();
-      let seasons = await listSeasons({
-        order: { column: 'start_date', ascending: true },
-        filters: [{ column: 'is_ongoing', operator: 'eq', value: true }]
-      });
-      if (!seasons.length) {
-        seasonSelect.innerHTML = `<option value="">${t('publicRankings.noAvailableSeasons')}</option>`;
-        seasonSelect.disabled = true;
-        renderEmpty(t('publicRankings.noAvailableSeasonsYet'));
-        return;
-      }
-      
-      const renderSeasonOptions = () => {
-        seasonSelect.innerHTML = seasons
-          .map(season => `<option value="${season.id}">${season.name}</option>`)
-          .join('');
-      };
-      
-      const findSeasonById = (seasonId) => (
-        seasons.find(season => String(season.id) === String(seasonId))
-      );
-      
+
       const renderRankingsForSeason = async (season) => {
         renderLoading();
-        applySeasonTheme(season);
-        
+
         const cups = await listCups({ seasonId: season.id, order: { column: 'start_date', ascending: true } });
         const races = await listRaces({
           filters: [{ column: 'season_id', operator: 'eq', value: season.id }],
           order: { column: 'race_datetime', ascending: true }
         });
-        
+
         if (!races.length) {
           renderEmpty();
           return;
         }
-        
+
         const raceResults = await listRaceResultsByRaceIds(races.map(race => race.id));
 
         const overallRaces = races.filter(race => race.affects_championship !== false);
@@ -292,30 +271,22 @@ const PublicRankings = {
           `;
         }).join('');
       };
-      
-      const selectSeason = async (seasonId) => {
-        let selectedSeason = seasonId ? findSeasonById(seasonId) : null;
-        if (!selectedSeason) {
-          selectedSeason = await resolveSelectedSeason(seasons);
+
+      // Initialize the season selector component
+      const selectedSeason = await initializeSeasonSelector(seasonSelect, {
+        applyTheme: true,
+        onChange: async (season) => {
+          // Re-render rankings when season changes
+          await renderRankingsForSeason(season);
         }
-        if (!selectedSeason) {
-          seasonSelect.innerHTML = `<option value="">${t('publicRankings.noActiveSeasonFound')}</option>`;
-          seasonSelect.disabled = true;
-          renderEmpty(t('publicRankings.noActiveSeasonFound'));
-          return;
-        }
-        seasonSelect.value = String(selectedSeason.id);
-        seasonSelect.disabled = false;
-        await renderRankingsForSeason(selectedSeason);
-      };
-      
-      renderSeasonOptions();
-      await selectSeason();
-      
-      seasonSelect.addEventListener('change', async (event) => {
-        setStoredSeasonId(event.target.value);
-        await selectSeason(event.target.value);
       });
+
+      // Render rankings for the initially selected season
+      if (selectedSeason) {
+        await renderRankingsForSeason(selectedSeason);
+      } else {
+        renderEmpty(t('publicRankings.noAvailableSeasonsYet'));
+      }
     } catch (error) {
       showNotification(error.message, 'error');
       renderEmpty();
