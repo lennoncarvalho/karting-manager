@@ -30,3 +30,8 @@ sed \
   -e "s|^export const AZURE_VISION_KEY = .*|export const AZURE_VISION_KEY = '${azure_key_escaped}';|" \
   "$CONFIG_FILE" > "$tmp_file"
 mv "$tmp_file" "$CONFIG_FILE"
+
+# Production build: minify and bundle (for Cloudflare Pages etc.)
+if command -v npm >/dev/null 2>&1 && [ -f package.json ]; then
+  npm run build
+fi

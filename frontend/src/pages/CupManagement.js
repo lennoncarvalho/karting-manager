@@ -6,7 +6,7 @@
 import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { formatDisplayDate } from '../utils/formatting.js';
-import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
 import { getStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
 
@@ -273,13 +273,15 @@ const CupManagement = {
         if (!confirmed) {
           return;
         }
-        try {
-          await deleteCup(id);
-          showNotification(t('notifications.cupDeleted'), 'success');
-          await loadData();
-        } catch (error) {
-          showNotification(error.message, 'error');
-        }
+        await withGlobalLoading(async () => {
+          try {
+            await deleteCup(id);
+            showNotification(t('notifications.cupDeleted'), 'success');
+            await loadData();
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+        });
       }
     });
     

@@ -5,7 +5,7 @@
 
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
 import { isRequired } from '../utils/validation.js';
-import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
 import { getStoredSeasonId } from '../services/theme.js';
 import { formatDateTime, formatDateTimeForInput, formatDateTimeForStorage } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
@@ -385,14 +385,16 @@ const RaceManagement = {
         if (!confirmed) {
           return;
         }
-        try {
-          await deleteRace(id);
-          showNotification(t('notifications.raceDeleted'), 'success');
-          await loadRaces();
-          renderTable();
-        } catch (error) {
-          showNotification(error.message, 'error');
-        }
+        await withGlobalLoading(async () => {
+          try {
+            await deleteRace(id);
+            showNotification(t('notifications.raceDeleted'), 'success');
+            await loadRaces();
+            renderTable();
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+        });
       }
     });
     

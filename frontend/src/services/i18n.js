@@ -1,3 +1,6 @@
+import en from '../translations/en.json';
+import ptBR from '../translations/pt-BR.json';
+
 const STORAGE_KEY = 'language';
 const SUPPORTED_LANGUAGES = ['en', 'pt-BR'];
 const DEFAULT_LANGUAGE = 'pt-BR';
@@ -42,16 +45,13 @@ export async function initI18n() {
   const storedLanguage = getStoredLanguage();
   const initialLanguage = storedLanguage || DEFAULT_LANGUAGE;
 
-  if (window.i18nextHttpBackend) {
-    window.i18next.use(window.i18nextHttpBackend);
-  }
-
   await window.i18next.init({
     lng: initialLanguage,
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LANGUAGES,
-    backend: {
-      loadPath: 'src/translations/{{lng}}.json'
+    resources: {
+      en: { translation: en },
+      'pt-BR': { translation: ptBR }
     },
     interpolation: { escapeValue: false }
   });

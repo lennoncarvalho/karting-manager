@@ -52,17 +52,7 @@
   
   <!-- Supabase JS from CDN (UMD) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script type="module">
-    import { SUPABASE_URL, SUPABASE_ANON_KEY } from './src/config.js';
-    
-    if (!window.supabase || !window.supabase.createClient) {
-      console.error('Supabase JS failed to load.');
-    } else {
-      window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-  </script>
-  
   <!-- Main application script -->
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

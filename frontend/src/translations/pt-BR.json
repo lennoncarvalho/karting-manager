@@ -67,6 +67,7 @@
       "ranking": "Ranking"
     },
     "status": {
+      "loading": "Carregando...",
       "loadingSeasons": "Carregando temporadas...",
       "loadingDrivers": "Carregando pilotos...",
       "loadingCups": "Carregando copas...",

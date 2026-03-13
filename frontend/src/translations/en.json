@@ -67,6 +67,7 @@
       "ranking": "Rankings"
     },
     "status": {
+      "loading": "Loading...",
       "loadingSeasons": "Loading seasons...",
       "loadingDrivers": "Loading drivers...",
       "loadingCups": "Loading cups...",

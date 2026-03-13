@@ -5,7 +5,7 @@
 
 import { listSeasons, createSeason, updateSeason, deleteSeason } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidHexColor } from '../utils/validation.js';
-import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
 import { formatDisplayDate } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
 
@@ -248,13 +248,15 @@ const SeasonManagement = {
         if (!confirmed) {
           return;
         }
-        try {
-          await deleteSeason(id);
-          showNotification(t('notifications.seasonDeleted'), 'success');
-          await loadSeasons();
-        } catch (error) {
-          showNotification(error.message, 'error');
-        }
+        await withGlobalLoading(async () => {
+          try {
+            await deleteSeason(id);
+            showNotification(t('notifications.seasonDeleted'), 'success');
+            await loadSeasons();
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+        });
       }
     });
     

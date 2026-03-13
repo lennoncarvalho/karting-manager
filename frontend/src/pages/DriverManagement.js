@@ -5,7 +5,7 @@
 
 import { listDrivers, createDriver, updateDriver, deleteDriver, getSupabaseClient } from '../services/api.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
-import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
+import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { t } from '../services/i18n.js';
 
@@ -317,13 +317,15 @@ const DriverManagement = {
         if (!confirmed) {
           return;
         }
-        try {
-          await deleteDriver(id);
-          showNotification(t('notifications.driverDeleted'), 'success');
-          await loadDrivers();
-        } catch (error) {
-          showNotification(error.message, 'error');
-        }
+        await withGlobalLoading(async () => {
+          try {
+            await deleteDriver(id);
+            showNotification(t('notifications.driverDeleted'), 'success');
+            await loadDrivers();
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+        });
       }
     });
     

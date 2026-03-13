@@ -12,12 +12,11 @@ import {
   updateRaceResult,
   deleteRaceResult,
   createPenalties,
-  deletePenaltiesByRaceResult,
   calculatePenaltyPoints,
   queryTable,
   getSeasonById
 } from '../services/api.js';
-import { showNotification, showConfirmation } from '../utils/helpers.js';
+import { showNotification, showConfirmation, withGlobalLoading } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { formatDateTime } from '../utils/formatting.js';
 import { isValidLapTime } from '../utils/validation.js';
@@ -200,47 +199,48 @@ const RaceDetail = {
     };
     
     const handleSave = async (payload) => {
-      try {
-        if (payload.id) {
-          await updateRaceResult(payload.id, {
-            race_id: raceId,
-            driver_id: payload.driver_id,
-            finish_position: payload.finish_position,
-            grid_start_position: payload.grid_start_position,
-            best_lap_time: payload.best_lap_time,
-            is_disqualified: payload.is_disqualified,
-            comments: payload.comments
-          });
-          await deletePenaltiesByRaceResult(payload.id);
-          if (payload.penalties.length) {
-            await createPenalties(payload.penalties.map(penalty => ({
-              ...penalty,
-              race_result_id: payload.id
-            })));
+      await withGlobalLoading(async () => {
+        try {
+          if (payload.id) {
+            const updated = await updateRaceResult(payload.id, {
+              race_id: raceId,
+              driver_id: payload.driver_id,
+              finish_position: payload.finish_position,
+              grid_start_position: payload.grid_start_position,
+              best_lap_time: payload.best_lap_time,
+              is_disqualified: payload.is_disqualified,
+              comments: payload.comments
+            });
+            if (payload.penalties.length) {
+              await createPenalties(payload.penalties.map(penalty => ({
+                ...penalty,
+                race_result_id: updated.id
+              })));
+            }
+            showNotification(t('notifications.raceResultUpdated'), 'success');
+          } else {
+            const created = await createRaceResult({
+              race_id: raceId,
+              driver_id: payload.driver_id,
+              finish_position: payload.finish_position,
+              grid_start_position: payload.grid_start_position,
+              best_lap_time: payload.best_lap_time,
+              is_disqualified: payload.is_disqualified,
+              comments: payload.comments
+            });
+            if (payload.penalties.length) {
+              await createPenalties(payload.penalties.map(penalty => ({
+                ...penalty,
+                race_result_id: created.id
+              })));
+            }
+            showNotification(t('notifications.raceResultCreated'), 'success');
           }
-          showNotification(t('notifications.raceResultUpdated'), 'success');
-        } else {
-          const created = await createRaceResult({
-            race_id: raceId,
-            driver_id: payload.driver_id,
-            finish_position: payload.finish_position,
-            grid_start_position: payload.grid_start_position,
-            best_lap_time: payload.best_lap_time,
-            is_disqualified: payload.is_disqualified,
-            comments: payload.comments
-          });
-          if (payload.penalties.length) {
-            await createPenalties(payload.penalties.map(penalty => ({
-              ...penalty,
-              race_result_id: created.id
-            })));
-          }
-          showNotification(t('notifications.raceResultCreated'), 'success');
+          await loadResults();
+        } catch (error) {
+          showNotification(error.message, 'error');
         }
-        await loadResults();
-      } catch (error) {
-        showNotification(error.message, 'error');
-      }
+      });
     };
 
     const handleOcrSave = async ({ mode, rows }) => {
@@ -248,48 +248,52 @@ const RaceDetail = {
         showNotification(t('ocrImport.noValidRows'), 'warning');
         return false;
       }
-      try {
-        if (mode === 'race') {
-          if (results.length) {
-            showNotification(t('ocrImport.blockedRace'), 'warning');
-            return false;
+      let result = false;
+      await withGlobalLoading(async () => {
+        try {
+          if (mode === 'race') {
+            if (results.length) {
+              showNotification(t('ocrImport.blockedRace'), 'warning');
+              return;
+            }
+            await Promise.all(rows.map((row) => createRaceResult({
+              race_id: raceId,
+              driver_id: row.driverId,
+              finish_position: row.position,
+              grid_start_position: null,
+              best_lap_time: isValidLapTime(row.bestLapTime) ? row.bestLapTime : null,
+              is_disqualified: false,
+              comments: null
+            })));
+            showNotification(t('ocrImport.saveSuccessRace'), 'success');
+            window.location.reload();
+            result = true;
+            return;
           }
-          await Promise.all(rows.map((row) => createRaceResult({
-            race_id: raceId,
-            driver_id: row.driverId,
-            finish_position: row.position,
-            grid_start_position: null,
-            best_lap_time: isValidLapTime(row.bestLapTime) ? row.bestLapTime : null,
-            is_disqualified: false,
-            comments: null
-          })));
-          showNotification(t('ocrImport.saveSuccessRace'), 'success');
-          window.location.reload();
-          return true;
+          if (mode === 'qualifying') {
+            if (!results.length) {
+              showNotification(t('ocrImport.blockedQualifying'), 'warning');
+              return;
+            }
+            const resultMap = new Map(results.map((result) => [result.driver_id, result]));
+            const positionMap = new Map(rows.map((row) => [row.driverId, row.position]));
+            const updates = rows
+              .map((row) => resultMap.get(row.driverId))
+              .filter(Boolean)
+              .map((result) => updateRaceResult(result.id, { grid_start_position: positionMap.get(result.driver_id) }));
+            if (updates.length) {
+              await Promise.all(updates);
+            }
+            showNotification(t('ocrImport.saveSuccessQualifying'), 'success');
+            window.location.reload();
+            result = true;
+            return;
+          }
+        } catch (error) {
+          showNotification(error.message || t('ocrImport.saveFailure'), 'error');
         }
-        if (mode === 'qualifying') {
-          if (!results.length) {
-            showNotification(t('ocrImport.blockedQualifying'), 'warning');
-            return false;
-          }
-          const resultMap = new Map(results.map((result) => [result.driver_id, result]));
-          const positionMap = new Map(rows.map((row) => [row.driverId, row.position]));
-          const updates = rows
-            .map((row) => resultMap.get(row.driverId))
-            .filter(Boolean)
-            .map((result) => updateRaceResult(result.id, { grid_start_position: positionMap.get(result.driver_id) }));
-          if (updates.length) {
-            await Promise.all(updates);
-          }
-          showNotification(t('ocrImport.saveSuccessQualifying'), 'success');
-          window.location.reload();
-          return true;
-        }
-        return false;
-      } catch (error) {
-        showNotification(error.message || t('ocrImport.saveFailure'), 'error');
-        return false;
-      }
+      });
+      return result;
     };
     
     addResultButton.addEventListener('click', () => {
@@ -330,13 +334,15 @@ const RaceDetail = {
       if (action === 'delete') {
         const confirmed = await showConfirmation(t('raceDetail.confirmDelete'));
         if (!confirmed) return;
-        try {
-          await deleteRaceResult(id);
-          showNotification(t('notifications.raceResultDeleted'), 'success');
-          await loadResults();
-        } catch (error) {
-          showNotification(error.message, 'error');
-        }
+        await withGlobalLoading(async () => {
+          try {
+            await deleteRaceResult(id);
+            showNotification(t('notifications.raceResultDeleted'), 'success');
+            await loadResults();
+          } catch (error) {
+            showNotification(error.message, 'error');
+          }
+        });
       }
     });
     

@@ -3,6 +3,7 @@
  * Bootstrap navbar with Formula 1 styling
  */
 
+import logoUrl from '../assets/icons/kartarados_3grays.png';
 import { t } from '../services/i18n.js';
 
 /**
@@ -24,7 +25,7 @@ export function renderNavigation(options = {}) {
   nav.innerHTML = `
     <div class="container-fluid py-0 gap-3">
       <a href="#/rankings" aria-label="${t('nav.brandAria')}">
-        <img src="src/assets/icons/kartarados_3grays.png" alt="Kartarados Logo" height="80px">
+        <img src="${logoUrl}" alt="Club logo" height="80px">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
               aria-controls="navbarNav" aria-expanded="false" aria-label="${t('nav.toggle')}">

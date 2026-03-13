@@ -5,6 +5,75 @@
 
 import { t } from '../services/i18n.js';
 
+/** @type {HTMLElement | null} */
+let loadingOverlayEl = null;
+let loadingOverlayCount = 0;
+
+/**
+ * Show global loading overlay (backdrop + spinner + wait cursor).
+ * Use hideLoadingOverlay() or withGlobalLoading() to hide.
+ */
+export function showLoadingOverlay() {
+  loadingOverlayCount += 1;
+  if (loadingOverlayEl) {
+    loadingOverlayEl.classList.remove('d-none');
+    loadingOverlayEl.setAttribute('aria-hidden', 'false');
+    return;
+  }
+  const overlay = document.createElement('div');
+  overlay.id = 'global-loading-overlay';
+  overlay.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center';
+  overlay.style.zIndex = '9998';
+  overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+  overlay.style.cursor = 'wait';
+  overlay.setAttribute('aria-live', 'polite');
+  overlay.setAttribute('aria-busy', 'true');
+  overlay.innerHTML = `
+    <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">${t('common.status.loading')}</span>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.style.cursor = 'wait';
+  document.body.style.pointerEvents = 'none';
+  overlay.style.pointerEvents = 'auto';
+  loadingOverlayEl = overlay;
+}
+
+/**
+ * Hide global loading overlay. Safe to call if not shown.
+ */
+export function hideLoadingOverlay() {
+  if (loadingOverlayCount > 0) {
+    loadingOverlayCount -= 1;
+  }
+  if (loadingOverlayCount > 0) {
+    return;
+  }
+  document.body.style.cursor = '';
+  document.body.style.pointerEvents = '';
+  if (loadingOverlayEl) {
+    loadingOverlayEl.classList.add('d-none');
+    loadingOverlayEl.setAttribute('aria-hidden', 'true');
+    loadingOverlayEl.setAttribute('aria-busy', 'false');
+  }
+}
+
+/**
+ * Run an async function with the global loading overlay shown.
+ * Overlay is hidden in finally. Prevents double-triggering while the promise runs.
+ * @param {() => Promise<void>} asyncFn
+ * @returns {Promise<void>}
+ */
+export async function withGlobalLoading(asyncFn) {
+  showLoadingOverlay();
+  try {
+    await asyncFn();
+  } finally {
+    hideLoadingOverlay();
+  }
+}
+
 /**
  * Debounce function to limit function calls
  * @param {Function} func - Function to debounce

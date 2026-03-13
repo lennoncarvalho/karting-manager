@@ -3,6 +3,12 @@
  * Handles routing and page initialization
  */
 
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+
+if (typeof window !== 'undefined' && window.supabase?.createClient) {
+  window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
 import { isAuthenticated } from './services/auth.js';
 import { showNotification } from './utils/helpers.js';
 import { initNavigation, syncNavigation } from './components/navigationManager.js';
