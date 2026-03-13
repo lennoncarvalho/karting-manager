@@ -30,23 +30,6 @@
   border: 2px solid var(--season-accent, #000000);
 }
 
-/* Rankings table styling */
-.rankings-table {
-  font-size: 0.95rem;
-}
-
-.rankings-table .position {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: var(--season-accent, #000000);
-  transition: color 0.2s ease;
-}
-
-.rankings-table .points {
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
 /* Race results table */
 .race-results-table {
   font-size: 0.9rem;

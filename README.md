@@ -160,4 +160,6 @@ See `.specify/memory/constitution.md` for details.
 
 ## License
 
-[Add license information]
+- Free to use for your own club.
+- Youre welcome to fork it and submit PRs with improvements.
+- Not for comercial use.
