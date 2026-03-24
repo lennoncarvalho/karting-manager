@@ -244,9 +244,9 @@ const PublicRankings = {
                     </tr>
                   </thead>
                   <tbody>
-                    ${rankings.map(driver => `
+                    ${rankings.map((driver, index) => `
                       <tr>
-                        <td>${driver.rank}</td>
+                        <td>${index + 1}</td>
                         <td>
                           <div class="d-flex align-items-center gap-2">
                             ${getDriverImageHtml({
