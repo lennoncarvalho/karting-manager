@@ -21,6 +21,7 @@ import { getDriverImageHtml } from '../utils/image.js';
 import { formatDateTime } from '../utils/formatting.js';
 import { isValidLapTime } from '../utils/validation.js';
 import { t } from '../services/i18n.js';
+import { parseLapTime } from '../services/points.js';
 
 function getHashParam(name) {
   const hash = window.location.hash || '';
@@ -159,10 +160,24 @@ const RaceDetail = {
         `;
         return;
       }
+
+      let fastestDriverId = null;
+      let fastestTime = null;
+      results.forEach(result => {
+        const time = parseLapTime(result.best_lap_time);
+        if (time === null) return;
+        if (fastestTime === null || time < fastestTime) {
+          fastestTime = time;
+          fastestDriverId = result.driver_id;
+        } else if (time === fastestTime && result.finish_position < (results.find(r => r.driver_id === fastestDriverId) || {}).finish_position) {
+          fastestDriverId = result.driver_id;
+        }
+      });
       
       resultsTableBody.innerHTML = results.map(result => {
         const penalties = result.penalties || [];
         const penaltyTotal = calculatePenaltyPoints(penalties);
+        const isFastest = result.driver_id === fastestDriverId;
         return `
           <tr>
             <td>${result.finish_position}</td>
@@ -179,7 +194,7 @@ const RaceDetail = {
               </div>
             </td>
             <td>${result.grid_start_position || '-'}</td>
-            <td>${result.best_lap_time || '-'}</td>
+            <td class="${isFastest ? 'text-decoration-underline' : ''}">${result.best_lap_time || '-'}</td>
             <td>${penalties.length ? `${penalties.length} (${penaltyTotal})` : '-'}</td>
             <td>${result.is_disqualified ? t('common.misc.yes') : t('common.misc.no')}</td>
             <td class="text-end">
