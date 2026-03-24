@@ -263,14 +263,18 @@ const RaceDetail = {
         showNotification(t('ocrImport.noValidRows'), 'warning');
         return false;
       }
+      if (mode === 'race' && results.length) {
+        showNotification(t('ocrImport.blockedRace'), 'warning');
+        return false;
+      }
+      if (mode === 'qualifying' && !results.length) {
+        showNotification(t('ocrImport.blockedQualifying'), 'warning');
+        return false;
+      }
       let result = false;
       await withGlobalLoading(async () => {
         try {
           if (mode === 'race') {
-            if (results.length) {
-              showNotification(t('ocrImport.blockedRace'), 'warning');
-              return;
-            }
             await Promise.all(rows.map((row) => createRaceResult({
               race_id: raceId,
               driver_id: row.driverId,
@@ -281,27 +285,23 @@ const RaceDetail = {
               comments: null
             })));
             showNotification(t('ocrImport.saveSuccessRace'), 'success');
-            window.location.reload();
             result = true;
+            window.location.reload();
             return;
           }
           if (mode === 'qualifying') {
-            if (!results.length) {
-              showNotification(t('ocrImport.blockedQualifying'), 'warning');
-              return;
-            }
-            const resultMap = new Map(results.map((result) => [result.driver_id, result]));
+            const resultMap = new Map(results.map((r) => [r.driver_id, r]));
             const positionMap = new Map(rows.map((row) => [row.driverId, row.position]));
             const updates = rows
               .map((row) => resultMap.get(row.driverId))
               .filter(Boolean)
-              .map((result) => updateRaceResult(result.id, { grid_start_position: positionMap.get(result.driver_id) }));
+              .map((r) => updateRaceResult(r.id, { grid_start_position: positionMap.get(r.driver_id) }));
             if (updates.length) {
               await Promise.all(updates);
             }
             showNotification(t('ocrImport.saveSuccessQualifying'), 'success');
-            window.location.reload();
             result = true;
+            window.location.reload();
             return;
           }
         } catch (error) {
