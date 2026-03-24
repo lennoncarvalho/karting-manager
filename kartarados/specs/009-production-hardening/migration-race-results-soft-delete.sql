@@ -1,23 +1,26 @@
--- Migration: race_results soft-delete and audit trail (009-production-hardening)
--- Run this in Supabase SQL Editor before deploying the app changes.
--- This adds deleted_at so we never physically delete rows; "edit" = soft-delete original + insert new row.
-
--- 1. Add deleted_at column (NULL = current row)
-ALTER TABLE race_results
-  ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
-
--- 2. Optional: partial unique index so only one "current" result per (race_id, driver_id)
---    Uncomment if you want to enforce at DB level (PostgreSQL supports partial unique indexes)
--- CREATE UNIQUE INDEX idx_race_results_current_per_driver
---   ON race_results (race_id, driver_id)
---   WHERE deleted_at IS NULL;
-
--- 3. Backfill: existing rows stay current (deleted_at already NULL)
-
--- 4. RLS: keep existing policies. Only admins can INSERT/UPDATE/DELETE.
---    To prevent physical DELETE from the app, you can either:
---    (a) Remove the DELETE policy and use only UPDATE to set deleted_at, or
---    (b) Keep DELETE for admin cleanup and have the app use only UPDATE for "delete".
---    Recommended: keep one policy "Admin full access" for ALL; app will use UPDATE for soft-delete.
-
-COMMENT ON COLUMN race_results.deleted_at IS 'Set when this row is superseded or deleted; NULL = current result.';
+-- NOTE: This file is kept for historical reference only.
+-- The original soft-delete approach (adding deleted_at to race_results) was reverted.
+-- Instead, a race_results_log audit table is used.
+--
+-- The race_results_log table should be created manually in Supabase with:
+--   - All columns from race_results (id, race_id, driver_id, finish_position, grid_start_position,
+--     best_lap_time, is_disqualified, comments, created_at, updated_at)
+--   - An additional changed_by_user_id UUID column to record the authenticated user who triggered the change.
+--
+-- Example:
+--
+-- CREATE TABLE race_results_log (
+--   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+--   race_result_id UUID,          -- original race_results.id
+--   race_id UUID,
+--   driver_id UUID,
+--   finish_position INT,
+--   grid_start_position INT,
+--   best_lap_time TEXT,
+--   is_disqualified BOOLEAN,
+--   comments TEXT,
+--   created_at TIMESTAMPTZ,       -- from the original row
+--   updated_at TIMESTAMPTZ,       -- from the original row
+--   changed_by_user_id UUID,      -- the admin who made the change
+--   logged_at TIMESTAMPTZ DEFAULT now()
+-- );

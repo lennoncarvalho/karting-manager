@@ -456,9 +456,27 @@ export async function deleteRace(id) {
 }
 
 /**
+ * Save a race_results row snapshot to race_results_log before it is mutated or deleted.
+ * Includes the authenticated user UUID that triggered the change.
+ */
+async function saveRaceResultLog(supabase, row) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id ?? null;
+
+  // Strip relational / computed fields that don't belong in the log table.
+  const { drivers, penalties, ...columns } = row;
+
+  const { error } = await supabase
+    .from('race_results_log')
+    .insert([{ ...columns, changed_by_user_id: userId }]);
+  if (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+/**
  * Race Results CRUD
- * With soft-delete: list filters deleted_at IS NULL; update = mark original deleted + insert new row; delete = set deleted_at.
- * Requires migration: add deleted_at to race_results (see specs/009-production-hardening/migration-race-results-soft-delete.sql).
+ * On update/delete the previous row state is saved to race_results_log for audit.
  */
 export async function listRaceResults(raceId) {
   const supabase = getSupabaseClient();
@@ -466,7 +484,6 @@ export async function listRaceResults(raceId) {
     .from('race_results')
     .select('*, drivers(*), penalties(*)')
     .eq('race_id', raceId)
-    .is('deleted_at', null)
     .order('finish_position', { ascending: true });
   if (error) {
     throw new Error(handleApiError(error));
@@ -482,8 +499,7 @@ export async function listRaceResultsByRaceIds(raceIds = []) {
   const { data, error } = await supabase
     .from('race_results')
     .select('*, drivers(*), penalties(*)')
-    .in('race_id', raceIds)
-    .is('deleted_at', null);
+    .in('race_id', raceIds);
   if (error) {
     throw new Error(handleApiError(error));
   }
@@ -506,12 +522,13 @@ export async function createRaceResult(payload) {
 }
 
 /**
- * Update = soft-delete original row (set deleted_at) and insert new row with updates. Returns the new row.
- * Penalties: frontend should create penalties for the returned (new) id; old penalties stay on old row for audit.
+ * Update a race result in-place. Before applying changes the previous row
+ * state is saved to race_results_log for audit purposes.
  */
 export async function updateRaceResult(id, updates) {
   const supabase = await getAuthenticatedClient();
-  // Fetch the current row so partial updates don't null fields.
+
+  // Fetch the current row so we can log it before mutating.
   const { data: current, error: currentError } = await supabase
     .from('race_results')
     .select('*')
@@ -521,27 +538,13 @@ export async function updateRaceResult(id, updates) {
     throw new Error(handleApiError(currentError));
   }
 
-  const deletedAt = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from('race_results')
-    .update({ deleted_at: deletedAt })
-    .eq('id', id);
-  if (updateError) {
-    throw new Error(handleApiError(updateError));
-  }
-
-  // Build the new row by merging updates on top of existing values.
-  // Strip fields that should not be copied directly.
-  const { id: _oldId, created_at: _createdAt, updated_at: _updatedAt, deleted_at: _deletedAt, ...base } = current || {};
-  const nextRow = {
-    ...base,
-    ...updates,
-    deleted_at: null
-  };
+  // Save previous state to audit log.
+  await saveRaceResultLog(supabase, current);
 
   const { data, error } = await supabase
     .from('race_results')
-    .insert([nextRow])
+    .update(updates)
+    .eq('id', id)
     .select('*')
     .single();
   if (error) {
@@ -550,12 +553,26 @@ export async function updateRaceResult(id, updates) {
   return data;
 }
 
-/** Soft-delete: set deleted_at instead of physical delete. */
+/** Delete a race result. The previous state is saved to race_results_log first. */
 export async function deleteRaceResult(id) {
   const supabase = await getAuthenticatedClient();
+
+  // Fetch the current row so we can log it before deleting.
+  const { data: current, error: currentError } = await supabase
+    .from('race_results')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (currentError) {
+    throw new Error(handleApiError(currentError));
+  }
+
+  // Save previous state to audit log.
+  await saveRaceResultLog(supabase, current);
+
   const { error } = await supabase
     .from('race_results')
-    .update({ deleted_at: new Date().toISOString() })
+    .delete()
     .eq('id', id);
   if (error) {
     throw new Error(handleApiError(error));

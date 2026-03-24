@@ -3,7 +3,7 @@
 **Feature Branch**: `009-production-hardening`
 **Created**: 2026-03-12
 **Status**: In progress
-**Input**: Pre-production adjustments: minify/uglify in build (Cloudflare Pages), prevent race_results tampering (auth + soft-delete/append-only), and prevent double-triggering of buttons during AJAX (loading backdrop + wait cursor).
+**Input**: Pre-production adjustments: minify/uglify in build (Cloudflare Pages), prevent race_results tampering (auth + audit log), and prevent double-triggering of buttons during AJAX (loading backdrop + wait cursor).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -23,16 +23,16 @@ As a deployer, I want the production build to minify and bundle frontend assets 
 
 ### User Story 2 - Race results tampering prevention (Priority: P1)
 
-As an operator, I want only authenticated admins to modify race results, and I want an audit trail so that edits do not erase history (no physical deletes; edits create a new row and mark the original as superseded/deleted).
+As an operator, I want only authenticated admins to modify race results, and I want an audit trail so that every change is logged (the previous row state is saved to an audit log table before any update or delete).
 
 **Why this priority**: Integrity of championship data and accountability.
 
 **Acceptance Scenarios**:
 
 1. **Given** RLS is enabled on `race_results`, **When** a non-admin or unauthenticated user attempts INSERT/UPDATE/DELETE, **Then** the operation is denied.
-2. **Given** the `race_results` table has a `deleted_at` (or equivalent) column and no physical DELETE is allowed, **When** an admin edits a result from the UI, **Then** the backend marks the original row as deleted and inserts a new row with the updated data (append-only style).
-3. **Given** read queries for "current" results, **When** the app lists results for a race, **Then** only non-deleted (or latest per driver/race) rows are returned.
-4. **Given** penalties reference `race_result_id`, **When** a result is "edited" (soft-delete + insert), **Then** penalties are re-associated with the new row (new `race_result_id`); the old row’s penalties remain for audit or are copied to the new result per product decision.
+2. **Given** a `race_results_log` audit table exists, **When** an admin edits a result from the UI, **Then** the previous row state (all columns + the authenticated user UUID) is saved to `race_results_log` before the update is applied in-place.
+3. **Given** a `race_results_log` audit table exists, **When** an admin deletes a result from the UI, **Then** the previous row state is saved to `race_results_log` before the row is physically deleted.
+4. **Given** penalties reference `race_result_id`, **When** a result is updated in-place, **Then** the row ID is preserved so penalty foreign keys remain valid without re-association.
 
 ---
 
@@ -59,5 +59,5 @@ As a user, I want to be unable to trigger the same action multiple times while a
 ## Technical Notes
 
 - **Build**: Current `build.sh` injects config into `frontend/src/config.js`. Minification should run after config injection, with build output suitable for Cloudflare Pages (e.g. `frontend/dist`).
-- **Race results**: Existing RLS already restricts write to admins. New behavior: add `deleted_at` (or `superseded_at`), disallow physical DELETE; "update" = soft-delete original + INSERT new row; list endpoints filter by `deleted_at IS NULL` (or use a view).
+- **Race results**: Existing RLS already restricts write to admins. Audit trail: a `race_results_log` table mirrors the `race_results` columns plus a `changed_by_user_id` UUID column. Before any update or delete, the app saves the previous row state to `race_results_log` with the authenticated user's UUID. Updates are applied in-place (row ID preserved); deletes are physical. The `race_results` table keeps `created_at` and `updated_at` columns for traceability.
 - **Loading**: A single global overlay component or helper that wraps async handlers and shows/hides backdrop + cursor.

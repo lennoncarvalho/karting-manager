@@ -17,11 +17,10 @@
 - [x] **T010** Document Cloudflare Pages: build command and publish directory (e.g. `./build.sh`, `dist`); env vars in dashboard.
 - [x] **T011** Add `frontend/.gitignore` entry for `dist/` and `node_modules/` if not already present.
 
-## Phase 3: Race results audit trail and soft-delete
+## Phase 3: Race results audit log
 
-- [x] **T012** Provide SQL migration in spec folder: add `deleted_at TIMESTAMPTZ DEFAULT NULL` to `race_results`; optional index on `(race_id, driver_id, deleted_at)` for "current" listing.
-- [x] **T013** Update `listRaceResults` and `listRaceResultsByRaceIds` to filter `deleted_at IS NULL`.
-- [x] **T014** Replace `updateRaceResult(id, updates)` with "replace" flow: soft-delete row `id` (set `deleted_at = now()`), insert new row with same race_id/driver_id and new data, return new row; frontend creates penalties for new row and does not delete penalties from old row (or backend handles penalty reassociation if desired).
-- [x] **T015** Replace `deleteRaceResult(id)` with soft-delete: update `race_results` set `deleted_at = now()` where id = id.
-- [x] **T016** Update RaceDetail (and any caller) to use new API behavior: on "edit" save, receive new result id and refresh list; penalties tied to new result id.
-- [ ] **T017** Consider unique constraint: (race_id, driver_id) for rows where deleted_at IS NULL (partial unique index in Postgres) so only one "current" result per driver per race.
+- [x] **T012** Create `race_results_log` table in Supabase (manually): mirrors `race_results` columns plus `changed_by_user_id` UUID. Document example DDL in spec folder.
+- [x] **T013** Add `saveRaceResultLog` helper in `api.js`: fetches the authenticated user UUID, strips relational fields, and inserts the previous row state into `race_results_log`.
+- [x] **T014** Update `updateRaceResult(id, updates)`: fetch current row, save to audit log via `saveRaceResultLog`, then apply update in-place (row ID preserved; penalty foreign keys stay valid).
+- [x] **T015** Update `deleteRaceResult(id)`: fetch current row, save to audit log via `saveRaceResultLog`, then physically delete the row.
+- [x] **T016** Remove `deleted_at` filters from `listRaceResults` and `listRaceResultsByRaceIds` (no soft-delete filtering needed).
