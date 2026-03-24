@@ -175,6 +175,8 @@ export function calculateRankings(races, raceResults, options = {}) {
       
       const ledger = driverRacePoints.get(driverId);
       ledger.basePoints[raceIndex] += basePoints;
+      if (poleWinner === driverId) ledger.basePoints[raceIndex] += 1;
+      if (fastestLapWinner === driverId) ledger.basePoints[raceIndex] += 1;
       ledger.penalties[raceIndex] += penalties;
       
       if (finishPosition) {

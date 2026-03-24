@@ -4,7 +4,6 @@
 
 import { AZURE_VISION_ENDPOINT, AZURE_VISION_KEY } from '../config.js';
 
-const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js';
 const AZURE_DOC_API_VERSION = '2024-11-30';
 
 function isTruthyConfig(value) {
@@ -75,7 +74,7 @@ let tesseractPromise = null;
 
 async function loadTesseract() {
   if (!tesseractPromise) {
-    tesseractPromise = import(TESSERACT_CDN);
+    tesseractPromise = import('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js');
   }
   return tesseractPromise;
 }
