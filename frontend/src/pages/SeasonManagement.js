@@ -3,6 +3,7 @@
  * CRUD interface for seasons
  */
 
+import * as Sentry from '@sentry/browser';
 import { listSeasons, createSeason, updateSeason, deleteSeason } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidHexColor } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
@@ -155,6 +156,7 @@ const SeasonManagement = {
         seasons = await listSeasons({ order: { column: 'start_date', ascending: true } });
         renderTable();
       } catch (error) {
+        Sentry.captureException(error);
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" class="text-center text-danger">${error.message}</td>
@@ -209,6 +211,7 @@ const SeasonManagement = {
         resetForm();
         await loadSeasons();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         submitButton.disabled = false;
@@ -254,6 +257,7 @@ const SeasonManagement = {
             showNotification(t('notifications.seasonDeleted'), 'success');
             await loadSeasons();
           } catch (error) {
+            Sentry.captureException(error);
             showNotification(error.message, 'error');
           }
         });

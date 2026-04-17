@@ -3,6 +3,7 @@
  * Display race info and manage race results
  */
 
+import * as Sentry from '@sentry/browser';
 import { openRaceResultModal } from '../components/RaceResultModal.js';
 import { openOcrImportModal } from '../components/OcrImportModal.js';
 import {
@@ -253,6 +254,7 @@ const RaceDetail = {
           }
           await loadResults();
         } catch (error) {
+          Sentry.captureException(error);
           showNotification(error.message, 'error');
         }
       });
@@ -305,6 +307,7 @@ const RaceDetail = {
             return;
           }
         } catch (error) {
+          Sentry.captureException(error);
           showNotification(error.message || t('ocrImport.saveFailure'), 'error');
         }
       });
@@ -355,6 +358,7 @@ const RaceDetail = {
             showNotification(t('notifications.raceResultDeleted'), 'success');
             await loadResults();
           } catch (error) {
+            Sentry.captureException(error);
             showNotification(error.message, 'error');
           }
         });
@@ -368,6 +372,7 @@ const RaceDetail = {
       await loadResults();
       renderRaceInfo();
     } catch (error) {
+      Sentry.captureException(error);
       showNotification(error.message, 'error');
     }
   }

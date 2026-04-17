@@ -3,6 +3,7 @@
  * Handles image upload, OCR, review, and import confirmation.
  */
 
+import * as Sentry from '@sentry/browser';
 import { runOcr, hasAzureConfig } from '../services/ocr.js';
 import { detectSheetType, parseOcrRows } from '../utils/parsing.js';
 import { matchDriverName } from '../utils/matching.js';
@@ -17,6 +18,7 @@ function readDraft(key) {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
+    Sentry.captureException(error);
     return null;
   }
 }
@@ -25,6 +27,7 @@ function writeDraft(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage failures.
   }
 }
@@ -33,6 +36,7 @@ function clearDraft(key) {
   try {
     localStorage.removeItem(key);
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage failures.
   }
 }
@@ -433,6 +437,7 @@ export function openOcrImportModal(options = {}) {
       renderReviewTable();
       persistDraft();
     } catch (error) {
+      Sentry.captureException(error);
       statusLabel.textContent = t('ocrImport.statusIdle');
       showNotification(error.message || t('ocrImport.ocrFailed'), 'error');
     }
@@ -453,6 +458,7 @@ export function openOcrImportModal(options = {}) {
       cropSelection = null;
       renderPreview();
     } catch (error) {
+      Sentry.captureException(error);
       showNotification(error.message || t('ocrImport.noImage'), 'error');
     }
   });

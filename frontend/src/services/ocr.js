@@ -2,6 +2,7 @@
  * OCR provider utilities (Azure Document Intelligence + Tesseract.js fallback).
  */
 
+import * as Sentry from '@sentry/browser';
 import { AZURE_VISION_ENDPOINT, AZURE_VISION_KEY } from '../config.js';
 
 const AZURE_DOC_API_VERSION = '2024-11-30';
@@ -115,6 +116,7 @@ export async function runOcr(imageFile) {
       const result = await runAzureOcr(imageFile);
       return { ...result, provider: 'azure-document-intelligence', fallbackUsed: false };
     } catch (error) {
+      Sentry.captureException(error);
       const result = await runTesseractOcr(imageFile);
       return { ...result, provider: 'tesseract', fallbackUsed: true, error };
     }

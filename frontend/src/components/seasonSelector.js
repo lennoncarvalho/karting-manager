@@ -3,6 +3,7 @@
  * Centralized component for season selection with theme management
  */
 
+import * as Sentry from '@sentry/browser';
 import { listSeasons } from '../services/api.js';
 import { applySeasonTheme, setStoredSeasonId, getStoredSeasonId } from '../services/theme.js';
 import { t } from '../services/i18n.js';
@@ -90,6 +91,7 @@ export async function initializeSeasonSelector(selectElement, options = {}) {
             ongoingSeasons = [selectedSeason, ...ongoingSeasons];
           }
         } catch (error) {
+          Sentry.captureException(error);
           console.warn('Could not fetch stored season:', error);
         }
       }
@@ -149,6 +151,7 @@ export async function initializeSeasonSelector(selectElement, options = {}) {
 
     return selectedSeason;
   } catch (error) {
+    Sentry.captureException(error);
     console.error('Error initializing season selector:', error);
     selectElement.innerHTML = `<option value="">${t('common.errors.loadSeasons')}</option>`;
     selectElement.disabled = true;

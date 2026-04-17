@@ -3,6 +3,7 @@
  * Admin authentication form
  */
 
+import * as Sentry from '@sentry/browser';
 import { login } from '../services/auth.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
@@ -80,6 +81,7 @@ const LoginPage = {
         showNotification(t('notifications.welcomeBack'), 'success');
         window.router.navigate('/admin');
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         button.disabled = false;

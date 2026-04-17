@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import en from '../translations/en.json';
 import ptBR from '../translations/pt-BR.json';
 
@@ -26,6 +27,7 @@ function getStoredLanguage() {
   try {
     return normalizeLanguage(localStorage.getItem(STORAGE_KEY));
   } catch (error) {
+    Sentry.captureException(error);
     return null;
   }
 }
@@ -89,6 +91,7 @@ export async function changeLanguage(language) {
   try {
     localStorage.setItem(STORAGE_KEY, normalized);
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage errors.
   }
   setDocumentLanguage(normalized);

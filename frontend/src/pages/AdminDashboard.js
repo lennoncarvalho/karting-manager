@@ -3,6 +3,7 @@
  * Navigation hub for admin actions
  */
 
+import * as Sentry from '@sentry/browser';
 import { changePassword, createAdmin } from '../services/auth.js';
 import { showNotification, setFieldInvalid, clearFieldInvalid } from '../utils/helpers.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
@@ -149,6 +150,7 @@ const AdminDashboard = {
         showNotification(t('notifications.passwordUpdated'), 'success');
         passwordForm.reset();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         passwordSubmit.disabled = false;
@@ -184,6 +186,7 @@ const AdminDashboard = {
         showNotification(t('notifications.adminCreated'), 'success');
         adminForm.reset();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         adminSubmit.disabled = false;

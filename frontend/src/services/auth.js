@@ -6,6 +6,7 @@
  * Reference: research.md → Authentication Implementation
  */
 
+import * as Sentry from '@sentry/browser';
 import { getSupabaseClient, handleApiError } from './api.js';
 import { APP_URL } from '../config.js';
 
@@ -32,6 +33,7 @@ export async function login(email, password) {
       session: data.session
     };
   } catch (error) {
+    Sentry.captureException(error);
     throw new Error(handleApiError(error));
   }
 }
@@ -49,6 +51,7 @@ export async function logout() {
       throw error;
     }
   } catch (error) {
+    Sentry.captureException(error);
     throw new Error(handleApiError(error));
   }
 }
@@ -68,6 +71,7 @@ export async function getCurrentSession() {
     
     return session;
   } catch (error) {
+    Sentry.captureException(error);
     console.error('Error getting session:', error);
     return null;
   }
@@ -93,6 +97,7 @@ export async function getCurrentUser() {
     
     return user;
   } catch (error) {
+    Sentry.captureException(error);
     console.error('Error getting user:', error);
     return null;
   }
@@ -127,6 +132,7 @@ export async function changePassword(newPassword) {
       throw error;
     }
   } catch (error) {
+    Sentry.captureException(error);
     throw new Error(handleApiError(error));
   }
 }
@@ -180,6 +186,7 @@ export async function createAdmin(email, password) {
 
     return signUpData.user;
   } catch (error) {
+    Sentry.captureException(error);
     throw new Error(handleApiError(error));
   }
 }

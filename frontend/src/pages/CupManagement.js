@@ -3,6 +3,7 @@
  * CRUD interface for cups
  */
 
+import * as Sentry from '@sentry/browser';
 import { listSeasons, listCups, createCup, updateCup, deleteCup } from '../services/api.js';
 import { isRequired, isValidDateRange, isValidCupDateRange } from '../utils/validation.js';
 import { formatDisplayDate } from '../utils/formatting.js';
@@ -164,6 +165,7 @@ const CupManagement = {
         }
         renderTable();
       } catch (error) {
+        Sentry.captureException(error);
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" class="text-center text-danger">${error.message}</td>
@@ -230,6 +232,7 @@ const CupManagement = {
         resetForm();
         await loadData();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         submitButton.disabled = false;
@@ -279,6 +282,7 @@ const CupManagement = {
             showNotification(t('notifications.cupDeleted'), 'success');
             await loadData();
           } catch (error) {
+            Sentry.captureException(error);
             showNotification(error.message, 'error');
           }
         });

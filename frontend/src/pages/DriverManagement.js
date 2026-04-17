@@ -3,6 +3,7 @@
  * CRUD interface for drivers
  */
 
+import * as Sentry from '@sentry/browser';
 import { listDrivers, createDriver, updateDriver, deleteDriver, getSupabaseClient } from '../services/api.js';
 import { isRequired, isValidEmail } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
@@ -175,6 +176,7 @@ const DriverManagement = {
         drivers = await listDrivers({ order: { column: 'name', ascending: true } });
         renderTable();
       } catch (error) {
+        Sentry.captureException(error);
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" class="text-center text-danger">${error.message}</td>
@@ -275,6 +277,7 @@ const DriverManagement = {
         resetForm();
         await loadDrivers();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         submitButton.disabled = false;
@@ -323,6 +326,7 @@ const DriverManagement = {
             showNotification(t('notifications.driverDeleted'), 'success');
             await loadDrivers();
           } catch (error) {
+            Sentry.captureException(error);
             showNotification(error.message, 'error');
           }
         });

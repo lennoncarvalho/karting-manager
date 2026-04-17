@@ -10,6 +10,7 @@ import { showNotification } from '../utils/helpers.js';
 import { getDriverImageHtml } from '../utils/image.js';
 import { formatDateTime } from '../utils/formatting.js';
 import { t } from '../services/i18n.js';
+import * as Sentry from "@sentry/browser";
 
 const PublicRankings = {
   async render(container) {
@@ -288,6 +289,7 @@ const PublicRankings = {
         renderEmpty(t('publicRankings.noAvailableSeasonsYet'));
       }
     } catch (error) {
+      Sentry.captureException(error);
       showNotification(error.message, 'error');
       renderEmpty();
     }

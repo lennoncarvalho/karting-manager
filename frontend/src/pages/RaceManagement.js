@@ -3,6 +3,7 @@
  * CRUD interface for races
  */
 
+import * as Sentry from '@sentry/browser';
 import { listSeasons, listCups, listRaces, createRace, updateRace, deleteRace } from '../services/api.js';
 import { isRequired } from '../utils/validation.js';
 import { showNotification, showConfirmation, setFieldInvalid, clearFieldInvalid, withGlobalLoading } from '../utils/helpers.js';
@@ -241,6 +242,7 @@ const RaceManagement = {
         await loadRaces();
         renderTable();
       } catch (error) {
+        Sentry.captureException(error);
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" class="text-center text-danger">${error.message}</td>
@@ -343,6 +345,7 @@ const RaceManagement = {
         await loadRaces();
         renderTable();
       } catch (error) {
+        Sentry.captureException(error);
         showNotification(error.message, 'error');
       } finally {
         submitButton.disabled = false;
@@ -392,6 +395,7 @@ const RaceManagement = {
             await loadRaces();
             renderTable();
           } catch (error) {
+            Sentry.captureException(error);
             showNotification(error.message, 'error');
           }
         });

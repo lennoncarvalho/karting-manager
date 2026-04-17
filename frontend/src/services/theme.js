@@ -3,6 +3,7 @@
  * Applies season accent colors across the UI
  */
 
+import * as Sentry from '@sentry/browser';
 import { isValidHexColor } from '../utils/validation.js';
 
 const SELECTED_SEASON_KEY = 'selectedSeasonId';
@@ -11,6 +12,7 @@ function readStorage(key) {
   try {
     return localStorage.getItem(key);
   } catch (error) {
+    Sentry.captureException(error);
     return null;
   }
 }
@@ -19,6 +21,7 @@ function writeStorage(key, value) {
   try {
     localStorage.setItem(key, value);
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage errors (private mode, quota, etc.).
   }
 }

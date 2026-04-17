@@ -5,6 +5,7 @@
  * Reference: contracts/api-contracts.md for endpoint specifications
  */
 
+import * as Sentry from '@sentry/browser';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../config.js';
 
 // Supabase client is initialized in index.html
@@ -112,6 +113,7 @@ function readStorageJson(key) {
     if (!raw) return null;
     return JSON.parse(raw);
   } catch (error) {
+    Sentry.captureException(error);
     return null;
   }
 }
@@ -120,6 +122,7 @@ function writeStorageJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage errors (private mode, quota, etc.).
   }
 }
@@ -269,6 +272,7 @@ export async function deleteSeason(id) {
     delete cache[String(id)];
     writeSeasonsByIdCache(cache);
   } catch (error) {
+    Sentry.captureException(error);
     // Ignore storage errors.
   }
   removeSeasonFromListCache(id);

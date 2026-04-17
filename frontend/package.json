@@ -9,5 +9,9 @@
   },
   "devDependencies": {
     "vite": "^6.0.1"
+  },
+  "dependencies": {
+    "@sentry/browser": "^10.49.0",
+    "@sentry/vite-plugin": "^5.2.0"
   }
 }
