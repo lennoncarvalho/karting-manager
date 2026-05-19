@@ -1,0 +1,45 @@
+@if (race(); as r) {
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h1 class="h3 mb-1">{{ r.name }}</h1>
+      <div class="text-secondary">{{ r.location }} · {{ r.race_datetime | ktDateTime }}</div>
+    </div>
+    @if (auth.isAdmin()) {
+      <kt-button icon="plus-lg" (clicked)="addResult()" i18n>Add result</kt-button>
+    }
+  </div>
+
+  @if (results().length === 0) {
+    <kt-empty-state icon="clipboard-x" title="No results yet" i18n-title />
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead><tr>
+          <th>#</th><th i18n>Driver</th><th i18n>Grid</th><th i18n>Best lap</th>
+          <th i18n>Pen.</th><th i18n>DSQ</th>
+        </tr></thead>
+        <tbody>
+          @for (rr of results(); track rr.id) {
+            <tr>
+              <td class="fw-bold kt-text-accent">{{ rr.finish_position }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <kt-driver-image [src]="rr.drivers?.picture_url" [name]="rr.drivers?.name || ''" size="sm" />
+                  <span>{{ rr.drivers?.name }}</span>
+                </div>
+              </td>
+              <td>{{ rr.grid_start_position ?? '—' }}</td>
+              <td>{{ rr.best_lap_time | lapTime }}</td>
+              <td>{{ penaltyPoints(rr) }}</td>
+              <td>@if (rr.is_disqualified) { <span class="badge text-bg-danger" i18n>DSQ</span> }</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+} @else if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+} @else {
+  <p i18n>Loading race…</p>
+}

@@ -1,0 +1,35 @@
+<nav class="navbar navbar-expand-md bg-body-tertiary border-bottom" aria-label="Main navigation">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" routerLink="/">
+      <img src="assets/icons/kart_favicon.svg" alt="" width="28" height="28" class="me-2" />
+      <span>Kartarados</span>
+    </a>
+    <button
+      class="navbar-toggler" type="button"
+      data-bs-toggle="collapse" data-bs-target="#kt-navbar"
+      aria-controls="kt-navbar" aria-expanded="false" aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="kt-navbar">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" i18n>Rankings</a>
+        </li>
+        @if (auth.isAdmin()) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin" routerLinkActive="active" i18n>Admin</a>
+          </li>
+        }
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <kt-season-select />
+        @if (auth.isAdmin()) {
+          <kt-button variant="outline-secondary" size="sm" icon="box-arrow-right" (clicked)="logout()" i18n>Logout</kt-button>
+        } @else {
+          <a routerLink="/login" class="btn btn-outline-primary btn-sm" i18n>Login</a>
+        }
+      </div>
+    </div>
+  </div>
+</nav>

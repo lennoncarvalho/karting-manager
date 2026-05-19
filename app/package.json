@@ -1,0 +1,51 @@
+{
+  "name": "kartarados",
+  "version": "2.0.0-alpha.0",
+  "private": true,
+  "description": "Kartarados v2 — Angular 19 rewrite of the karting championship manager.",
+  "license": "MIT",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "dev": "ng serve",
+    "build": "ng build --configuration=production",
+    "build:prod": "ng build --configuration=production",
+    "build:dev": "ng build --configuration=development",
+    "watch": "ng build --watch --configuration=development",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "ng lint",
+    "i18n:extract": "ng extract-i18n --output-path src/locale --format xlf"
+  },
+  "dependencies": {
+    "@angular/animations": "^19.0.0",
+    "@angular/common": "^19.0.0",
+    "@angular/compiler": "^19.0.0",
+    "@angular/core": "^19.0.0",
+    "@angular/forms": "^19.0.0",
+    "@angular/localize": "^19.0.0",
+    "@angular/platform-browser": "^19.0.0",
+    "@angular/platform-browser-dynamic": "^19.0.0",
+    "@angular/router": "^19.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
+    "@popperjs/core": "^2.11.8",
+    "@sentry/angular": "^8.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "flag-icons": "^7.2.3",
+    "rxjs": "~7.8.0",
+    "tesseract.js": "^5.1.0",
+    "tslib": "^2.6.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^19.0.0",
+    "@angular/cli": "^19.0.0",
+    "@angular/compiler-cli": "^19.0.0",
+    "@types/node": "^20.10.0",
+    "jsdom": "^25.0.0",
+    "typescript": "~5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

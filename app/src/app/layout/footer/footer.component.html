@@ -1,0 +1,14 @@
+<footer class="border-top mt-auto py-3 bg-body-tertiary">
+  <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <small class="text-secondary">© {{ year }} Kartarados</small>
+    <ul class="list-inline mb-0">
+      @for (l of locales; track l.code) {
+        <li class="list-inline-item">
+          <button type="button" class="btn btn-link btn-sm p-1" (click)="switch(l.href)" [attr.aria-label]="l.code">
+            <kt-flag [locale]="l.code" />
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+</footer>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="pt-BR" target-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <!-- Run `npm run i18n:extract` to populate this with <trans-unit> entries,
+           then translate them. v1 translations live in
+           ../../frontend/src/translations/{en,pt-BR}.json and can be copied
+           by hand into the matching <target> tags once the IDs are known. -->
+    </body>
+  </file>
+</xliff>

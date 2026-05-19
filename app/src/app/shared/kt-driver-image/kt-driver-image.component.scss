@@ -1,0 +1,13 @@
+.kt-driver-image {
+  object-fit: cover;
+  background-color: var(--bs-secondary-bg);
+
+  &--placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+    background-color: var(--bs-secondary-bg);
+  }
+}

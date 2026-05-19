@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="pt-BR" datatype="plaintext" original="ng2.template">
+    <body>
+      <!-- pt-BR is the source locale; entries here are placeholders.
+           Real strings are extracted via `npm run i18n:extract`. -->
+    </body>
+  </file>
+</xliff>

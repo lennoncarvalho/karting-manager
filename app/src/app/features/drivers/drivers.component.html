@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0" i18n>Drivers</h1>
+  <kt-button icon="person-plus" (clicked)="start()" i18n>New driver</kt-button>
+</div>
+
+@if (editing(); as f) {
+  <div class="card mb-4">
+    <div class="card-body">
+      <form #form="ngForm" (ngSubmit)="save(form)" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label" i18n>Name</label>
+            <input class="form-control" name="name" [(ngModel)]="f.name" required /></div>
+          <div class="col-md-6"><label class="form-label" i18n>Email</label>
+            <input class="form-control" type="email" name="email" [(ngModel)]="f.email" required /></div>
+          <div class="col-md-4"><label class="form-label" i18n>Nickname</label>
+            <input class="form-control" name="nickname" [(ngModel)]="f.nickname" /></div>
+          <div class="col-md-4"><label class="form-label" i18n>Birth date</label>
+            <input type="date" class="form-control" name="birth_date" [(ngModel)]="f.birth_date" /></div>
+          <div class="col-md-2"><label class="form-label" i18n>Weight (kg)</label>
+            <input type="number" class="form-control" name="weight" [(ngModel)]="f.weight" /></div>
+          <div class="col-md-2"><label class="form-label" i18n>Blood type</label>
+            <input class="form-control" name="blood_type" [(ngModel)]="f.blood_type" /></div>
+          <div class="col-12"><label class="form-label" i18n>Picture URL</label>
+            <input class="form-control" name="picture_url" [(ngModel)]="f.picture_url" /></div>
+        </div>
+        <kt-form-error [message]="error()" />
+        <div class="d-flex gap-2 mt-3">
+          <kt-button type="submit" i18n>Save</kt-button>
+          <kt-button variant="secondary" (clicked)="cancel()" i18n>Cancel</kt-button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (drivers().length === 0) {
+  <kt-empty-state icon="person-x" title="No drivers yet" i18n-title />
+} @else {
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead><tr>
+        <th></th><th i18n>Name</th><th i18n>Email</th><th class="d-none d-md-table-cell" i18n>Nickname</th>
+        <th class="text-end"></th>
+      </tr></thead>
+      <tbody>
+        @for (d of drivers(); track d.id) {
+          <tr>
+            <td><kt-driver-image [src]="d.picture_url" [name]="d.name" size="sm" /></td>
+            <td>{{ d.name }}</td>
+            <td>{{ d.email }}</td>
+            <td class="d-none d-md-table-cell">{{ d.nickname }}</td>
+            <td class="text-end">
+              <kt-button variant="outline-secondary" size="sm" icon="pencil" (clicked)="start(d)" />
+              <kt-button variant="outline-danger" size="sm" icon="trash" (clicked)="remove(d)" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

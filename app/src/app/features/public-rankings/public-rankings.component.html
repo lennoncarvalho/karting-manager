@@ -1,0 +1,61 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">
+    {{ seasonStore.selectedSeason()?.name ?? '—' }}
+  </h1>
+  <div class="btn-group" role="group" aria-label="Ranking view">
+    <button type="button" class="btn btn-sm" [class.btn-primary]="mode() === 'overall'" [class.btn-outline-primary]="mode() !== 'overall'" (click)="setMode('overall')" i18n>Overall</button>
+    <button type="button" class="btn btn-sm" [class.btn-primary]="mode() === 'cup'" [class.btn-outline-primary]="mode() !== 'cup'" (click)="setMode('cup')" i18n>Cup</button>
+    <button type="button" class="btn btn-sm" [class.btn-primary]="mode() === 'penalty'" [class.btn-outline-primary]="mode() !== 'penalty'" (click)="setMode('penalty')" i18n>Penalties</button>
+  </div>
+</div>
+
+@if (mode() === 'cup' && cups().length) {
+  <div class="mb-3">
+    <label class="form-label" i18n>Cup</label>
+    <select class="form-select form-select-sm" [value]="selectedCupId() ?? ''" (change)="selectedCupId.set(($any($event.target).value) || null)">
+      @for (c of cups(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+}
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (rankingForView().length === 0) {
+  <kt-empty-state icon="trophy" title="No results yet" message="Once races are imported, the ranking will appear here." i18n-title i18n-message />
+} @else {
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th ktAccentHeader>#</th>
+          <th ktAccentHeader i18n>Driver</th>
+          <th ktAccentHeader class="text-end" i18n>Points</th>
+          <th ktAccentHeader class="text-end d-none d-md-table-cell" i18n>Poles</th>
+          <th ktAccentHeader class="text-end d-none d-md-table-cell" i18n>FL</th>
+          <th ktAccentHeader class="text-end" i18n>Pen.</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of rankingForView(); track entry.driverId) {
+          <tr>
+            <td class="fw-bold kt-text-accent">{{ entry.rank }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <kt-driver-image [src]="entry.picture" [name]="entry.name" size="sm" />
+                <span>{{ entry.name }}</span>
+              </div>
+            </td>
+            <td class="text-end fw-semibold">{{ entry.totalPoints }}</td>
+            <td class="text-end d-none d-md-table-cell">{{ entry.poles }}</td>
+            <td class="text-end d-none d-md-table-cell">{{ entry.fastestLaps }}</td>
+            <td class="text-end">{{ entry.penalties }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

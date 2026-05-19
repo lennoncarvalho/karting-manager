@@ -1,0 +1,15 @@
+<h1 class="h3 mb-3" i18n>OCR import (preview)</h1>
+<div class="alert alert-info" i18n>
+  This is the foundation of the OCR flow. Full parsing/driver-matching and
+  the multi-step result import wizard are still pending — see
+  IMPLEMENTATION-STATUS.md.
+</div>
+<input type="file" accept="image/*" class="form-control mb-3" (change)="onFile($event)" />
+@if (provider()) {
+  <p class="text-secondary"><span i18n>Provider</span>: {{ provider() }}</p>
+}
+@if (error()) { <div class="alert alert-danger">{{ error() }}</div> }
+@if (result()) {
+  <h2 class="h5" i18n>Extracted text</h2>
+  <pre class="bg-body-tertiary p-3 rounded" style="white-space: pre-wrap;">{{ result() }}</pre>
+}

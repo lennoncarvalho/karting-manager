@@ -1,0 +1,57 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0" i18n>Cups</h1>
+  @if (seasonId()) {
+    <kt-button icon="plus-lg" (clicked)="start()" i18n>New cup</kt-button>
+  }
+</div>
+
+@if (!seasonId()) {
+  <div class="alert alert-warning" i18n>Select a season first.</div>
+}
+
+@if (editing(); as f) {
+  <div class="card mb-4">
+    <div class="card-body">
+      <form #form="ngForm" (ngSubmit)="save(form)" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label" i18n>Name</label>
+            <input class="form-control" name="name" [(ngModel)]="f.name" required /></div>
+          <div class="col-md-3"><label class="form-label" i18n>Start</label>
+            <input type="date" class="form-control" name="start_date" [(ngModel)]="f.start_date" required /></div>
+          <div class="col-md-3"><label class="form-label" i18n>End</label>
+            <input type="date" class="form-control" name="end_date" [(ngModel)]="f.end_date" required /></div>
+        </div>
+        <kt-form-error [message]="error()" />
+        <div class="d-flex gap-2 mt-3">
+          <kt-button type="submit" i18n>Save</kt-button>
+          <kt-button variant="secondary" (clicked)="cancel()" i18n>Cancel</kt-button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (seasonId() && cups().length === 0) {
+  <kt-empty-state icon="trophy" title="No cups" i18n-title />
+} @else {
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead><tr>
+        <th i18n>Name</th><th i18n>Start</th><th i18n>End</th><th class="text-end"></th>
+      </tr></thead>
+      <tbody>
+        @for (c of cups(); track c.id) {
+          <tr>
+            <td>{{ c.name }}</td>
+            <td>{{ c.start_date }}</td>
+            <td>{{ c.end_date }}</td>
+            <td class="text-end">
+              <kt-button variant="outline-secondary" size="sm" icon="pencil" (clicked)="start(c)" />
+              <kt-button variant="outline-danger" size="sm" icon="trash" (clicked)="remove(c)" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

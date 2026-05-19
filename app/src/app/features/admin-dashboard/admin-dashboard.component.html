@@ -1,0 +1,20 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0" i18n>Admin dashboard</h1>
+  <small class="text-secondary">{{ auth.userEmail() }}</small>
+</div>
+
+<div class="row g-3">
+  @for (item of [
+    { path: '/admin/seasons', icon: 'calendar3', title: 'Seasons' },
+    { path: '/admin/cups',    icon: 'trophy',    title: 'Cups' },
+    { path: '/admin/drivers', icon: 'person',    title: 'Drivers' },
+    { path: '/admin/races',   icon: 'flag',      title: 'Races' }
+  ]; track item.path) {
+    <div class="col-6 col-md-3">
+      <a [routerLink]="item.path" class="card text-decoration-none h-100 text-center py-4 kt-border-accent">
+        <i class="bi display-4 mb-2 kt-text-accent" [class]="'bi-' + item.icon"></i>
+        <div class="fw-semibold">{{ item.title }}</div>
+      </a>
+    </div>
+  }
+</div>

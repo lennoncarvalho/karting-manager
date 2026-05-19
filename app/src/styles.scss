@@ -1,0 +1,52 @@
+// ─────────────────────────────────────────────────────────────────────
+// Kartarados v2 — global stylesheet
+// Per spec §7: only the bootstrap import + a handful of themed rules.
+// All component-specific styles live inside their own .scss next to the
+// component, and almost everything should be Bootstrap utilities.
+// ─────────────────────────────────────────────────────────────────────
+
+// Bootstrap 5 + bootstrap-icons + flag-icons
+// Using `@use` (module system) instead of the deprecated `@import` rule.
+// flag-icons: disable the square (1x1) variant to avoid duplicate SVG
+// output (both 1x1/xx.svg and 4x3/xx.svg would be emitted to the same
+// media/ path by Angular's bundler, causing
+// "Two output files share the same path" errors).
+@use 'bootstrap/scss/bootstrap' as *;
+@use 'flag-icons/sass/flag-icons' as * with (
+  $flag-icons-use-square: false
+);
+
+// Plain CSS imports are not affected by the Sass `@import` deprecation.
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// Season-accent custom property. Defaults to Bootstrap primary; the
+// ThemeService overrides `--kt-season-accent` whenever a season is
+// selected (see core/theme.service.ts).
+:root {
+  --kt-season-accent: #0d6efd;
+}
+
+// Rule #1 — accent-colored table headers (used via [ktAccentHeader]
+// or .kt-th-accent directly).
+.kt-th-accent {
+  background-color: var(--kt-season-accent) !important;
+  color: var(--bs-white) !important;
+}
+
+// Rule #2 — accent text utility for medals, ranks, etc.
+.kt-text-accent {
+  color: var(--kt-season-accent) !important;
+}
+
+// Rule #3 — accent border (used for highlighted cards).
+.kt-border-accent {
+  border-color: var(--kt-season-accent) !important;
+}
+
+// Make ng-bootstrap modals look natively Bootstrap.
+.modal-header .btn-close {
+  filter: none;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: var(--bs-body-font-family); }
