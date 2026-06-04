@@ -1,15 +1,110 @@
-<h1 class="h3 mb-3" i18n>OCR import (preview)</h1>
-<div class="alert alert-info" i18n>
-  This is the foundation of the OCR flow. Full parsing/driver-matching and
-  the multi-step result import wizard are still pending — see
-  IMPLEMENTATION-STATUS.md.
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h1 class="h3 mb-1" i18n>OCR import</h1>
+    @if (race(); as r) {
+      <div class="text-secondary">
+        <ng-container i18n>For race</ng-container>: {{ r.name }} · {{ r.location }}
+      </div>
+    } @else if (raceId()) {
+      <div class="text-secondary" i18n>Loading race…</div>
+    } @else {
+      <div class="text-warning-emphasis" i18n>
+        Open this page from a race detail to attach results. (Missing <code>raceId</code> query parameter.)
+      </div>
+    }
+  </div>
+  <a class="btn btn-outline-secondary" [routerLink]="['/admin']" i18n>← Back to admin</a>
 </div>
-<input type="file" accept="image/*" class="form-control mb-3" (change)="onFile($event)" />
-@if (provider()) {
-  <p class="text-secondary"><span i18n>Provider</span>: {{ provider() }}</p>
-}
+
 @if (error()) { <div class="alert alert-danger">{{ error() }}</div> }
-@if (result()) {
-  <h2 class="h5" i18n>Extracted text</h2>
-  <pre class="bg-body-tertiary p-3 rounded" style="white-space: pre-wrap;">{{ result() }}</pre>
+@if (status() === 'saved') {
+  <div class="alert alert-success" i18n>Results imported successfully.</div>
+}
+
+<div class="card mb-3">
+  <div class="card-header" i18n>Source</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="ocr-mode" i18n>Mode</label>
+        <select id="ocr-mode" class="form-select"
+                [ngModel]="mode()" (ngModelChange)="onModeChange($event)">
+          <option value="race" i18n>Race (creates results)</option>
+          <option value="qualifying" i18n>Qualifying (sets grid + best lap)</option>
+        </select>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label" for="ocr-file" i18n>Choose image</label>
+        <input id="ocr-file" type="file" class="form-control"
+               accept="image/*" capture="environment"
+               (change)="onFile($event)">
+      </div>
+    </div>
+
+    @if (gateWarning()) {
+      <div class="alert alert-warning mt-3 mb-0">{{ gateWarning() }}</div>
+    }
+
+    <div class="d-flex align-items-center gap-3 mt-3 flex-wrap">
+      <button type="button" class="btn btn-primary"
+              [disabled]="busy() || !selectedFile() || gateWarning()"
+              (click)="runOcr()">
+        @if (busy()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        <ng-container i18n>Run OCR</ng-container>
+      </button>
+      <span class="text-secondary small">
+        <ng-container i18n>Status</ng-container>: {{ status() }}
+        @if (providerLabel()) { · {{ providerLabel() }} }
+      </span>
+    </div>
+  </div>
+</div>
+
+@if (rows().length > 0) {
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span i18n>Review parsed rows</span>
+      <button type="button" class="btn btn-primary btn-sm"
+              [disabled]="!canSave()" (click)="save()" i18n>Save import</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th i18n>Pos</th>
+            <th i18n>OCR name</th>
+            @if (mode() === 'race') { <th i18n>Best lap</th> }
+            <th i18n>Driver</th>
+            <th class="text-center" i18n>Skip</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.position; let i = $index) {
+            <tr [class.table-warning]="!row.driverId && !row.skip">
+              <td>{{ row.position }}</td>
+              <td>{{ row.name }}</td>
+              @if (mode() === 'race') {
+                <td>{{ row.bestLapTime || '—' }}</td>
+              }
+              <td>
+                <select class="form-select form-select-sm"
+                        [ngModel]="row.driverId"
+                        (ngModelChange)="patchRow(i, { driverId: $event || null, skip: false })">
+                  <option [ngValue]="null" i18n>— no match —</option>
+                  @for (d of drivers(); track d.id) {
+                    <option [ngValue]="d.id">{{ d.name }}</option>
+                  }
+                </select>
+              </td>
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input"
+                       [ngModel]="row.skip"
+                       (ngModelChange)="patchRow(i, { skip: $event })">
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
 }

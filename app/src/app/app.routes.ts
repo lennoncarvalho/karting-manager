@@ -22,6 +22,14 @@ export const routes: Routes = [
     title: 'Login — Kartarados',
   },
   {
+    path: 'auth/reset-password',
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+    title: 'Reset password — Kartarados',
+  },
+  {
     path: 'admin',
     canActivate: [authGuard],
     children: [
@@ -64,6 +72,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/race-detail/race-detail.component').then(
             (m) => m.RaceDetailComponent,
+          ),
+      },
+      {
+        path: 'ocr-import',
+        loadComponent: () =>
+          import('./features/ocr-import/ocr-import.component').then(
+            (m) => m.OcrImportComponent,
           ),
       },
     ],

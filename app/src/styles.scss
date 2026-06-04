@@ -1,8 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────
 // Kartarados v2 — global stylesheet
-// Per spec §7: only the bootstrap import + a handful of themed rules.
-// All component-specific styles live inside their own .scss next to the
-// component, and almost everything should be Bootstrap utilities.
+//
+// Theming model (per `.junie/plans/app-v2-resume.md` Step 2):
+//   • Single CSS variable `--kt-season-accent` (Hex), set by ThemeService.
+//   • Bootstrap surfaces (`.navbar`, `.table thead th`, `.btn-primary`,
+//     `.card-header`, `.modal-header`, `.nav-tabs .nav-link.active`,
+//     `.badge-primary`, `.progress-bar`, links, focus rings, selection)
+//     pick up the accent automatically via low-specificity `:where(...)`
+//     selectors. No per-template helper classes / directives required.
 // ─────────────────────────────────────────────────────────────────────
 
 // Bootstrap 5 + bootstrap-icons + flag-icons
@@ -19,34 +24,104 @@
 // Plain CSS imports are not affected by the Sass `@import` deprecation.
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// Season-accent custom property. Defaults to Bootstrap primary; the
-// ThemeService overrides `--kt-season-accent` whenever a season is
-// selected (see core/theme.service.ts).
+// ──────────────────────────────────────────────────────────────────
+// Season accent CSS variable
+// ──────────────────────────────────────────────────────────────────
 :root {
   --kt-season-accent: #0d6efd;
+  --kt-navbar-fg: #fff;
 }
 
-// Rule #1 — accent-colored table headers (used via [ktAccentHeader]
-// or .kt-th-accent directly).
-.kt-th-accent {
-  background-color: var(--kt-season-accent) !important;
-  color: var(--bs-white) !important;
-}
-
-// Rule #2 — accent text utility for medals, ranks, etc.
-.kt-text-accent {
-  color: var(--kt-season-accent) !important;
-}
-
-// Rule #3 — accent border (used for highlighted cards).
-.kt-border-accent {
-  border-color: var(--kt-season-accent) !important;
-}
-
-// Make ng-bootstrap modals look natively Bootstrap.
-.modal-header .btn-close {
-  filter: none;
-}
-
+// ──────────────────────────────────────────────────────────────────
+// V1 dark body theme
+// ──────────────────────────────────────────────────────────────────
 html, body { height: 100%; }
-body { margin: 0; font-family: var(--bs-body-font-family); }
+
+body {
+  margin: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Global accent rules — every Bootstrap surface picks the active
+// season's accent. `:where(...)` keeps specificity at 0 so any
+// explicit Bootstrap utility class / inline override still wins.
+// ──────────────────────────────────────────────────────────────────
+
+// Table header rows
+:where(.table thead th) {
+  background-color: var(--kt-season-accent);
+  color: var(--kt-navbar-fg);
+}
+
+// Navbar background
+:where(.navbar) {
+  background-color: var(--kt-season-accent) !important;
+  color: var(--kt-navbar-fg);
+}
+
+// Primary buttons
+:where(.btn-primary) {
+  background-color: var(--kt-season-accent);
+  border-color: var(--kt-season-accent);
+  color: var(--kt-navbar-fg);
+}
+:where(.btn-primary:hover, .btn-primary:focus, .btn-primary:active) {
+  background-color: var(--kt-season-accent);
+  border-color: var(--kt-season-accent);
+  filter: brightness(0.9);
+  color: var(--kt-navbar-fg);
+}
+
+// Card / modal headers
+:where(.card-header, .modal-header) {
+  background-color: var(--kt-season-accent);
+  color: var(--kt-navbar-fg);
+}
+
+// Primary badges
+:where(.badge.bg-primary, .badge-primary) {
+  background-color: var(--kt-season-accent) !important;
+  color: var(--kt-navbar-fg);
+}
+
+// Nav-tabs active state
+:where(.nav-tabs .nav-link.active) {
+  background-color: var(--kt-season-accent);
+  border-color: var(--kt-season-accent);
+  color: var(--kt-navbar-fg);
+}
+
+// Progress bar fill
+:where(.progress-bar) {
+  background-color: var(--kt-season-accent);
+}
+
+// Links + focus + selection
+:where(a) {
+  color: var(--kt-season-accent);
+}
+:where(a:hover) {
+  color: var(--kt-season-accent);
+  filter: brightness(1.15);
+}
+:where(*:focus) {
+  outline-color: var(--kt-season-accent);
+}
+::selection {
+  background-color: var(--kt-season-accent);
+  color: var(--kt-navbar-fg);
+}
+
+// ng-bootstrap close button stays visible on the dark themed modal-header.
+.modal-header .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}

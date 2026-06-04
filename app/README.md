@@ -64,6 +64,7 @@ If Azure vars are missing the OCR flow falls back to Tesseract.js (`por`).
 | `npm run build:prod` | Same as `build`, explicit |
 | `npm run lint` | Lint via `ng lint` (optional, only if `@angular-eslint` installed) |
 | `npm run i18n:extract` | Extract `messages.xlf` (run after touching `i18n` strings) |
+| `npm run i18n:sync` | Extract then back-fill `<target>` tags in `messages.{en,pt-BR}.xlf` from v1's `frontend/src/translations/{en,pt-BR}.json` (see `scripts/migrate-json-to-xlf.mjs`) |
 | `npm test` | Vitest (only critical-path tests: points engine, OCR parsing, auth guard) |
 
 ## i18n
@@ -72,6 +73,14 @@ If Azure vars are missing the OCR flow falls back to Tesseract.js (`por`).
 - Available: `pt-BR`, `en`
 - Build command produces one bundle per locale under `dist/<locale>/`.
 - Translation files: `src/locale/messages.pt-BR.xlf`, `src/locale/messages.en.xlf`.
+- Migration workflow: `npm run i18n:sync` extracts current template strings via
+  `ng extract-i18n` and then runs `scripts/migrate-json-to-xlf.mjs`, which uses
+  the v1 dotted-key JSON files in `../frontend/src/translations/` as the lookup
+  table. The script matches `<source>` text (English) to `en.json` leaf values,
+  then emits the corresponding `pt-BR.json` value as `<target>`. Strings that
+  exist in templates but not in v1 JSON stay untranslated;
+  `i18nMissingTranslation: "warning"` (set in `angular.json`) flags them at
+  build time so they can be filled in manually.
 
 ## Deployment
 

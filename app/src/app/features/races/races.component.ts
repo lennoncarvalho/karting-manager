@@ -9,6 +9,7 @@ import type { Cup, Race } from '../../core/models';
 import { ButtonComponent } from '../../shared/kt-button/kt-button.component';
 import { FormErrorComponent } from '../../shared/kt-form-error/kt-form-error.component';
 import { EmptyStateComponent } from '../../shared/kt-empty-state/kt-empty-state.component';
+import { SkeletonRowComponent } from '../../shared/kt-skeleton-row/kt-skeleton-row.component';
 import { DateTimePipe } from '../../shared/pipes/date-time.pipe';
 import { ConfirmDialogService } from '../../shared/kt-confirm-dialog/kt-confirm-dialog.component';
 
@@ -18,10 +19,14 @@ type RaceForm = {
   affects_championship: boolean;
 };
 
+function emptyRaceForm(): RaceForm {
+  return { name: '', location: '', race_datetime: '', cup_id: null, affects_championship: true };
+}
+
 @Component({
   selector: 'kt-races',
   standalone: true,
-  imports: [FormsModule, RouterLink, ButtonComponent, FormErrorComponent, EmptyStateComponent, DateTimePipe],
+  imports: [FormsModule, RouterLink, ButtonComponent, FormErrorComponent, EmptyStateComponent, SkeletonRowComponent, DateTimePipe],
   templateUrl: './races.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -33,7 +38,10 @@ export class RacesComponent {
 
   protected readonly races = signal<Race[]>([]);
   protected readonly cups = signal<Cup[]>([]);
-  protected readonly editing = signal<RaceForm | null>(null);
+  protected readonly form = signal<RaceForm>(emptyRaceForm());
+  protected readonly isEditing = signal(false);
+  protected readonly busy = signal(false);
+  protected readonly loadingList = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly seasonId = computed(() => this.store.selectedSeasonId());
 
@@ -47,6 +55,7 @@ export class RacesComponent {
 
   private async load(seasonId: string): Promise<void> {
     this.error.set(null);
+    this.loadingList.set(true);
     try {
       const [races, cups] = await Promise.all([
         this.loading.track(this.api.listRaces({ seasonId })),
@@ -54,24 +63,37 @@ export class RacesComponent {
       ]);
       this.races.set(races); this.cups.set(cups);
     } catch (e) { this.error.set((e as Error).message); }
+    finally { this.loadingList.set(false); }
   }
 
-  protected start(r?: Race): void {
+  protected edit(r: Race): void {
     this.error.set(null);
-    this.editing.set(r
-      ? { id: r.id, name: r.name, location: r.location,
-          race_datetime: r.race_datetime.slice(0, 16),
-          cup_id: r.cup_id ?? null, affects_championship: r.affects_championship }
-      : { name: '', location: '', race_datetime: '', cup_id: null, affects_championship: true });
+    this.form.set({
+      id: r.id, name: r.name, location: r.location,
+      race_datetime: r.race_datetime.slice(0, 16),
+      cup_id: r.cup_id ?? null, affects_championship: r.affects_championship,
+    });
+    this.isEditing.set(true);
   }
-  protected cancel(): void { this.editing.set(null); this.error.set(null); }
 
-  protected async save(form: NgForm): Promise<void> {
-    if (form.invalid) return;
-    const f = this.editing();
+  protected reset(): void {
+    this.form.set(emptyRaceForm());
+    this.isEditing.set(false);
+    this.error.set(null);
+  }
+
+  /** Generic field setter used by the template (Angular templates disallow arrow fns). */
+  protected setField<K extends keyof RaceForm>(key: K, value: RaceForm[K]): void {
+    this.form.update((f) => ({ ...f, [key]: value }));
+  }
+
+  protected async save(ngForm: NgForm): Promise<void> {
+    if (ngForm.invalid) return;
+    const f = this.form();
     const sid = this.seasonId();
-    if (!f || !sid) return;
+    if (!sid) return;
     this.error.set(null);
+    this.busy.set(true);
     try {
       const payload = {
         name: f.name, location: f.location,
@@ -87,8 +109,9 @@ export class RacesComponent {
       if (idx >= 0) list[idx] = saved; else list.push(saved);
       list.sort((a, b) => a.race_datetime.localeCompare(b.race_datetime));
       this.races.set(list);
-      this.editing.set(null);
+      this.reset();
     } catch (e) { this.error.set((e as Error).message); }
+    finally { this.busy.set(false); }
   }
 
   protected async remove(r: Race): Promise<void> {
@@ -101,6 +124,7 @@ export class RacesComponent {
     try {
       await this.loading.track(this.api.deleteRace(r.id));
       this.races.set(this.races().filter((x) => x.id !== r.id));
+      if (this.form().id === r.id) this.reset();
     } catch (e) { this.error.set((e as Error).message); }
   }
 }

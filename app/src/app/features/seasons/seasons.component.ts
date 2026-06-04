@@ -8,6 +8,7 @@ import type { Season } from '../../core/models';
 import { ButtonComponent } from '../../shared/kt-button/kt-button.component';
 import { FormErrorComponent } from '../../shared/kt-form-error/kt-form-error.component';
 import { EmptyStateComponent } from '../../shared/kt-empty-state/kt-empty-state.component';
+import { SkeletonRowComponent } from '../../shared/kt-skeleton-row/kt-skeleton-row.component';
 import { ConfirmDialogService } from '../../shared/kt-confirm-dialog/kt-confirm-dialog.component';
 
 type SeasonForm = {
@@ -19,10 +20,14 @@ type SeasonForm = {
   accent_color: string;
 };
 
+function emptyForm(): SeasonForm {
+  return { name: '', start_date: '', end_date: '', is_ongoing: false, accent_color: '#0d6efd' };
+}
+
 @Component({
   selector: 'kt-seasons',
   standalone: true,
-  imports: [FormsModule, ButtonComponent, FormErrorComponent, EmptyStateComponent],
+  imports: [FormsModule, ButtonComponent, FormErrorComponent, EmptyStateComponent, SkeletonRowComponent],
   templateUrl: './seasons.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -33,29 +38,45 @@ export class SeasonsComponent {
   private readonly confirm = inject(ConfirmDialogService);
 
   protected readonly seasons = this.store.seasons;
-  protected readonly editing = signal<SeasonForm | null>(null);
+  protected readonly form = signal<SeasonForm>(emptyForm());
+  protected readonly isEditing = signal(false);
+  protected readonly busy = signal(false);
+  protected readonly loadingList = signal(false);
   protected readonly error = signal<string | null>(null);
 
   constructor() {
-    if (!this.seasons().length) void this.store.refresh();
+    if (!this.seasons().length) {
+      this.loadingList.set(true);
+      void this.store.refresh().finally(() => this.loadingList.set(false));
+    }
   }
 
-  protected start(season?: Season): void {
+  protected edit(season: Season): void {
     this.error.set(null);
-    this.editing.set(season
-      ? { id: season.id, name: season.name, start_date: season.start_date,
-          end_date: season.end_date, is_ongoing: season.is_ongoing,
-          accent_color: season.accent_color }
-      : { name: '', start_date: '', end_date: '', is_ongoing: false, accent_color: '#0d6efd' });
+    this.form.set({
+      id: season.id, name: season.name, start_date: season.start_date,
+      end_date: season.end_date, is_ongoing: season.is_ongoing,
+      accent_color: season.accent_color,
+    });
+    this.isEditing.set(true);
   }
 
-  protected cancel(): void { this.editing.set(null); this.error.set(null); }
-
-  protected async save(form: NgForm): Promise<void> {
-    if (form.invalid) return;
-    const f = this.editing();
-    if (!f) return;
+  protected reset(): void {
+    this.form.set(emptyForm());
+    this.isEditing.set(false);
     this.error.set(null);
+  }
+
+  /** Generic field setter used by the template (Angular templates disallow arrow fns). */
+  protected setField<K extends keyof SeasonForm>(key: K, value: SeasonForm[K]): void {
+    this.form.update((f) => ({ ...f, [key]: value }));
+  }
+
+  protected async save(ngForm: NgForm): Promise<void> {
+    if (ngForm.invalid) return;
+    const f = this.form();
+    this.error.set(null);
+    this.busy.set(true);
     try {
       const payload = {
         name: f.name, start_date: f.start_date, end_date: f.end_date,
@@ -65,8 +86,9 @@ export class SeasonsComponent {
         ? await this.loading.track(this.api.updateSeason(f.id, payload))
         : await this.loading.track(this.api.createSeason(payload));
       this.store.upsert(saved);
-      this.editing.set(null);
+      this.reset();
     } catch (e) { this.error.set((e as Error).message); }
+    finally { this.busy.set(false); }
   }
 
   protected async remove(s: Season): Promise<void> {
@@ -79,6 +101,7 @@ export class SeasonsComponent {
     try {
       await this.loading.track(this.api.deleteSeason(s.id));
       this.store.removeLocal(s.id);
+      if (this.form().id === s.id) this.reset();
     } catch (e) { this.error.set((e as Error).message); }
   }
 }

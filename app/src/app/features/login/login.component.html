@@ -1,8 +1,10 @@
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-4">
     <div class="card shadow-sm">
+      <div class="card-header text-white text-center">
+        <i class="bi bi-shield-lock me-2"></i><span i18n>Admin login</span>
+      </div>
       <div class="card-body">
-        <h1 class="h4 mb-3" i18n>Admin login</h1>
         <form #f="ngForm" (ngSubmit)="submit(f)" novalidate>
           <div class="mb-3">
             <label for="email" class="form-label" i18n>Email</label>
@@ -22,6 +24,9 @@
           </div>
           <kt-form-error [message]="error()" />
           <kt-button type="submit" [loading]="busy()" [fullWidth]="true" i18n>Sign in</kt-button>
+          <div class="text-center mt-3">
+            <a routerLink="/auth/reset-password" class="small" i18n>Forgot password?</a>
+          </div>
         </form>
       </div>
     </div>

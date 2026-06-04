@@ -1,33 +1,71 @@
-<nav class="navbar navbar-expand-md bg-body-tertiary border-bottom" aria-label="Main navigation">
+<nav class="navbar navbar-expand-lg navbar-dark" aria-label="Main navigation">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center" routerLink="/">
-      <img src="assets/icons/kart_favicon.svg" alt="" width="28" height="28" class="me-2" />
-      <span>Kartarados</span>
+    <a class="navbar-brand d-flex align-items-center" routerLink="/" (click)="closeMenu()">
+      <img src="assets/icons/kartarados_3grays.png" alt="Kartarados" height="80" />
     </a>
+
     <button
-      class="navbar-toggler" type="button"
-      data-bs-toggle="collapse" data-bs-target="#kt-navbar"
-      aria-controls="kt-navbar" aria-expanded="false" aria-label="Toggle navigation"
+      type="button"
+      class="navbar-toggler"
+      [attr.aria-expanded]="!collapsed()"
+      aria-controls="kt-navbar"
+      aria-label="Toggle navigation"
+      (click)="toggleCollapsed()"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="kt-navbar">
-      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+
+    <div id="kt-navbar" class="collapse navbar-collapse" [ngbCollapse]="collapsed()">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" i18n>Rankings</a>
+          <a
+            class="nav-link"
+            routerLink="/"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeMenu()"
+            i18n
+          >Rankings</a>
         </li>
+
         @if (auth.isAdmin()) {
           <li class="nav-item">
-            <a class="nav-link" routerLink="/admin" routerLinkActive="active" i18n>Admin</a>
+            <a class="nav-link" routerLink="/admin" routerLinkActive="active" (click)="closeMenu()" i18n>Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/seasons" routerLinkActive="active" (click)="closeMenu()" i18n>Seasons</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/cups" routerLinkActive="active" (click)="closeMenu()" i18n>Cups</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/drivers" routerLinkActive="active" (click)="closeMenu()" i18n>Drivers</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/admin/races" routerLinkActive="active" (click)="closeMenu()" i18n>Races</a>
           </li>
         }
       </ul>
-      <div class="d-flex align-items-center gap-2">
+
+      <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
         <kt-season-select />
+
         @if (auth.isAdmin()) {
-          <kt-button variant="outline-secondary" size="sm" icon="box-arrow-right" (clicked)="logout()" i18n>Logout</kt-button>
+          <div ngbDropdown class="d-inline-block" placement="bottom-end">
+            <button
+              type="button"
+              class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-1"
+              ngbDropdownToggle
+            >
+              <i class="bi bi-person-circle"></i>
+              <span class="text-truncate" style="max-width: 14rem;">{{ auth.userEmail() }}</span>
+            </button>
+            <div ngbDropdownMenu>
+              <button type="button" ngbDropdownItem (click)="logout()" i18n>Logout</button>
+            </div>
+          </div>
         } @else {
-          <a routerLink="/login" class="btn btn-outline-primary btn-sm" i18n>Login</a>
+          <a routerLink="/login" class="btn btn-outline-light btn-sm" (click)="closeMenu()" i18n>Login</a>
         }
       </div>
     </div>

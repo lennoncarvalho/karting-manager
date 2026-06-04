@@ -1,7 +1,7 @@
 /**
- * Points / Ranking engine — ported verbatim from `frontend/src/services/points.js`.
+ * Points / Ranking engine — ported from `frontend/src/services/points.js`.
  *
- * IMPORTANT BUSINESS-LOGIC NOTES
+ * BUSINESS RULES (see spec 010 §6.7 — canonical)
  * - Position 1..24 awards 35..1 points (see `POSITION_POINTS` below).
  * - Pole position (`grid_start_position === 1`) awards **+1 bonus**.
  * - Fastest lap (lowest parsed `best_lap_time` among the race results)
@@ -22,10 +22,6 @@
  * - Tie-breakers for overall ranking: total points → most 1st places,
  *   2nd, … 24th → poles → fastest laps → fewer penalties → earliest
  *   race in which the driver reached their final total.
- *
- * See spec §6.7 + §12 reconciliation log for the divergence between this
- * engine (pole/fastest +1 bonus active) and spec 002 (which said
- * "finish position only"). Code is source of truth; the bonus stays.
  */
 
 import type { Race, RaceResult } from './models';

@@ -11,10 +11,23 @@
     { path: '/admin/races',   icon: 'flag',      title: 'Races' }
   ]; track item.path) {
     <div class="col-6 col-md-3">
-      <a [routerLink]="item.path" class="card text-decoration-none h-100 text-center py-4 kt-border-accent">
-        <i class="bi display-4 mb-2 kt-text-accent" [class]="'bi-' + item.icon"></i>
+      <a [routerLink]="item.path" class="card shadow-sm text-decoration-none h-100 text-center py-4">
+        <i class="bi display-4 mb-2 text-primary" [class]="'bi-' + item.icon"></i>
         <div class="fw-semibold">{{ item.title }}</div>
       </a>
     </div>
   }
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-header text-white">
+    <i class="bi bi-camera2 me-2"></i><span i18n>OCR import</span>
+  </div>
+  <div class="card-body">
+    <p class="mb-0 text-secondary" i18n>
+      To import race results from a photo of the timing sheet, open a race from the
+      <a routerLink="/admin/races">Races</a> page and use the “Import via OCR” button on the
+      race detail screen.
+    </p>
+  </div>
 </div>

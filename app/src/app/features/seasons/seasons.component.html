@@ -1,75 +1,116 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0" i18n>Seasons</h1>
-  <kt-button icon="plus-lg" (clicked)="start()" i18n>New season</kt-button>
 </div>
 
-@if (editing(); as f) {
-  <div class="card mb-4">
-    <div class="card-body">
-      <form #form="ngForm" (ngSubmit)="save(form)" novalidate>
-        <div class="row g-3">
-          <div class="col-md-6">
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-header text-white">
+        @if (isEditing()) { <span i18n>Edit season</span> }
+        @else { <span i18n>New season</span> }
+      </div>
+      <div class="card-body">
+        <form #ngForm="ngForm" (ngSubmit)="save(ngForm)" novalidate>
+          <div class="mb-3">
             <label class="form-label" i18n>Name</label>
-            <input class="form-control" name="name" [(ngModel)]="f.name" required />
+            <input class="form-control" name="name" [ngModel]="form().name"
+                   (ngModelChange)="setField('name', $event)" required />
           </div>
-          <div class="col-md-3">
-            <label class="form-label" i18n>Start date</label>
-            <input type="date" class="form-control" name="start_date" [(ngModel)]="f.start_date" required />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label" i18n>End date</label>
-            <input type="date" class="form-control" name="end_date" [(ngModel)]="f.end_date" required />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label" i18n>Accent color</label>
-            <input type="color" class="form-control form-control-color" name="accent_color" [(ngModel)]="f.accent_color" required />
-          </div>
-          <div class="col-md-3 align-self-center">
-            <div class="form-check mt-3">
-              <input type="checkbox" class="form-check-input" id="is_ongoing" name="is_ongoing" [(ngModel)]="f.is_ongoing" />
-              <label class="form-check-label" for="is_ongoing" i18n>Ongoing</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label" i18n>Start date</label>
+              <input type="date" class="form-control" name="start_date" [ngModel]="form().start_date"
+                     (ngModelChange)="setField('start_date', $event)" required />
+            </div>
+            <div class="col-6">
+              <label class="form-label" i18n>End date</label>
+              <input type="date" class="form-control" name="end_date" [ngModel]="form().end_date"
+                     (ngModelChange)="setField('end_date', $event)" required />
             </div>
           </div>
-        </div>
-        <kt-form-error [message]="error()" />
-        <div class="d-flex gap-2 mt-3">
-          <kt-button type="submit" i18n>Save</kt-button>
-          <kt-button variant="secondary" (clicked)="cancel()" i18n>Cancel</kt-button>
-        </div>
-      </form>
+          <div class="row g-2 mt-1 align-items-center">
+            <div class="col-6">
+              <label class="form-label" i18n>Accent color</label>
+              <input type="color" class="form-control form-control-color w-100"
+                     name="accent_color" [ngModel]="form().accent_color"
+                     (ngModelChange)="setField('accent_color', $event)" required />
+            </div>
+            <div class="col-6">
+              <div class="form-check mt-4">
+                <input type="checkbox" class="form-check-input" id="is_ongoing" name="is_ongoing"
+                       [ngModel]="form().is_ongoing"
+                       (ngModelChange)="setField('is_ongoing', $event)" />
+                <label class="form-check-label" for="is_ongoing" i18n>Ongoing</label>
+              </div>
+            </div>
+          </div>
+          <kt-form-error [message]="error()" />
+          <div class="d-flex gap-2 mt-3">
+            <kt-button type="submit" [loading]="busy()" i18n>Save</kt-button>
+            @if (isEditing()) {
+              <kt-button variant="secondary" (clicked)="reset()" i18n>Cancel</kt-button>
+            }
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-}
 
-@if (seasons().length === 0) {
-  <kt-empty-state icon="calendar-x" title="No seasons" message="Create one to get started." i18n-title i18n-message />
-} @else {
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead><tr>
-        <th i18n>Name</th>
-        <th i18n>Start</th>
-        <th i18n>End</th>
-        <th i18n>Ongoing</th>
-        <th class="text-end"></th>
-      </tr></thead>
-      <tbody>
-        @for (s of seasons(); track s.id) {
-          <tr>
-            <td>
-              <span class="d-inline-block rounded-circle me-2" style="width:10px;height:10px;" [style.backgroundColor]="s.accent_color"></span>
-              {{ s.name }}
-            </td>
-            <td>{{ s.start_date }}</td>
-            <td>{{ s.end_date }}</td>
-            <td>@if (s.is_ongoing) { <span class="badge text-bg-success" i18n>Ongoing</span> }</td>
-            <td class="text-end">
-              <kt-button variant="outline-secondary" size="sm" icon="pencil" (clicked)="start(s)" />
-              <kt-button variant="outline-danger" size="sm" icon="trash" (clicked)="remove(s)" />
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header text-white d-flex justify-content-between align-items-center">
+        <span i18n>Seasons</span>
+        <span class="badge bg-light text-dark">{{ seasons().length }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th i18n>Name</th>
+              <th i18n>Start</th>
+              <th i18n>End</th>
+              <th i18n>Ongoing</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          @if (loadingList()) {
+            <tbody kt-skeleton-row [columns]="5" [rows]="4"></tbody>
+          } @else if (seasons().length === 0) {
+            <tbody>
+              <tr>
+                <td colspan="5" class="p-0 border-0">
+                  <kt-empty-state icon="calendar-x" title="No seasons"
+                                  message="Create one to get started." i18n-title i18n-message />
+                </td>
+              </tr>
+            </tbody>
+          } @else {
+            <tbody>
+              @for (s of seasons(); track s.id) {
+                <tr>
+                  <td>
+                    <span class="d-inline-block rounded-circle me-2"
+                          style="width:10px;height:10px;"
+                          [style.backgroundColor]="s.accent_color"></span>
+                    {{ s.name }}
+                  </td>
+                  <td>{{ s.start_date }}</td>
+                  <td>{{ s.end_date }}</td>
+                  <td>
+                    @if (s.is_ongoing) {
+                      <span class="badge text-bg-success" i18n>Ongoing</span>
+                    }
+                  </td>
+                  <td class="text-end">
+                    <kt-button variant="outline-secondary" size="sm" icon="pencil" (clicked)="edit(s)" />
+                    <kt-button variant="outline-danger" size="sm" icon="trash" (clicked)="remove(s)" />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          }
+        </table>
+      </div>
+    </div>
   </div>
-}
+</div>

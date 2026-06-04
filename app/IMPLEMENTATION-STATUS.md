@@ -22,7 +22,7 @@ Legend: ✅ done · 🟡 partial / scaffolded · ⚪ not started
 | `src/_redirects` (Cloudflare SPA fallback) | ✅ | |
 | `.env.example` + environments | ✅ | Replace placeholder Supabase keys before running |
 | Assets copied (`kart_favicon.svg`, `kartarados_3grays.png`) | ✅ | |
-| Locale stub XLIFF files | 🟡 | `messages.*.xlf` are empty stubs; run `npm run i18n:extract` then populate `<target>` tags from `frontend/src/translations/*.json` |
+| Locale XLIFF files | ✅ | `messages.{en,pt-BR}.xlf` populated by `npm run i18n:sync` (runs `ng extract-i18n` then `scripts/migrate-json-to-xlf.mjs` which back-fills `<target>` tags from `frontend/src/translations/{en,pt-BR}.json` by `<source>` text). Last sync: 234 trans-units extracted, 43 mapped to pt-BR, 31 ngb.* skipped (ng-bootstrap ships its own bundles), 104 strings present in templates but absent from v1 JSON remain untranslated (`i18nMissingTranslation: warning` surfaces them). |
 
 ## Core layer (`src/app/core/`)
 | Service | Status | Notes |
@@ -52,29 +52,33 @@ Legend: ✅ done · 🟡 partial / scaffolded · ⚪ not started
 | `kt-form-error` | ✅ | Bootstrap danger alert |
 | `kt-flag` | ✅ | Uses flag-icons; maps locale → flag code |
 | `kt-confirm-dialog` + `ConfirmDialogService` | ✅ | ng-bootstrap NgbModal-based |
+| `kt-driver-image-uploader` | ✅ | File input + Supabase Storage upload + `[(value)]` URL model + DriverImage fallback preview. Vitest sanity test under same folder. |
+| `kt-skeleton-row` | ✅ | `tbody[kt-skeleton-row]` attribute component; `placeholder-glow` rows with varied widths. Tables-only per resume plan Open-3. |
+| `kt-race-result-modal` + `RaceResultModalService` | ✅ | Full port of v1 `RaceResultModal.js`. NgbModal-based, signal-driven template, standard + custom penalty rows, duplicate-driver guard, lap-time/positive-int validation. Resolves with a `RaceResultModalPayload` the caller persists. |
+| `validators.ts` | ✅ | Pure `isRequired` / `isPositiveInteger` / `isValidLapTime` (port of v1 `utils/validation.js`). Used by the race-result modal. |
 | `pipes/lap-time.pipe.ts` | ✅ | |
 | `pipes/date-time.pipe.ts` | ✅ | `dd/MM/yyyy HH:mm` lightweight formatter |
-| `directives/accent-header.directive.ts` (`[ktAccentHeader]`) | ✅ | |
+| `directives/accent-header.directive.ts` (`[ktAccentHeader]`) | ❌ removed | Accent applied globally via `:where(.table thead th, .navbar, .btn-primary, .card-header, .modal-header, .nav-tabs .nav-link.active, …)` in `styles.scss`. All template usages stripped. |
 | `directives/async-click.directive.ts` (`[ktAsyncClick]`) | ✅ | |
 
 ## Layout (`src/app/layout/`)
 | Component | Status |
 |---|---|
-| `navigation/` | ✅ — brand, route links, season selector, login/logout |
-| `footer/` | ✅ — copyright + locale flags (hard-navigate to swap bundles) |
+| `navigation/` | ✅ — dark `navbar-expand-lg`, `kartarados_3grays.png` brand at 80 px, `[ngbCollapse]` mobile toggle, admin route links, `<kt-season-select>`, `NgbDropdown` user-email menu with Logout (anonymous: Login link). |
+| `footer/` | ✅ — themed via `var(--kt-season-accent)`; left: LinkedIn credit + MIT License + © year; right: GitHub icon + locale flag buttons (hard-navigate to swap bundles). |
 
 ## Features (`src/app/features/`)
 | Feature | Status | Notes / TODO |
 |---|---|---|
-| `public-rankings/` | ✅ | Three modes (overall / cup / penalty), uses the ported points engine, season-aware via `SeasonStore`. **Note:** the v1 page had additional polish — "compact mode" toggle, sortable columns, season-summary cards. These are not in the new spec §6 explicitly; port them on demand. |
-| `login/` | ✅ | Email/password + returnUrl, password reset still callable via `AuthStore.requestPasswordReset` but no UI yet. |
-| `admin-dashboard/` | ✅ | Tile grid linking to admin pages. v1 also exposed "OCR import" as an action — add a link once `ocr-import` is wired into a real flow. |
-| `seasons/` | ✅ | Full CRUD with inline editor, accent color picker, ongoing flag, confirm-dialog on delete. |
-| `cups/` | ✅ | Full CRUD scoped to the selected season. |
-| `drivers/` | ✅ | Full CRUD with inline editor + avatar preview. **TODO:** picture upload to the Supabase `driver-pictures` bucket (the v1 page uses a file input + storage upload). Currently the form accepts only an existing URL. |
-| `races/` | ✅ | Full CRUD with cup picker + `affects_championship` flag. |
-| `race-detail/` | 🟡 | Lists results with driver/penalty info. **TODO:** port the v1 `RaceResultModal.js` (251 lines) into a `kt-race-result-modal` shared modal so admins can add/edit results + their penalties from this page. Current "Add result" button is a placeholder. |
-| `ocr-import/` | 🟡 | Foundation only — calls `OcrService` and shows raw extracted text + provider name. **TODO:** port the full multi-step wizard from `frontend/src/components/OcrImportModal.js` (648 lines): driver-matching heuristics (`utils/matching.js`), table parsing (`utils/parsing.js`), preview/edit grid, persist results via `ApiService.createRaceResult` + `createPenalties`. |
+| `public-rankings/` | ✅ | Rebuilt with `ngbNav` tabs: **Calendar** (chronological race list with winner + fastest lap, race-name link visible to admins), **Overall**, one tab **per cup** (sorted by `cups.start_date` asc), **Penalties** (last). Ongoing-only season selector. Uses the ported `points.ts` engine; `<tbody kt-skeleton-row>` while loading. The v1 page had additional polish — "compact mode" toggle, sortable columns, season-summary cards — not in spec §6; port them on demand. |
+| `login/` | ✅ | Email/password + returnUrl, themed card header, and a **"Forgot password?" link** that resolves to the live `/auth/reset-password` route (Step 7 done). |
+| `admin-dashboard/` | ✅ | Tile grid linking to admin pages, plus a dedicated **OCR import** card explaining that OCR is launched from the race-detail screen (until the OCR feature module lands). |
+| `seasons/` | ✅ | Re-skinned to v1 two-card layout (form-left / list-right). Always-visible form, themed `card-header`, `busy()` on Save, `loadingList()` skeleton rows via `<tbody kt-skeleton-row>`. |
+| `cups/` | ✅ | Same v1 two-card layout, gated by selected season; skeleton rows on first load. |
+| `drivers/` | ✅ | Re-skinned to v1 two-card layout with the **`<kt-driver-image-uploader>` wired into the form** (replaces the old picture-URL text input). Skeleton rows on first load. |
+| `races/` | ✅ | Same v1 two-card layout; cup picker + `affects_championship` flag; skeleton rows on first load. |
+| `race-detail/` | ✅ | Lists results with driver/penalty info. **Add / Edit / Delete** all wired through `RaceResultModalService` (full v1 `RaceResultModal.js` port). Delete uses `kt-confirm-dialog`; edits re-persist penalties wholesale (delete-by-result + bulk insert) to match v1 semantics; the API service still pushes the prior row to `race_results_log` on update/delete. Also exposes an **Import via OCR** button that deep-links to `/admin/ocr-import?raceId=…`. |
+| `ocr-import/` | ✅ | Full flow: upload image → `OcrService.run` (Azure → Tesseract fallback) → `detectSheetType` confirmation → `parseOcrRows` → `matchDriverName` auto-match → operator-reviewable table with per-row driver picker & skip → persist via `ApiService.createRaceResult` (race mode) or `updateRaceResult` (qualifying mode, sets `grid_start_position` + `best_lap_time`). Drafts persist to `localStorage` under v1's `ocrImportDraft:<raceId>` key. Mode gating (race blocked when results exist, qualifying blocked when none) + duplicate-driver guard match v1. Pure parser/matcher utilities live in `core/ocr-parsing.ts` + `core/ocr-matching.ts` with vitest specs (11 tests). **Intentionally NOT ported:** v1's canvas crop/enhance/threshold tooling — purely additive UI work if needed later. |
 
 ## Routing (`src/app/app.routes.ts`)
 | Route | Status |
@@ -84,9 +88,9 @@ Legend: ✅ done · 🟡 partial / scaffolded · ⚪ not started
 | `/admin` (guarded) → dashboard | ✅ |
 | `/admin/seasons`, `/cups`, `/drivers`, `/races`, `/races/:raceId` | ✅ |
 | `/races/:raceId` (public race detail) | ✅ |
+| `/admin/ocr-import` | ✅ | Guarded under `/admin`. Reads `raceId` from query params. |
+| `/auth/reset-password` | ✅ | Lazy-loaded `ResetPasswordComponent`; uses `AuthStore.changePassword` (wraps `supabase.auth.updateUser({ password })`) once Supabase's `PASSWORD_RECOVERY` event has set the temporary session. Two-field form (new password + confirm), 8-char minimum, redirects to `/admin` on success. Login page's "Forgot password?" link now resolves. |
 | `**` → redirect `/` | ✅ |
-| `/admin/ocr-import` | ⚪ | Add when OCR feature lands |
-| Password reset deep-link route | ⚪ | Wire when adding the reset UI |
 
 ## Known divergences from v1 that I intentionally **kept** (per your earlier answers)
 - **Pole position and fastest lap still award +1 bonus** (code wins; documented in `points.ts` header and spec §6.7).
@@ -100,12 +104,19 @@ Legend: ✅ done · 🟡 partial / scaffolded · ⚪ not started
 - **Single API surface**: all 6 CRUD groups live in `ApiService` for easy mocking in tests.
 - **Audit log helper**: `ApiService.logRaceResultBeforeChange` is private and called transparently on `updateRaceResult` / `deleteRaceResult`, so feature code can't forget it.
 
-## Suggestions worth discussing
-1. **Driver picture upload** — move to a shared `kt-driver-image-uploader` component that talks to `supabase.storage.from('driver-pictures').upload(...)`. (Currently only the URL field exists.)
-2. **Server-side audit trigger** — the new spec §14 already notes this. Putting the audit insert inside a Postgres trigger would let us drop the JS-side read-then-log dance in `ApiService`.
-3. **`profiles` table with a `role` column** — currently `isAdmin` is "any authenticated user". For multi-admin clubs with read-only collaborators, a real role check would be safer.
-4. **Per-season toggle for pole/FL bonus** — would resolve the "code vs spec 002" tension cleanly. Cheap to add (one extra column + a branch in `points.ts`).
-5. **Generated DB types** — wire `supabase gen types typescript` into a `prebuild` script so `core/models.ts` becomes a hand-written facade over a generated source-of-truth file.
-6. **Skeleton loaders** — the global `kt-loading-overlay` works but a per-table skeleton would feel snappier on slow connections (a quick win once we add a `kt-skeleton-row` shared component).
+## Suggestions — resolutions
+1. **Driver picture upload** — ✅ Built `<kt-driver-image-uploader>` (Step 3) **and wired into the drivers form** (Step 4).
+2. **Server-side audit trigger** — ⏸ Skipped for later. Current JS-side audit-log stays.
+3. **`profiles` table with `role` column** — ⏸ Skipped for later. Any authenticated user remains admin.
+4. **Per-season toggle for pole/FL bonus** — ❌ Closed. Pole/FL +1 bonus is the canonical rule; no toggle. Spec 010 §6.7 updated, §12 reconciliation row dropped, §14 open question dropped, `points.ts` header reworded.
+5. **Generated DB types** — 📄 Captured in dedicated spec `kartarados/specs/011-generated-db-types/spec.md` (Status: Planned — deferred).
+6. **Skeleton loaders** — ✅ `<kt-skeleton-row>` built (Step 3) **and adopted by all five admin tables** (Step 4): drivers, seasons, cups, races. (Race-detail still pending — part of Step 5.)
 
-If any of the 🟡 / ⚪ items above are blockers for your first deploy, point me at the most important one and I'll port it next.
+## Open Decisions (resolved)
+1. UI library — ng-bootstrap + Bootstrap utilities (always prefer).
+2. OCR layout — split into feature module with single-responsibility files.
+3. Skeleton scope — tables only.
+4. Accent helpers — fully remove `.kt-*` accent classes and `[ktAccentHeader]`.
+5. DB-types plan — own numbered spec (011).
+6. Password reset — in-app via `supabase.auth.updateUser({ password })` at `/auth/reset-password`.
+7. Spec edit scope — broader cleanup pass of spec 010 (✅ done).

@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "ng lint",
-    "i18n:extract": "ng extract-i18n --output-path src/locale --format xlf"
+    "i18n:extract": "ng extract-i18n --output-path src/locale --format xlf",
+    "i18n:sync": "npm run i18n:extract && node scripts/migrate-json-to-xlf.mjs"
   },
   "dependencies": {
     "@angular/animations": "^19.0.0",

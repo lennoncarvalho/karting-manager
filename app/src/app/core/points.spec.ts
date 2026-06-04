@@ -20,7 +20,7 @@ describe('parseLapTime', () => {
   it('returns null for invalid', () => expect(parseLapTime('foo')).toBeNull());
 });
 
-describe('calculateRankings — pole + fastest-lap bonus is active', () => {
+describe('calculateRankings — pole and fastest-lap bonus', () => {
   it('awards +1 for pole and +1 for fastest lap', () => {
     const race = baseRace({ id: 'r1' });
     const results: RaceResult[] = [

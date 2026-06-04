@@ -10,6 +10,12 @@
 
 ---
 
+## Changelog
+
+- **2026-06-03** — Cleanup pass: §6.7 pole/FL +1 bonus restated as the canonical rule (no "reconciliation" framing); §12 reconciliation table pruned of pure-divergence rows and renumbered; §14 Open Questions: removed the per-season pole/FL bonus toggle item and renumbered survivors. No requirement-level changes. No version bump.
+
+---
+
 ## 1. Background
 
 Kartarados is a generalist go-kart championship manager. It started as a POC and is now in production at a single club with real user engagement. v1 is vanilla JS on Vite, hosted on Cloudflare Pages, backed by Supabase (Auth + Postgres + Storage). v2 replaces the frontend with **Angular 19+** while keeping the Supabase database, business rules, and hosting model intact.
@@ -324,9 +330,9 @@ Bucket `driver-pictures` (public read). Path convention `drivers/<driver-id>/<ti
 - **FR-RR-05** _Audit trail_ (spec 009): on every update or delete of a `race_results` row, the previous state plus the authenticated user's id is inserted into `race_results_log` **before** the mutation. The row id is preserved across updates so penalty foreign keys stay valid.
 - **FR-RR-06**: Race results remain editable forever by admins. There is no time-window lock. _[Confirmed current behavior.]_
 
-### 6.7 Points & Rankings (Critical — Reconciled)
+### 6.7 Points & Rankings (Critical)
 
-> **Reconciled rule**: The current production code awards a `+1` bonus for pole position and `+1` bonus for fastest lap **in addition to** finish-position points. Spec 002 had removed those bonuses; the live behaviour preserves them. The v2 spec keeps the bonuses.
+> **Canonical rule**: A `+1` bonus is awarded for pole position and a `+1` bonus is awarded for fastest lap, **in addition to** finish-position points. This is the championship's points definition for v2.
 
 #### 6.7.1 Position points table
 
@@ -357,7 +363,7 @@ A driver's race contribution = `base + penalty_sum` (penalties are negative). Mi
 - **Overall championship ranking**: discard count = number of distinct cups represented among the season's `affects_championship` races. Races without `cup_id` are not counted toward the discard count.
 - **Penalty sums are NEVER discarded.** Even on discarded races the penalty contribution still counts toward the driver's total.
 
-#### 6.7.6 Suspension flag (kept, no UI surfacing — _[Reconciled]_)
+#### 6.7.6 Suspension flag (computed only — no UI surfacing)
 
 Compute `raceDirectionPenaltyPoints = Σ point_deduction * count` for penalties where `penalty_type = 'race_direction_warning'`. If `<= -20`, mark the driver as suspended on the computed ranking object. This field is computed but **not surfaced in the v2 UI** (current behavior).
 
@@ -612,18 +618,15 @@ Per project decision, testing focuses on critical paths only.
 
 ## 12. Reconciliation Log (Code vs. Specs 001–009)
 
-The new spec is grounded in the **current production code**. The following items resolve known divergences:
+The new spec is grounded in the **current production code**. The following items resolve known divergences from earlier specs:
 
 | # | Topic | Spec said | Code does | v2 keeps |
 |---|---|---|---|---|
-| 1 | Pole / fastest-lap bonus | Spec 002: NO bonus | `+1` for pole, `+1` for fastest | Code wins — bonuses kept (§6.7.2). |
-| 2 | Admin invitation | Spec 001: in-app invite | Created in Supabase dashboard | Code wins — no in-app UI (§6.1 FR-AUTH-02). |
-| 3 | Driver weight | Spec 004 added field | Stored, displayed, not used in calc | Informational only (§5.1, §6.4 FR-DRV-02). |
-| 4 | Suspension UI | Spec 001 required surfacing | Computed but not shown | Computed-only, no UI (§6.7.6). |
-| 5 | `is_ongoing` vs "available" | Spec 003 renamed to availability | DB field unchanged | DB stays `is_ongoing`, label is "Available" (§6.2 FR-SEA-04). |
-| 6 | race_results immutability | Spec 009 considered locking | Editable forever, audit only | Editable forever (§6.6 FR-RR-06). |
-| 7 | Soft-delete | Earlier draft of spec 009 | Reverted — audit log only | Audit log is the canonical mechanism (§6.6 FR-RR-05). |
-| 8 | Driver delete FK | Spec 001: RESTRICT | Spec 004 + production: CASCADE | CASCADE (§5.1 `race_results`). |
+| 1 | Admin invitation | Spec 001: in-app invite | Created in Supabase dashboard | Code wins — no in-app UI (§6.1 FR-AUTH-02). |
+| 2 | `is_ongoing` vs "available" | Spec 003 renamed to availability | DB field unchanged | DB stays `is_ongoing`, label is "Available" (§6.2 FR-SEA-04). |
+| 3 | race_results immutability | Spec 009 considered locking | Editable forever, audit only | Editable forever (§6.6 FR-RR-06). |
+| 4 | Soft-delete | Earlier draft of spec 009 | Reverted — audit log only | Audit log is the canonical mechanism (§6.6 FR-RR-05). |
+| 5 | Driver delete FK | Spec 001: RESTRICT | Spec 004 + production: CASCADE | CASCADE (§5.1 `race_results`). |
 
 If any other divergence is discovered during the build, treat the production code as authoritative and add a new row to this log.
 
@@ -653,9 +656,8 @@ These are not blocking but should be revisited:
 1. **Move audit-log enforcement to a Postgres trigger** so the client cannot accidentally skip it.
 2. **Add a `profiles` table** with a `role` column to distinguish "admin" from "any authenticated user", enabling future read-only collaborator roles.
 3. **Add `kart_number` column** to `race_results` to enable FR-OCR-15.
-4. **Pole / Fastest-lap bonus toggle per season** — if the club ever wants to align with spec 002's rules, expose `bonus_points_enabled` on `seasons`.
-5. **Multi-language footer flags** beyond PT/EN if new translations are added.
-6. **Per-table indexes audit** in Supabase as data grows past tens of thousands of `race_results_log` rows.
+4. **Multi-language footer flags** beyond PT/EN if new translations are added.
+5. **Per-table indexes audit** in Supabase as data grows past tens of thousands of `race_results_log` rows.
 
 ---
 

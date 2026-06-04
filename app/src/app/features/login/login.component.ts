@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../core/auth.store';
 import { LoadingService } from '../../core/loading.service';
@@ -10,7 +10,7 @@ import { FormErrorComponent } from '../../shared/kt-form-error/kt-form-error.com
 @Component({
   selector: 'kt-login',
   standalone: true,
-  imports: [FormsModule, ButtonComponent, FormErrorComponent],
+  imports: [FormsModule, RouterLink, ButtonComponent, FormErrorComponent],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

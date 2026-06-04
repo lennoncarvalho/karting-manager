@@ -8,14 +8,17 @@ import type { Cup } from '../../core/models';
 import { ButtonComponent } from '../../shared/kt-button/kt-button.component';
 import { FormErrorComponent } from '../../shared/kt-form-error/kt-form-error.component';
 import { EmptyStateComponent } from '../../shared/kt-empty-state/kt-empty-state.component';
+import { SkeletonRowComponent } from '../../shared/kt-skeleton-row/kt-skeleton-row.component';
 import { ConfirmDialogService } from '../../shared/kt-confirm-dialog/kt-confirm-dialog.component';
 
 type CupForm = { id?: string; name: string; start_date: string; end_date: string };
 
+function emptyForm(): CupForm { return { name: '', start_date: '', end_date: '' }; }
+
 @Component({
   selector: 'kt-cups',
   standalone: true,
-  imports: [FormsModule, ButtonComponent, FormErrorComponent, EmptyStateComponent],
+  imports: [FormsModule, ButtonComponent, FormErrorComponent, EmptyStateComponent, SkeletonRowComponent],
   templateUrl: './cups.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -26,7 +29,10 @@ export class CupsComponent {
   protected readonly store = inject(SeasonStore);
 
   protected readonly cups = signal<Cup[]>([]);
-  protected readonly editing = signal<CupForm | null>(null);
+  protected readonly form = signal<CupForm>(emptyForm());
+  protected readonly isEditing = signal(false);
+  protected readonly busy = signal(false);
+  protected readonly loadingList = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly seasonId = computed(() => this.store.selectedSeasonId());
 
@@ -40,24 +46,36 @@ export class CupsComponent {
 
   private async load(seasonId: string): Promise<void> {
     this.error.set(null);
+    this.loadingList.set(true);
     try { this.cups.set(await this.loading.track(this.api.listCups(seasonId))); }
     catch (e) { this.error.set((e as Error).message); }
+    finally { this.loadingList.set(false); }
   }
 
-  protected start(cup?: Cup): void {
+  protected edit(cup: Cup): void {
     this.error.set(null);
-    this.editing.set(cup
-      ? { id: cup.id, name: cup.name, start_date: cup.start_date, end_date: cup.end_date }
-      : { name: '', start_date: '', end_date: '' });
+    this.form.set({ id: cup.id, name: cup.name, start_date: cup.start_date, end_date: cup.end_date });
+    this.isEditing.set(true);
   }
-  protected cancel(): void { this.editing.set(null); this.error.set(null); }
 
-  protected async save(form: NgForm): Promise<void> {
-    if (form.invalid) return;
-    const f = this.editing();
+  protected reset(): void {
+    this.form.set(emptyForm());
+    this.isEditing.set(false);
+    this.error.set(null);
+  }
+
+  /** Generic field setter used by the template (Angular templates disallow arrow fns). */
+  protected setField<K extends keyof CupForm>(key: K, value: CupForm[K]): void {
+    this.form.update((f) => ({ ...f, [key]: value }));
+  }
+
+  protected async save(ngForm: NgForm): Promise<void> {
+    if (ngForm.invalid) return;
+    const f = this.form();
     const sid = this.seasonId();
-    if (!f || !sid) return;
+    if (!sid) return;
     this.error.set(null);
+    this.busy.set(true);
     try {
       const payload = { name: f.name, start_date: f.start_date, end_date: f.end_date, season_id: sid };
       const saved = f.id
@@ -68,8 +86,9 @@ export class CupsComponent {
       if (idx >= 0) list[idx] = saved; else list.push(saved);
       list.sort((a, b) => (a.start_date ?? '').localeCompare(b.start_date ?? ''));
       this.cups.set(list);
-      this.editing.set(null);
+      this.reset();
     } catch (e) { this.error.set((e as Error).message); }
+    finally { this.busy.set(false); }
   }
 
   protected async remove(c: Cup): Promise<void> {
@@ -82,6 +101,7 @@ export class CupsComponent {
     try {
       await this.loading.track(this.api.deleteCup(c.id));
       this.cups.set(this.cups().filter((x) => x.id !== c.id));
+      if (this.form().id === c.id) this.reset();
     } catch (e) { this.error.set((e as Error).message); }
   }
 }
