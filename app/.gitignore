@@ -6,5 +6,9 @@ out-tsc/
 .env
 .env.local
 .env.*.local
+
+# Local environment with real secrets (Supabase/Azure/Sentry keys).
+# Use environment.example.ts as a template — copy it to environment.ts.
+/src/environments/environment.ts
 .DS_Store
 .fallow/
