@@ -10,6 +10,8 @@ import { environment } from '../../environments/environment';
  */
 @Injectable({ providedIn: 'root' })
 export class GlobalErrorHandler implements ErrorHandler {
+  /** Invoked by Angular via the `ErrorHandler` injection token (see `app.config.ts`). */
+  // fallow-ignore-next-line unused-class-member
   handleError(error: unknown): void {
     if (environment.sentryDsn) {
       Sentry.captureException(error);

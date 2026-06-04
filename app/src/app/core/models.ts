@@ -90,27 +90,3 @@ export interface RaceResult {
   penalties?: Penalty[];
 }
 
-export interface RaceResultLog {
-  id: Uuid;
-  race_result_id: Uuid;
-  race_id: Uuid;
-  driver_id: Uuid;
-  finish_position?: number | null;
-  grid_start_position?: number | null;
-  best_lap_time?: string | null;
-  is_disqualified?: boolean | null;
-  comments?: string | null;
-  created_at?: IsoTimestamp;
-  updated_at?: IsoTimestamp;
-  changed_by_user_id?: Uuid | null;
-  logged_at: IsoTimestamp;
-}
-
-/** Standard penalty point deductions (mirrors v1 services/points.js). */
-export const STANDARD_PENALTY_POINTS: Record<Exclude<PenaltyType, 'custom'>, number> = {
-  disqualification: -8,
-  cone_tire_warning: -2,
-  race_direction_warning: -4,
-  stop_and_go: -6,
-  missing_club_shirt: -2,
-};

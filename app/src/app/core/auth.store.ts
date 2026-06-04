@@ -2,7 +2,6 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import type { Session, User } from '@supabase/supabase-js';
 
 import { SupabaseService } from './supabase.service';
-import { environment } from '../../environments/environment';
 
 /**
  * Holds the current Supabase auth session as a signal. Any authenticated
@@ -30,7 +29,11 @@ export class AuthStore {
     });
   }
 
-  /** Load any persisted session from local storage. Resolves once. */
+  /**
+   * Load any persisted session from local storage. Resolves once.
+   * Called from `app.config.ts` via `provideAppInitializer` + `inject()`.
+   */
+  // fallow-ignore-next-line unused-class-member
   async restoreSession(): Promise<void> {
     try {
       const { data } = await this.supa.client.auth.getSession();
@@ -54,13 +57,6 @@ export class AuthStore {
 
   async changePassword(newPassword: string): Promise<void> {
     const { error } = await this.supa.client.auth.updateUser({ password: newPassword });
-    if (error) throw new Error(SupabaseService.humanize(error));
-  }
-
-  async requestPasswordReset(email: string): Promise<void> {
-    const { error } = await this.supa.client.auth.resetPasswordForEmail(email, {
-      redirectTo: environment.appUrl,
-    });
     if (error) throw new Error(SupabaseService.humanize(error));
   }
 }

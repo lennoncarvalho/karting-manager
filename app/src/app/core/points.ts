@@ -33,7 +33,7 @@ const POSITION_POINTS: Record<number, number> = {
   19: 6, 20: 5, 21: 4, 22: 3, 23: 2, 24: 1,
 };
 
-export function getPositionPoints(position: number | null | undefined): number {
+function getPositionPoints(position: number | null | undefined): number {
   if (position == null) return 0;
   return POSITION_POINTS[position] ?? 0;
 }

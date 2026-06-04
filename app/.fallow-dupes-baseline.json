@@ -1,0 +1,10 @@
+{
+  "clone_groups": [
+    "src/app/core/api.service.ts:16-19|src/app/core/season.store.ts:68-73",
+    "src/app/features/cups/cups.component.ts:32-43|src/app/features/races/races.component.ts:41-52",
+    "src/app/features/cups/cups.component.ts:57-68|src/app/features/seasons/seasons.component.ts:56-71",
+    "src/app/features/cups/cups.component.ts:57-64|src/app/features/drivers/drivers.component.ts:66-73|src/app/features/seasons/seasons.component.ts:60-67",
+    "src/app/features/cups/cups.component.ts:68-80|src/app/features/races/races.component.ts:86-99",
+    "src/app/features/drivers/drivers.component.ts:82-92|src/app/features/seasons/seasons.component.ts:71-84"
+  ]
+}

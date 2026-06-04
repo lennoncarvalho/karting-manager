@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "src/main.ts"
+  ],
+  "duplicates": {
+    // Repo policy: report all duplicate pairs (>=2 occurrences).
+    // Existing pair-clones in feature CRUD components are tracked
+    // via the dupes baseline; new duplication will fail audit.
+    "minOccurrences": 2
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+  },
+  "ignoreDependencies": [
+    "@angular/animations"
+  ],
+  "audit": {
+    "deadCodeBaseline": ".fallow-deadcode-baseline.json",
+    "healthBaseline": ".fallow-health-baseline.json",
+    "dupesBaseline": ".fallow-dupes-baseline.json"
+  }
+}

@@ -41,7 +41,11 @@ export class SeasonStore {
     });
   }
 
-  /** Called once at startup (APP_INITIALIZER) — uses cache if available. */
+  /**
+   * Called once at startup (APP_INITIALIZER) — uses cache if available.
+   * Called from `app.config.ts` via `provideAppInitializer` + `inject()`.
+   */
+  // fallow-ignore-next-line unused-class-member
   async bootstrap(): Promise<void> {
     const cached = readJson<Season[]>(SEASONS_CACHE_KEY);
     if (cached?.length) {

@@ -7,3 +7,4 @@ out-tsc/
 .env.local
 .env.*.local
 .DS_Store
+.fallow/
