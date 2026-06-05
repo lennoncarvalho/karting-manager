@@ -1,0 +1,442 @@
+{
+  "app": {
+    "title": "Kartarados - Championship Manager"
+  },
+  "nav": {
+    "brandAria": "Kartarados Rankings",
+    "toggle": "Toggle navigation",
+    "rankings": "Rankings",
+    "adminLogin": "Admin Login",
+    "dashboard": "Dashboard",
+    "seasons": "Seasons",
+    "drivers": "Drivers",
+    "cups": "Cups",
+    "races": "Races",
+    "settings": "Settings",
+    "logout": "Logout",
+    "adminLabel": "Admin",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languagePortuguese": "Portuguese (Brazil)",
+    "confirmLogout": "Are you sure you want to logout?"
+  },
+  "common": {
+    "actions": {
+      "manage": "Manage",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "add": "Add",
+      "save": "Save",
+      "back": "Back",
+      "clear": "Clear",
+      "confirm": "Confirm",
+      "proceed": "Proceed",
+      "close": "Close"
+    },
+    "labels": {
+      "email": "Email",
+      "password": "Password",
+      "name": "Name",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "season": "Season",
+      "cup": "Cup",
+      "race": "Race",
+      "location": "Location",
+      "dateTime": "Date & Time",
+      "driver": "Driver",
+      "position": "Position",
+      "grid": "Grid",
+      "bestLap": "Best Lap",
+      "penalties": "Penalties",
+      "disqualified": "Disqualified",
+      "comments": "Comments",
+      "weight": "Weight",
+      "nickname": "Nickname",
+      "birthDate": "Birth Date",
+      "sex": "Sex",
+      "bloodType": "Blood Type",
+      "picture": "Picture",
+      "accent": "Accent",
+      "actions": "Actions",
+      "totalPoints": "Total Points",
+      "bestPosition": "Best Position",
+      "ranking": "Rankings"
+    },
+    "status": {
+      "loading": "Loading...",
+      "loadingSeasons": "Loading seasons...",
+      "loadingDrivers": "Loading drivers...",
+      "loadingCups": "Loading cups...",
+      "loadingRaces": "Loading races...",
+      "loadingResults": "Loading results...",
+      "loadingRankings": "Loading rankings...",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
+    "misc": {
+      "unknown": "Unknown",
+      "select": "Select",
+      "allSeasons": "All seasons",
+      "allCups": "All cups",
+      "noCup": "No cup",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "modalTitle": "Modal",
+    "errorTitle": "Error"
+  },
+  "notifications": {
+    "loggedOut": "Logged out successfully.",
+    "pleaseFix": "Please fix the highlighted fields.",
+    "welcomeBack": "Welcome back!",
+    "passwordUpdated": "Password updated.",
+    "adminCreated": "Admin created successfully.",
+    "onlyFirstAdmin": "Only the first admin can create new admins.",
+    "seasonCreated": "Season created.",
+    "seasonUpdated": "Season updated.",
+    "seasonDeleted": "Season deleted.",
+    "driverCreated": "Driver created.",
+    "driverUpdated": "Driver updated.",
+    "driverDeleted": "Driver deleted.",
+    "cupCreated": "Cup created.",
+    "cupUpdated": "Cup updated.",
+    "cupDeleted": "Cup deleted.",
+    "raceCreated": "Race created.",
+    "raceUpdated": "Race updated.",
+    "raceDeleted": "Race deleted.",
+    "raceResultCreated": "Race result created.",
+    "raceResultUpdated": "Race result updated.",
+    "raceResultDeleted": "Race result deleted."
+  },
+  "errors": {
+    "routeLoad": "Error loading page: {{message}}",
+    "raceIdMissing": "Race ID not provided.",
+    "raceNotFound": "Race not found",
+    "raceLoadFailed": "Unable to load race details.",
+    "uploadFailed": "Failed to upload image."
+  },
+  "validation": {
+    "emailRequired": "Email is required.",
+    "passwordRequired": "Password is required.",
+    "validEmailRequired": "Valid email is required.",
+    "tempPasswordRequired": "Temporary password is required.",
+    "newPasswordRequired": "New password is required.",
+    "passwordsMustMatch": "Passwords must match.",
+    "seasonNameRequired": "Season name is required.",
+    "startDateRequired": "Start date is required.",
+    "endDateAfterStart": "End date must be after start date.",
+    "accentColorRequired": "Accent color is required.",
+    "accentColorValid": "Accent color must be valid.",
+    "driverNameRequired": "Driver name is required.",
+    "weightMustBeNumber": "Weight must be a number.",
+    "emailExists": "Email already exists.",
+    "seasonRequired": "Season is required.",
+    "cupNameRequired": "Cup name is required.",
+    "cupDatesWithinSeason": "Cup dates must fall within the season.",
+    "raceNameRequired": "Race name is required.",
+    "locationRequired": "Location is required.",
+    "dateTimeRequired": "Date and time are required.",
+    "cupBelongsSeason": "Cup must belong to the selected season.",
+    "driverRequired": "Driver is required.",
+    "finishPositionRequired": "Finish position is required.",
+    "finishPositionPositive": "Finish position must be a positive number.",
+    "gridStartPositive": "Grid start position must be a positive number.",
+    "bestLapInvalid": "Best lap time format is invalid."
+  },
+  "login": {
+    "title": "Admin Login",
+    "signIn": "Sign in",
+    "signingIn": "Signing in..."
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "subtitle": "Manage seasons, drivers, cups, and races.",
+    "cards": {
+      "races": {
+        "title": "Races",
+        "description": "Create races and assign them to cups."
+      },
+      "drivers": {
+        "title": "Drivers",
+        "description": "Create driver profiles and upload photos."
+      },
+      "cups": {
+        "title": "Cups",
+        "description": "Optional cup series inside each season."
+      },
+      "seasons": {
+        "title": "Seasons",
+        "description": "Set up yearly championships and accent colors."
+      }
+    },
+    "changePassword": {
+      "title": "Change Your Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Update Password",
+      "updating": "Updating..."
+    },
+    "inviteAdmin": {
+      "title": "Invite Admin",
+      "tempPassword": "Temporary Password",
+      "submit": "Invite Admin",
+      "creating": "Creating...",
+      "noteOnlyFirst": "Only the first admin can create new admin accounts.",
+      "noteInfo": "New admins will receive the temporary password you provide."
+    }
+  },
+  "seasonManagement": {
+    "title": "Seasons",
+    "form": {
+      "createTitle": "Create Season",
+      "editTitle": "Edit Season",
+      "availableSeason": "Available season",
+      "availableHelp": "Only available seasons appear in public rankings."
+    },
+    "list": {
+      "title": "Existing Seasons",
+      "empty": "No seasons created yet."
+    },
+    "table": {
+      "name": "Name",
+      "start": "Start",
+      "end": "End",
+      "accent": "Accent",
+      "actions": "Actions"
+    },
+    "confirmDelete": "Delete this season? This cannot be undone."
+  },
+  "driverManagement": {
+    "title": "Drivers",
+    "form": {
+      "createTitle": "Create Driver",
+      "editTitle": "Edit Driver",
+      "fullName": "Full Name",
+      "nickname": "Nickname",
+      "birthDate": "Birth Date",
+      "sex": "Sex",
+      "sexSelect": "Select",
+      "sexMale": "Male",
+      "sexFemale": "Female",
+      "sexOther": "Other",
+      "bloodType": "Blood Type",
+      "bloodPlaceholder": "O+",
+      "weightPlaceholder": "kg",
+      "pictureHelp": "Upload a profile picture (optional)."
+    },
+    "list": {
+      "title": "Existing Drivers",
+      "empty": "No drivers created yet."
+    },
+    "table": {
+      "driver": "Driver",
+      "weight": "Weight",
+      "nickname": "Nickname",
+      "birthDate": "Birth Date",
+      "actions": "Actions"
+    },
+    "confirmDelete": "Are you sure you want to exclude this driver and all his race results? This cannot be undone."
+  },
+  "cupManagement": {
+    "title": "Cups",
+    "form": {
+      "createTitle": "Create Cup",
+      "editTitle": "Edit Cup",
+      "selectSeason": "Select season"
+    },
+    "list": {
+      "title": "Existing Cups",
+      "empty": "No cups created yet."
+    },
+    "table": {
+      "cup": "Cup",
+      "season": "Season",
+      "start": "Start",
+      "end": "End",
+      "actions": "Actions"
+    },
+    "confirmDelete": "Delete this cup? This cannot be undone."
+  },
+  "raceManagement": {
+    "title": "Races",
+    "filters": {
+      "season": "Filter by Season",
+      "cup": "Filter by Cup"
+    },
+    "form": {
+      "createTitle": "Create Race",
+      "editTitle": "Edit Race",
+      "cupOptional": "Cup (Optional)",
+      "raceDateTime": "Race Date & Time",
+      "affectsChampionship": "Affects Championship"
+    },
+    "list": {
+      "title": "Existing Races",
+      "empty": "No races found."
+    },
+    "table": {
+      "race": "Race",
+      "season": "Season",
+      "cup": "Cup",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "confirmDelete": "Delete this race? This cannot be undone."
+  },
+  "raceDetail": {
+    "title": "Race Details",
+    "addResult": "Add Result",
+    "importResults": "Import from Photo",
+    "backToRaces": "Back to Races",
+    "resultsTitle": "Race Results",
+    "loadingResults": "Loading results...",
+    "noResults": "No results yet.",
+    "info": {
+      "dateTime": "Date & Time",
+      "season": "Season",
+      "affectsChampionship": "Affects Championship"
+    },
+    "table": {
+      "position": "Position",
+      "driver": "Driver",
+      "grid": "Grid",
+      "bestLap": "Best Lap",
+      "penalties": "Penalties",
+      "dq": "DQ",
+      "actions": "Actions"
+    },
+    "confirmDelete": "Delete this race result? This cannot be undone."
+  },
+  "ocrImport": {
+    "title": "Import Results from Photo",
+    "modeLabel": "Sheet Type",
+    "modeRace": "Race Results",
+    "modeQualifying": "Qualifying",
+    "providerLabel": "OCR Provider",
+    "providerAuto": "Auto (Azure Document Intelligence + Tesseract)",
+    "providerTesseract": "Tesseract (in-browser)",
+    "chooseImage": "Choose an image",
+    "runOcr": "Run OCR",
+    "cropTitle": "Crop & Enhance",
+    "enhance": "Enhance for OCR",
+    "contrast": "Contrast",
+    "threshold": "Use threshold",
+    "thresholdValue": "Threshold value",
+    "applyCrop": "Apply crop",
+    "resetImage": "Reset image",
+    "cropHint": "Drag on the image to crop before running OCR.",
+    "statusIdle": "Waiting for an image.",
+    "statusRunning": "Running OCR...",
+    "statusParsing": "Parsing OCR text...",
+    "statusReady": "Review parsed rows before saving.",
+    "statusNoRows": "No rows detected. Try a clearer photo.",
+    "blockedRace": "Race results already exist. Delete them before importing again.",
+    "blockedQualifying": "Import race results before qualifying.",
+    "typeMismatch": "Detected {{detected}} but selected {{selected}}. Continue with selected type?",
+    "fallbackNotice": "Azure Document Intelligence failed, falling back to Tesseract.",
+    "noImage": "Please select an image first.",
+    "ocrFailed": "OCR failed. Please try again.",
+    "noValidRows": "Select at least one driver or skip invalid rows.",
+    "unresolvedRows": "Resolve all unmatched rows or skip them before saving.",
+    "duplicateDrivers": "Duplicate drivers found in the selection.",
+    "save": "Save Import",
+    "cancel": "Cancel",
+    "saveSuccessRace": "Race results imported.",
+    "saveSuccessQualifying": "Qualifying positions updated.",
+    "saveFailure": "Failed to save OCR results.",
+    "noDriverMatch": "No match",
+    "table": {
+      "position": "POS",
+      "name": "OCR Name",
+      "bestLap": "Best Lap",
+      "driver": "Driver",
+      "skip": "Skip"
+    }
+  },
+  "raceResultModal": {
+    "titleAdd": "Add Race Result",
+    "titleEdit": "Edit Race Result",
+    "driver": "Driver",
+    "selectDriver": "Select driver",
+    "finishPosition": "Finish Position",
+    "gridStart": "Grid Start",
+    "bestLapTime": "Best Lap Time",
+    "bestLapPlaceholder": "MM:SS.mmm",
+    "disqualified": "Disqualified",
+    "comments": "Comments",
+    "standardPenalties": "Standard Penalties",
+    "customPenalties": "Custom Penalties",
+    "add": "Add",
+    "cancel": "Cancel",
+    "saveResult": "Save Result",
+    "customName": "Name",
+    "customPoints": "Points",
+    "customCount": "Count",
+    "penalties": {
+      "disqualification": "Disqualification",
+      "coneTireWarning": "Cone/Tire Warning",
+      "raceDirectionWarning": "Race Direction Warning",
+      "stopAndGo": "Stop and Go",
+      "missingClubShirt": "Missing Club Shirt"
+    }
+  },
+  "publicRankings": {
+    "title": "Driver Rankings:",
+    "seasonLabel": "Season",
+    "noRacesOrResults": "No races or results available yet.",
+    "noAvailableSeasons": "No available seasons",
+    "noAvailableSeasonsYet": "No available seasons yet.",
+    "noActiveSeasonFound": "No active season found.",
+    "overallChampionship": "Overall Championship",
+    "calendar": "Calendar",
+    "penalties": "Penalties",
+    "noResultsTab": "No results for this tab yet.",
+    "table": {
+      "position": "#",
+      "driver": "Driver",
+      "raceDate": "Race Date",
+      "raceName": "Race",
+      "location": "Location",
+      "winner": "Winner",
+      "fastestLap": "Fastest lap",
+      "totalPoints": "Total Points",
+      "penalties": "Penalties",
+      "bestPosition": "Best Position"
+    }
+  },
+  "relative": {
+    "inMinute_one": "in {{count}} minute",
+    "inMinute_other": "in {{count}} minutes",
+    "minuteAgo_one": "{{count}} minute ago",
+    "minuteAgo_other": "{{count}} minutes ago",
+    "inHour_one": "in {{count}} hour",
+    "inHour_other": "in {{count}} hours",
+    "hourAgo_one": "{{count}} hour ago",
+    "hourAgo_other": "{{count}} hours ago",
+    "inDay_one": "in {{count}} day",
+    "inDay_other": "in {{count}} days",
+    "dayAgo_one": "{{count}} day ago",
+    "dayAgo_other": "{{count}} days ago"
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kilobytes": "KB",
+    "megabytes": "MB",
+    "gigabytes": "GB"
+  },
+  "footer": {
+    "createdBy": "Created by Lennon Carvalho",
+    "license": "MIT License",
+    "copyright": "© {{year}} Lennon Carvalho",
+    "githubAria": "Visit GitHub repository",
+    "linkedinAria": "Visit creator's LinkedIn profile",
+    "licenseAria": "View MIT License",
+    "selectLanguage": "Language:",
+    "languagePortuguese": "Portuguese (Brazil)",
+    "languageEnglish": "English"
+  }
+}
