@@ -522,7 +522,7 @@ export function RaceManagement() {
                           <td>
                             <div>
                               <Link
-                                className="fw-semibold text-decoration-underline"
+                                className="fw-semibold d-block"
                                 to={`/admin/race?id=${race.id}`}
                               >
                                 {race.name}

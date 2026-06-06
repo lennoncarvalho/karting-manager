@@ -7,7 +7,7 @@ export function Footer() {
 
   return (
     <footer
-      className="mt-auto py-3 text-white"
+      className="mt-5 py-3 text-white"
       style={{ backgroundColor: "var(--season-accent)" }}
       role="contentinfo"
     >

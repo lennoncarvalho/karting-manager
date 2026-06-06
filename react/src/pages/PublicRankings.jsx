@@ -58,7 +58,7 @@ export function PublicRankings() {
         console.error("Error loading rankings:", err);
         setError(
           err.message ||
-            t("common.errors.routeLoad", { message: "Unknown error" }),
+          t("common.errors.routeLoad", { message: "Unknown error" }),
         );
       } finally {
         setLoading(false);
@@ -225,7 +225,7 @@ export function PublicRankings() {
             ))}
           </ul>
 
-          <div className="tab-content" id="rankings-content">
+          <div className="tab-content border border-top-0" id="rankings-content">
             {sections.map((section, index) => {
               if (section.type === "calendar") {
                 return (
@@ -264,15 +264,23 @@ export function PublicRankings() {
                               <tr key={race.id}>
                                 <td>
                                   {race.race_datetime
-                                    ? new Date(
-                                        race.race_datetime,
-                                      ).toLocaleString()
+                                    ? (() => {
+                                      const d = new Date(race.race_datetime);
+                                      const day = String(d.getDate()).padStart(2, "0");
+                                      const month = d.toLocaleString(
+                                        undefined,
+                                        { month: "short" },
+                                      ).replace(/\.$/, "");
+                                      const hour = String(d.getHours()).padStart(2, "0");
+                                      const min = String(d.getMinutes()).padStart(2, "0");
+                                      return `${day} ${month} ${hour}h${min}m`;
+                                    })()
                                     : "-"}
                                 </td>
                                 <td>
                                   {race.id ? (
                                     <Link
-                                      className="fw-semibold text-decoration-underline"
+                                      className="fw-semibold d-block"
                                       to={`/admin/race?id=${race.id}`}
                                     >
                                       {race.name || "-"}
@@ -301,11 +309,11 @@ export function PublicRankings() {
               const rankings =
                 section.ranking === "penalties"
                   ? calculatePenaltyRankings(section.races, sectionResults, {
-                      type: "overall",
-                    })
+                    type: "overall",
+                  })
                   : calculateRankings(section.races, sectionResults, {
-                      type: section.id === "overall" ? "overall" : "cup",
-                    });
+                    type: section.id === "overall" ? "overall" : "cup",
+                  });
 
               if (!section.races.length || !sectionResults.length) {
                 return (
