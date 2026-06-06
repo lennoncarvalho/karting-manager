@@ -9,7 +9,7 @@ import {
   deleteDriver,
   uploadPicture,
 } from "@/lib/api";
-import { DriverImage } from "@/lib/driverImage";
+import { DriverImage } from "@/components/driverImage";
 import { isRequired, isValidEmail } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 

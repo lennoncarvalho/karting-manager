@@ -1,6 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+function cleanupModal() {
+  document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+  document.body.classList.remove("modal-open");
+  document.body.style.removeProperty("padding-right");
+}
+
 export function ConfirmModal({ show, onConfirm, onCancel, message, title }) {
   const { t } = useTranslation();
   const modalTitle = title || t("common.actions.confirm");
@@ -18,34 +24,44 @@ export function ConfirmModal({ show, onConfirm, onCancel, message, title }) {
       bsModalRef.current.show();
     } else if (bsModalRef.current) {
       bsModalRef.current.hide();
+      cleanupModal();
     }
 
     return () => {
       if (bsModalRef.current) {
+        try {
+          bsModalRef.current.hide();
+        } catch {}
         bsModalRef.current.dispose();
       }
+      cleanupModal();
     };
   }, [show]);
 
   const handleConfirm = () => {
     onConfirm();
     if (bsModalRef.current) bsModalRef.current.hide();
+    cleanupModal();
   };
 
   const handleCancel = () => {
     onCancel();
     if (bsModalRef.current) bsModalRef.current.hide();
+    cleanupModal();
   };
 
   return (
     <div
       ref={modalRef}
-      className="modal fade"
+      className={`modal fade ${show ? "show d-block" : ""}`}
       tabIndex="-1"
       role="dialog"
       aria-labelledby={`${modalTitle}Label`}
-      aria-hidden="true"
-      style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+      aria-hidden={!show}
+      style={{
+        backgroundColor: show ? "rgba(0,0,0,0.5)" : "transparent",
+        pointerEvents: show ? "auto" : "none",
+      }}
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">

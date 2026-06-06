@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
-import { DriverImage } from "@/lib/driverImage";
+import { DriverImage } from "@/components/driverImage";
 import { formatDateTime } from "@/lib/formatting";
 import { calculatePenaltyPoints, parseLapTime } from "@/lib/points";
 import {
