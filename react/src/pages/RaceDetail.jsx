@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
-import { getDriverImageHtml } from "@/lib/image";
+import { DriverImage } from "@/lib/driverImage";
 import { formatDateTime } from "@/lib/formatting";
 import { calculatePenaltyPoints, parseLapTime } from "@/lib/points";
 import {
@@ -171,18 +171,19 @@ export function RaceDetail() {
           <td>{result.finish_position}</td>
           <td>
             <div className="d-flex align-items-center gap-2">
-              {getDriverImageHtml({
-                src: result.drivers ? result.drivers.picture_url : null,
-                seed:
+              <DriverImage
+                src={result.drivers ? result.drivers.picture_url : null}
+                seed={
                   result.driver_id ||
                   (result.drivers ? result.drivers.email : null) ||
-                  (result.drivers ? result.drivers.name : null),
-                alt: result.drivers
+                  (result.drivers ? result.drivers.name : null)
+                }
+                alt={result.drivers
                   ? result.drivers.name
-                  : t("common.labels.driver"),
-                className: "rounded-circle",
-                size: 32,
-              })}
+                  : t("common.labels.driver")}
+                className="rounded-circle"
+                size={32}
+              />
               <span>
                 {result.drivers ? result.drivers.name : result.driver_id}
               </span>

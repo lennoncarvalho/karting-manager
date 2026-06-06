@@ -9,7 +9,7 @@ import {
   deleteDriver,
   uploadPicture,
 } from "@/lib/api";
-import { getDriverImageHtml } from "@/lib/image";
+import { DriverImage } from "@/lib/driverImage";
 import { isRequired, isValidEmail } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
@@ -397,13 +397,13 @@ export function DriverManagement() {
                         <tr key={driver.id}>
                           <td>
                             <div className="d-flex align-items-center gap-2">
-                              {getDriverImageHtml({
-                                src: driver.picture_url,
-                                seed: driver.id || driver.email || driver.name,
-                                alt: driver.name,
-                                className: "rounded-circle",
-                                size: 36,
-                              })}
+                              <DriverImage
+                                src={driver.picture_url}
+                                seed={driver.id || driver.email || driver.name}
+                                alt={driver.name}
+                                className="rounded-circle"
+                                size={36}
+                              />
                               <span>{driver.name}</span>
                             </div>
                           </td>

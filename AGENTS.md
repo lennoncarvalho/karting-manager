@@ -78,7 +78,7 @@ A standalone `useLoadingOverlay()` hook also exists at `@/lib/useLoadingOverlay`
 ## UI Components (`react/`)
 
 - **Bootstrap 5.3** from npm: `import "bootstrap/dist/css/bootstrap.min.css"` + `import * as bootstrap from "bootstrap"`.
-- **Driver images**: Use `<DriverImage>` from `@/lib/driverImage` (React component). `@/lib/image.js` exports `getDriverImageHtml()` (returns raw HTML string) — currently used in some pages but **without** `dangerouslySetInnerHTML`, so those image tags render as literal text. Prefer `DriverImage`.
+- **Driver images**: Use `<DriverImage>` from `@/lib/driverImage`. Falls back to DiceBear placeholder when no `src` provided or image fails to load.
 - Accent colors from `season.accent_color` drive CSS variable `--season-accent`.
 - Layout: `Navbar`, `Footer`, `MainContent` in `@/components/layout/`.
 - Modals: `ConfirmModal`, `RaceResultModal`, `OcrImportModal` in `@/components/modals/`.

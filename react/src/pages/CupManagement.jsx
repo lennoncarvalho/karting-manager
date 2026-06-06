@@ -17,7 +17,6 @@ import {
   isValidCupDateRange,
   isValidHexColor,
 } from "@/lib/validation";
-import { getDriverImageHtml } from "@/lib/image";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function CupManagement() {

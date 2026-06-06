@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
 import { useSeason } from "@/context/SeasonContext";
-import { getDriverImageHtml } from "@/lib/image";
 import { formatDateTime, formatDateTimeForInput } from "@/lib/formatting";
 import {
   listSeasons,
