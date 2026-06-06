@@ -1,9 +1,0 @@
-@for (r of rowIndexes(); track r) {
-  <tr class="placeholder-glow">
-    @for (c of colIndexes(); track c) {
-      <td>
-        <span class="placeholder" [style.width]="widthFor(c, r)"></span>
-      </td>
-    }
-  </tr>
-}

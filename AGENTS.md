@@ -1,89 +1,98 @@
-# React Kartarados — Development Rules
+# Kartarados — Development Rules
 
 ## Structure
 
-This repo has three React apps for the Kartarados go-kart championship manager:
+Two apps in the repo, all for the same go-kart championship manager:
 
-- **`frontend/`** — Original vanilla JS app, Vite-based, production-deployed to Cloudflare Pages. Uses `VITE_` env vars injected via `build.sh`. Has Sentry instrumentation.
-- **`react/`** — React rewrite. Uses React, React Router, Supabase JS SDK directly. `@/` path alias resolves to `react/src` (see `react/vite.config.js`).
-- **`kartarados/`** — Spec/design documents and skills from speckit. Reference only, not active code.
+| Directory | Stack | Status |
+|---|---|---|
+| `frontend/` | Vanilla JS + Vite | Legacy (read-only reference — source of truth) |
+| `react/` | React 18 + Vite | Active rewrite |
+| `kartarados/` | Specs + skills only | Reference, not active code |
 
-**When working on active code, `react/` is the primary codebase.** `frontend/` is legacy/canary.
+**`frontend/` is read-only source of truth.** Consult it for business rules, UI patterns, and behavior — never modify files there. All development is in `react/`.
 
 ## Commands
 
 ```bash
-cd react && npm run dev      # Dev server on localhost:8000
-cd react && npm run build    # Production build → react/dist/
-cd frontend && npm run dev   # Legacy app on localhost:8000
-cd frontend && npm run build # Production build using ../build.sh (Cloudflare Pages)
+# react/ (primary)
+cd react && npm run dev          # localhost:8000
+cd react && npm run build        # → react/dist/
+
+# frontend/ (read-only — reference only)
+cd frontend && npm run dev       # localhost:8000 (reference only)
+cd frontend && npm run build     # runs build.sh → injects env into src/config.js
 ```
 
-Production deploys via Cloudflare Pages. `build.sh` injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AZURE_VISION_*`, `SENTRY_*` into `frontend/src/config.js` at build time. **Never commit hardcoded secrets** — all env vars go through the build script or `.env` files (gitignored).
+Pre-verification: `npm run build` (only no-test fallback — no test framework).
+
+## Env & Secrets
+
+- `react/`: uses `import.meta.env.VITE_*` (`.env` gitignored). `@/lib/supabase.js` has fallback defaults for dev.
+- `frontend/`: `build.sh` injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AZURE_VISION_*`, `SENTRY_*` into `src/config.js`. **`src/config.js` is a build artifact — don't hand-edit.**
+- **Never commit secrets.**
 
 ## Code Style
 
-- Functional components with hooks only. No class components.
-- JSX: `noValidate` (not `novalidate`), `className` (not `class`).
-- Use `@/` alias for `react/src` imports — e.g. `@/lib/api`, `@/context/AuthContext`.
-- Prettier for formatting. Check touched files.
+- Functional components + hooks only. No class components.
+- `className`, `noValidate` (React JSX conventions).
+- `@/` alias → `react/src/` (see `react/vite.config.js`).
+- Use Prettier defaults.
 
-## Routing
+## Routing (`react/`)
 
-- `react-router-dom` with `BrowserRouter`. No hash-based routing.
-- Use `<Link to="/path" />` and `useNavigate()` for navigation.
+- `react-router-dom` `BrowserRouter`. Hash-free.
 - Dynamic routes use URL search params: `/admin/race?id={id}`.
 
-## State & Context
+## Context & State (`react/`)
 
-- **`SeasonContext`** (`@/context/SeasonContext`) — Manages seasons and season selection. **Always append to season array, never replace entirely** — `setSeasons(prev => [...prev, newSeason])` (see `react/src/context/SeasonContext.jsx:83`).
-- **`AuthContext`** (`@/context/AuthContext`) — `useAuth()` hook access. Wraps async auth with `loading` state.
-- **`LoadingContext`** — `useLoadingOverlay()` hook provides `(loading, withLoading)` for wrapping async operations.
+| Context | Hook | Notes |
+|---|---|---|
+| `AuthContext` | `useAuth()` | Async init with `loading` state. Wraps supabase auth. |
+| `SeasonContext` | `useSeason()` | **Always append** seasons, never replace: `setSeasons(prev => [...prev, newSeason])` |
+| `LoadingContext` | `useLoading()` | Returns `{ show, hide, withLoading }`. Global overlay. |
+| `ToastProvider` | `useToast()` | `notify(message, type)` — types: `success`, `error`, `warning`, `info`. Auto-dismiss 3s. |
 
-## API Layer
+A standalone `useLoadingOverlay()` hook also exists at `@/lib/useLoadingOverlay` (local state, not context).
 
-- **All** API calls go through functions in `@/lib/api`. Never call Supabase directly from components.
-- `@/lib/supabase` exports the initialized `supabase` client — use it only within `@/lib/api`.
-- Race result mutations (`createRaceResult`, `updateRaceResult`, `deleteRaceResult`) log to `race_results_log` audit table. The logged row's drivers/penalties are stripped out before writing to the audit table.
-- Season data is cached in `localStorage` under keys `seasonsCache` and `seasonsCacheById`. Cache is invalidated on create/update/delete.
+## API Layer (`react/`)
 
-## OCR
+- **All** data calls through `@/lib/api`. Components never call Supabase directly.
+- `@/lib/supabase` exports the client — used by `api.js`, `auth.js`, and `AuthContext.jsx` (the auth listener).
+- Race result mutations (`createRaceResult`, `updateRaceResult`, `deleteRaceResult`) log to `race_results_log` audit table. `drivers` and `penalties` columns are stripped before writing.
+- Season data cached in `localStorage` under `seasonsCache` / `seasonsCacheById`. Invalidated on create/update/delete.
 
-- Azure Document Intelligence (primary) + Tesseract.js (fallback). Implementations in `@/lib/ocr` and `@/lib/ocrParsing`.
+## OCR (`react/`)
+
+- **Primary**: Azure Document Intelligence (`@/lib/ocr.js` — reads `VITE_AZURE_ENDPOINT`, `VITE_AZURE_KEY`).
+- **Fallback**: Tesseract.js (`por` language).
 - OCR drafts persisted to `localStorage`.
 
-## Components & UI
+## i18n (`react/`)
 
-- **Images**: Use `DriverImage` from `@/lib/driverImage` — **never** raw `<img>` with `dangerouslySetInnerHTML`.
-- **Toasts**: `useToast()` from `@/components/Notification`.
-- **Modals**: `ConfirmModal`, `RaceResultModal`, `OcrImportModal` in `@/components/modals/`.
-- **Layout**: `Navbar`, `Footer`, `MainContent` in `@/components/layout/`.
-- Bootstrap 5.3 from CDN. Accent colors driven by `season.accent_color` CSS variable `--season-accent`.
+- `react-i18next`. Default: `pt-BR`, fallback: `en`.
+- Config-based (`@/i18n/config.js`), not auto-detected from browser.
+- `t('namespace.key')` in components. In utility functions, use `i18next.t.bind(i18next)` — never `useTranslation()` outside a component.
+- Translation files: `@/i18n/resources/{en,pt-BR}.json`.
 
-## i18n
+## UI Components (`react/`)
 
-- `react-i18next` with `pt-BR` (default) and `en` (fallback).
-- All UI strings use `t('namespace.key')`.
-- In utility/formatting functions, use `i18next.t.bind(i18next)` — **never** `useTranslation()` hook outside a component.
-- Translation files: `@/i18n/resources/en.json`, `@/i18n/resources/pt-BR.json`.
+- **Bootstrap 5.3** from npm: `import "bootstrap/dist/css/bootstrap.min.css"` + `import * as bootstrap from "bootstrap"`.
+- **Driver images**: Use `<DriverImage>` from `@/lib/driverImage` (React component). `@/lib/image.js` exports `getDriverImageHtml()` (returns raw HTML string) — currently used in some pages but **without** `dangerouslySetInnerHTML`, so those image tags render as literal text. Prefer `DriverImage`.
+- Accent colors from `season.accent_color` drive CSS variable `--season-accent`.
+- Layout: `Navbar`, `Footer`, `MainContent` in `@/components/layout/`.
+- Modals: `ConfirmModal`, `RaceResultModal`, `OcrImportModal` in `@/components/modals/`.
 
-## React Hooks Rules
+## Sentry (`react/`)
 
-- Hooks **never** inside plain functions (utilities, formatters, etc.).
-- All hooks at top level of components — no conditional or loop hook calls.
+- `@sentry/react` is a dependency and `@/lib/sentry.js` defines `Sentry.init()`, but it's **never imported** anywhere — Sentry is not wired into the React app's entrypoint. API/auth modules import `@sentry/react` directly for `captureException`.
 
 ## Vite / Build
 
-- `react/` uses `@vitejs/plugin-react` with esbuild minification and sourcemaps.
-- `frontend/` uses `@sentry/vite-plugin` for Sentry release tracking.
-- Assets imported in JS via standard ES import (e.g. `import logo from '../assets/logo.png'`) — Vite rewrites for dev and prod.
-- `frontend/src/config.js` is a **build artifact** — do not hand-edit it. Run the build to regenerate.
+- `react/`: `@vitejs/plugin-react`, esbuild minification, sourcemaps on.
+- `frontend/`: Sentry Vite plugin for release tracking (duplicated plugin in config).
 
-## Sentry
+## Hooks Rules
 
-- `frontend/` has Sentry (`@sentry/browser`, `@sentry/vite-plugin`). Configured via `SENTRY_DSN` env var.
-- `react/` has `@sentry/react` — initialize via `@/lib/sentry.js`.
-
-## Testing
-
-- No test framework configured. Before finishing a task: `npm run build` to verify no compile errors.
+- Hooks **never** inside plain functions (utilities, formatters, etc.).
+- All hooks at top level of components — no conditional or loop calls.
