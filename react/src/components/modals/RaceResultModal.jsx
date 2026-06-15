@@ -65,7 +65,7 @@ export function RaceResultModal({
     initialData?.is_disqualified || false,
   );
   const [comments, setComments] = useState(initialData?.comments || "");
-  const [standardPenalties, setStandardPenalties] = useState(
+  const [standardPenaltyList, setStandardPenaltyList] = useState(
     standardPenalties.map((p) => ({
       ...p,
       count:
@@ -116,7 +116,7 @@ export function RaceResultModal({
     }
 
     const penalties = [];
-    standardPenalties.forEach((p) => {
+    standardPenaltyList.forEach((p) => {
       if (p.count > 0) {
         penalties.push({
           penalty_type: p.type,
@@ -168,7 +168,7 @@ export function RaceResultModal({
       setBestLapTime("");
       setDisqualified(false);
       setComments("");
-      setStandardPenalties(standardPenalties.map((p) => ({ ...p, count: 0 })));
+      setStandardPenaltyList(standardPenalties.map((p) => ({ ...p, count: 0 })));
       setCustomPenalties([]);
     }
 
@@ -350,7 +350,7 @@ export function RaceResultModal({
                   {t("raceResultModal.standardPenalties")}
                 </h6>
                 <div className="row g-3">
-                  {standardPenalties.map((penalty, index) => (
+                  {standardPenaltyList.map((penalty, index) => (
                     <div className="col-md-4" key={penalty.type}>
                       <label className="form-label">
                         {t(penalty.labelKey)} ({penalty.points})
@@ -361,7 +361,7 @@ export function RaceResultModal({
                         className="form-control"
                         value={penalty.count}
                         onChange={(e) => {
-                          setStandardPenalties((prev) =>
+                          setStandardPenaltyList((prev) =>
                             prev.map((p, i) =>
                               i === index
                                 ? { ...p, count: Number(e.target.value) }
