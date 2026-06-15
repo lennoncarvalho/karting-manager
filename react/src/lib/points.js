@@ -46,7 +46,7 @@ const pointsTable = {
   24: 1,
 };
 
-export function getPositionPoints(position) {
+function getPositionPoints(position) {
   return pointsTable[position] || 0;
 }
 

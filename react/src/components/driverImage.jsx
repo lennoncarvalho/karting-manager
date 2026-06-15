@@ -1,7 +1,7 @@
 const placeholderStyle = "avataaars";
 const placeholderSize = 200;
 
-export function getDriverPlaceholderUrl(
+function getDriverPlaceholderUrl(
   seed,
   size = placeholderSize,
   style = placeholderStyle,

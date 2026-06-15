@@ -50,14 +50,6 @@ export function formatDateTime(datetime) {
   return formatWithParts(d, true);
 }
 
-export function formatDateForInput(date) {
-  const d = parseDateValue(date);
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 export function formatDateTimeForInput(datetime) {
   const d = parseDateValue(datetime, { assumeUtcWhenNoTz: true });
@@ -70,18 +62,13 @@ export function formatDateTimeForInput(datetime) {
   return `${y}-${m}-${day}T${h}:${min}`;
 }
 
-export function formatDateTimeForStorage(datetime) {
-  const d = parseDateValue(datetime);
-  if (!d) return "";
-  return d.toISOString();
-}
 
 function formatWithParts(date, includeTime) {
   if (!date) return "";
   return formatWithPartsCore(date, includeTime, i18next.t.bind(i18next));
 }
 
-export function formatWithPartsCore(date, includeTime, t) {
+function formatWithPartsCore(date, includeTime, t) {
   if (!date) return "";
   const locale = t("app.title") ? i18next.language || "pt-BR" : "pt-BR";
   const key = `${locale}-${includeTime ? "datetime" : "date"}`;

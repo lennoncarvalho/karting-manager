@@ -1,0 +1,35 @@
+name: Fallow Audit (react)
+
+on:
+  pull_request:
+    paths:
+      - "react/**"
+      - ".github/workflows/fallow-audit.yml"
+
+jobs:
+  fallow-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fallow audit diffs against the merge-base; full history is required.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: react/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run fallow audit
+        # `audit` reviews only changed files in the PR against the chosen
+        # base ref. Repo-wide policy lives in react/.fallowrc.json.
+        run: npx --yes fallow audit --base "origin/${{ github.base_ref }}"

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // Kartarados React app — entry is the Vite root mount file.
+  "entry": [
+    "src/main.jsx"
+  ],
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**"
+  ],
+  "duplicates": {
+    // Pair-only duplicates are too noisy for a small app; require 3+ instances.
+    "minOccurrences": 3,
+    // Page-level JSX form/table scaffolding (date inputs with validation,
+    // submit/cancel button rows, edit/delete row actions) is intentionally
+    // repeated across management pages. Each page has different i18n keys,
+    // state, and handlers, so a generic component abstraction would obscure
+    // intent more than it dedupes. Reconsider once a shared "ManagementPage"
+    // pattern emerges (e.g., during a Tailwind/Headless UI migration).
+    "ignore": ["src/pages/**"]
+  },
+  "health": {
+    // Widened thresholds (default 20/15/30 -> 30/25/80):
+    // React form components and the OCR pipeline are intrinsically
+    // branchy (validation paths, modal lifecycle, OCR fallbacks). These
+    // limits keep the typical management page under threshold while
+    // still flagging genuine runaway complexity.
+    "maxCyclomatic": 30,
+    "maxCognitive": 25,
+    // CRAP = CC^2 * (1 - coverage)^3 + CC. This repo has no test framework
+    // (see guidelines: "no test framework — npm run build is the only
+    // pre-verification"), so fallow falls back to static-estimated coverage
+    // (0% for everything not directly exported). That makes CRAP a
+    // de-facto complexity-only metric and forces every branchy function to
+    // fail. Until a test framework is adopted, cap CRAP at 600 so that
+    // cyclomatic/cognitive remain the real gates. Revisit this once tests
+    // exist (`fallow health --coverage <coverage-final.json>`).
+    "maxCrap": 600,
+    // OCR modal and race-result modal are large interactive forms with
+    // many branches by design. Track them separately rather than letting
+    // them dominate every health report; remove from this list once they
+    // are split into smaller subcomponents.
+    "ignore": [
+      "src/components/modals/OcrImportModal.jsx",
+      "src/components/modals/RaceResultModal.jsx"
+    ]
+  },
+  "rules": {}
+}

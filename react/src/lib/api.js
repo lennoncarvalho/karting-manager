@@ -5,7 +5,7 @@ export function getSupabaseClient() {
   return supabase;
 }
 
-export async function getAuthenticatedClient() {
+async function getAuthenticatedClient() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -13,7 +13,7 @@ export async function getAuthenticatedClient() {
   return supabase;
 }
 
-export function handleApiError(error) {
+function handleApiError(error) {
   if (!error) return "An unexpected error occurred.";
   if (error.message?.includes("JWT"))
     return "Session expired. Please log in again.";
@@ -68,9 +68,7 @@ function cacheSeasonsById(seasons) {
   writeStorageJson(SEASONS_CACHE_BY_ID_KEY, cache);
 }
 
-export async function listSeasons(options = {}) {
-  const { order, limit, offset, filters } = options;
-  let query = supabase.from("seasons").select("*");
+function applyListOptions(query, { order, limit, offset, filters } = {}) {
   if (filters)
     filters.forEach((f) => {
       query = query[f.operator](f.column, f.value);
@@ -80,9 +78,14 @@ export async function listSeasons(options = {}) {
   if (limit) query = query.limit(limit);
   if (offset !== undefined)
     query = query.range(offset, offset + (limit || 10) - 1);
+  return query;
+}
+
+export async function listSeasons(options = {}) {
+  const query = applyListOptions(supabase.from("seasons").select("*"), options);
   const { data, error } = await query;
   if (error) throw new Error(handleApiError(error));
-  if (!filters?.length)
+  if (!options.filters?.length)
     writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(data));
   cacheSeasonsById(data);
   return data;
@@ -158,17 +161,7 @@ export async function deleteSeason(id) {
 }
 
 export async function listDrivers(options = {}) {
-  const { order, limit, offset, filters } = options;
-  let query = supabase.from("drivers").select("*");
-  if (filters)
-    filters.forEach((f) => {
-      query = query[f.operator](f.column, f.value);
-    });
-  if (order)
-    query = query.order(order.column, { ascending: order.ascending !== false });
-  if (limit) query = query.limit(limit);
-  if (offset !== undefined)
-    query = query.range(offset, offset + (limit || 10) - 1);
+  const query = applyListOptions(supabase.from("drivers").select("*"), options);
   const { data, error } = await query;
   if (error) throw new Error(handleApiError(error));
   return data;
@@ -208,19 +201,14 @@ export async function deleteDriver(id) {
 }
 
 export async function listCups(options = {}) {
-  const { order, limit, offset, filters, seasonId } = options;
-  let f = filters ? [...filters] : [];
+  const { seasonId, filters, ...rest } = options;
+  const f = filters ? [...filters] : [];
   if (seasonId)
     f.push({ column: "season_id", operator: "eq", value: seasonId });
-  let query = supabase.from("cups").select("*");
-  f.forEach((fi) => {
-    query = query[fi.operator](fi.column, fi.value);
+  const query = applyListOptions(supabase.from("cups").select("*"), {
+    ...rest,
+    filters: f,
   });
-  if (order)
-    query = query.order(order.column, { ascending: order.ascending !== false });
-  if (limit) query = query.limit(limit);
-  if (offset !== undefined)
-    query = query.range(offset, offset + (limit || 10) - 1);
   const { data, error } = await query;
   if (error) throw new Error(handleApiError(error));
   return data;
@@ -256,20 +244,15 @@ export async function deleteCup(id) {
 }
 
 export async function listRaces(options = {}) {
-  const { order, limit, offset, filters, seasonId, cupId } = options;
-  let f = filters ? [...filters] : [];
+  const { seasonId, cupId, filters, ...rest } = options;
+  const f = filters ? [...filters] : [];
   if (seasonId)
     f.push({ column: "season_id", operator: "eq", value: seasonId });
   if (cupId) f.push({ column: "cup_id", operator: "eq", value: cupId });
-  let query = supabase.from("races").select("*");
-  f.forEach((fi) => {
-    query = query[fi.operator](fi.column, fi.value);
+  const query = applyListOptions(supabase.from("races").select("*"), {
+    ...rest,
+    filters: f,
   });
-  if (order)
-    query = query.order(order.column, { ascending: order.ascending !== false });
-  if (limit) query = query.limit(limit);
-  if (offset !== undefined)
-    query = query.range(offset, offset + (limit || 10) - 1);
   const { data, error } = await query;
   if (error) throw new Error(handleApiError(error));
   return data;
@@ -390,15 +373,6 @@ export async function createPenalties(penalties) {
   return data;
 }
 
-export async function deletePenaltiesByRaceResult(raceResultId) {
-  const supabase = await getAuthenticatedClient();
-  const { error } = await supabase
-    .from("penalties")
-    .delete()
-    .eq("race_result_id", raceResultId);
-  if (error) throw new Error(handleApiError(error));
-}
-
 export async function uploadPicture(file) {
   const supabase = getSupabaseClient();
   const ext = file.name.split(".").pop();
@@ -413,16 +387,3 @@ export async function uploadPicture(file) {
   return publicData.publicUrl;
 }
 
-export async function uploadRaceImage(file) {
-  const supabase = getSupabaseClient();
-  const ext = file.name.split(".").pop();
-  const fileName = `races/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { data, error } = await supabase.storage
-    .from("race-images")
-    .upload(fileName, file);
-  if (error) throw new Error(error.message || "Failed to upload image");
-  const { data: publicData } = supabase.storage
-    .from("race-images")
-    .getPublicUrl(data.path);
-  return publicData.publicUrl;
-}

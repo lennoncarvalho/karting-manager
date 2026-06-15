@@ -40,27 +40,6 @@ export async function getCurrentSession() {
   }
 }
 
-export async function getCurrentUser() {
-  try {
-    const session = await getCurrentSession();
-    if (!session) return null;
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-    if (error) throw error;
-    return user;
-  } catch (error) {
-    Sentry.captureException(error);
-    return null;
-  }
-}
-
-export async function isAuthenticated() {
-  const session = await getCurrentSession();
-  return session !== null;
-}
-
 export async function changePassword(newPassword) {
   try {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
