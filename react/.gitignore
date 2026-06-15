@@ -1,1 +1,6 @@
 .fallow/
+
+# Local env (Vite). Never commit secrets.
+.env
+.env.local
+.env.*.local
