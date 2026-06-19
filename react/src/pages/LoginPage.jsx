@@ -108,6 +108,11 @@ export function LoginPage() {
                 </button>
               </form>
             </div>
+            <div className="card-footer text-center">
+              <Link to="/driver/login" className="text-muted small">
+                {t("login.driverLoginLink")}
+              </Link>
+            </div>
           </div>
         </div>
       </div>

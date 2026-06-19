@@ -5,18 +5,25 @@ import logoUrl from "@/assets/kartarados_3grays.png";
 
 export function Navbar() {
   const { t } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isDriver, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    // Route drivers back to driver login, admins to admin login
+    navigate(isDriver ? "/driver/login" : "/login");
   };
 
   const isActive = (path) => {
     if (path === "/admin" && location.pathname === "/admin") return "active";
-    if (path !== "/admin" && location.pathname.startsWith(path))
+    if (path === "/driver/profile" && location.pathname === "/driver/profile")
+      return "active";
+    if (
+      path !== "/admin" &&
+      path !== "/driver/profile" &&
+      location.pathname.startsWith(path)
+    )
       return "active";
     return "";
   };
@@ -58,7 +65,8 @@ export function Navbar() {
               </Link>
             </li>
 
-            {isAuthenticated && (
+            {/* Admin navigation links */}
+            {isAuthenticated && isAdmin && (
               <>
                 <li className="nav-item">
                   <Link
@@ -95,14 +103,27 @@ export function Navbar() {
               </>
             )}
 
+            {/* Driver navigation link */}
+            {isAuthenticated && isDriver && (
+              <li className="nav-item">
+                <Link
+                  className={`nav-link ${isActive("/driver/profile")}`}
+                  to="/driver/profile"
+                >
+                  {t("nav.myProfile")}
+                </Link>
+              </li>
+            )}
+
+            {/* Unauthenticated links */}
             {!isAuthenticated && (
               <>
                 <li className="nav-item">
                   <Link
-                    className={`nav-link ${isActive("/rankings")}`}
-                    to="/rankings"
+                    className={`nav-link ${isActive("/driver/login")}`}
+                    to="/driver/login"
                   >
-                    {t("nav.rankings")}
+                    {t("nav.driverLogin")}
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -134,11 +155,20 @@ export function Navbar() {
                   className="dropdown-menu dropdown-menu-end"
                   aria-labelledby="navbarDropdown"
                 >
-                  <li>
-                    <Link className="dropdown-item" to="/admin">
-                      {t("nav.settings")}
-                    </Link>
-                  </li>
+                  {isAdmin && (
+                    <li>
+                      <Link className="dropdown-item" to="/admin">
+                        {t("nav.settings")}
+                      </Link>
+                    </li>
+                  )}
+                  {isDriver && (
+                    <li>
+                      <Link className="dropdown-item" to="/driver/profile">
+                        {t("nav.myProfile")}
+                      </Link>
+                    </li>
+                  )}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

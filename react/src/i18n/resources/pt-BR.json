@@ -7,6 +7,8 @@
     "toggle": "Alternar navegação",
     "rankings": "Ranking",
     "adminLogin": "Login Admin",
+    "driverLogin": "Login Piloto",
+    "myProfile": "Meu Perfil",
     "dashboard": "Painel",
     "seasons": "Temporadas",
     "drivers": "Pilotos",
@@ -150,7 +152,35 @@
   "login": {
     "title": "Login Admin",
     "signIn": "Entrar",
-    "signingIn": "Entrando..."
+    "signingIn": "Entrando...",
+    "driverLoginLink": "É piloto? Entre aqui"
+  },
+  "driverLogin": {
+    "title": "Login Piloto",
+    "instructions": "Digite o email cadastrado pelo admin da sua equipe. Enviaremos um link mágico para entrar — sem senha.",
+    "sendLink": "Enviar link mágico",
+    "sending": "Enviando...",
+    "checkInbox": "Verifique sua caixa de entrada!",
+    "checkInboxDetail": "Enviamos um link de acesso para {{email}}. Clique no link no email para acessar seu perfil.",
+    "tryAnother": "Usar outro email",
+    "error": "Não foi possível enviar o link mágico. Tente novamente.",
+    "adminLoginLink": "Admin? Entre aqui"
+  },
+  "authCallback": {
+    "verifying": "Verificando sua sessão...",
+    "failed": "Autenticação falhou. Redirecionando para o login...",
+    "redirecting": "Redirecionando..."
+  },
+  "driverProfile": {
+    "title": "Meu Perfil",
+    "changePhoto": "Alterar foto",
+    "uploading": "Enviando...",
+    "avatarUpdated": "Foto de perfil atualizada.",
+    "invalidImage": "Selecione um arquivo de imagem válido.",
+    "saved": "Perfil atualizado.",
+    "saveFailed": "Falha ao salvar o perfil.",
+    "notRegistered": "Email não cadastrado",
+    "notRegisteredDetail": "Seu email não está cadastrado como piloto. Entre em contato com o admin da sua equipe."
   },
   "adminDashboard": {
     "title": "Painel Admin",

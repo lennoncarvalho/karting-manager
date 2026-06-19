@@ -7,6 +7,8 @@
     "toggle": "Toggle navigation",
     "rankings": "Rankings",
     "adminLogin": "Admin Login",
+    "driverLogin": "Driver Login",
+    "myProfile": "My Profile",
     "dashboard": "Dashboard",
     "seasons": "Seasons",
     "drivers": "Drivers",
@@ -150,7 +152,35 @@
   "login": {
     "title": "Admin Login",
     "signIn": "Sign in",
-    "signingIn": "Signing in..."
+    "signingIn": "Signing in...",
+    "driverLoginLink": "Are you a driver? Sign in here"
+  },
+  "driverLogin": {
+    "title": "Driver Login",
+    "instructions": "Enter the email address registered by your team admin. We'll send you a magic link to sign in — no password needed.",
+    "sendLink": "Send magic link",
+    "sending": "Sending...",
+    "checkInbox": "Check your inbox!",
+    "checkInboxDetail": "We sent a sign-in link to {{email}}. Click the link in the email to access your profile.",
+    "tryAnother": "Use a different email",
+    "error": "Could not send the magic link. Please try again.",
+    "adminLoginLink": "Admin? Sign in here"
+  },
+  "authCallback": {
+    "verifying": "Verifying your session...",
+    "failed": "Authentication failed. Redirecting to login...",
+    "redirecting": "Redirecting..."
+  },
+  "driverProfile": {
+    "title": "My Profile",
+    "changePhoto": "Change photo",
+    "uploading": "Uploading...",
+    "avatarUpdated": "Profile picture updated.",
+    "invalidImage": "Please select a valid image file.",
+    "saved": "Profile updated.",
+    "saveFailed": "Failed to save profile.",
+    "notRegistered": "Email not registered",
+    "notRegisteredDetail": "Your email is not registered as a driver. Contact your team admin to be added."
   },
   "adminDashboard": {
     "title": "Admin Dashboard",

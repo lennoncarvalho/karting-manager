@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { SeasonProvider } from "@/context/SeasonContext";
 import { LoadingProvider } from "@/context/LoadingContext";
@@ -15,9 +14,17 @@ import { DriverManagement } from "@/pages/DriverManagement";
 import { CupManagement } from "@/pages/CupManagement";
 import { RaceManagement } from "@/pages/RaceManagement";
 import { RaceDetail } from "@/pages/RaceDetail";
+import { DriverLoginPage } from "@/pages/driver/DriverLoginPage";
+import { DriverProfilePage } from "@/pages/driver/DriverProfilePage";
+import { AuthCallback } from "@/pages/AuthCallback";
 
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+/**
+ * Protects admin-only routes.
+ * Redirects unauthenticated users to /login and driver sessions
+ * to /driver/profile (they should not access admin pages).
+ */
+function AdminRoute({ children }) {
+  const { isAuthenticated, isAdmin, isDriver, loading } = useAuth();
 
   if (loading) {
     return (
@@ -36,6 +43,11 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
+  // Driver sessions must not access admin routes
+  if (isDriver) {
+    return <Navigate to="/driver/profile" replace />;
+  }
+
   return children;
 }
 
@@ -45,52 +57,55 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/rankings" replace />} />
       <Route path="/rankings" element={<PublicRankings />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/driver/login" element={<DriverLoginPage />} />
+      <Route path="/driver/profile" element={<DriverProfilePage />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/seasons"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <SeasonManagement />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/drivers"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <DriverManagement />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/cups"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <CupManagement />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/races"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <RaceManagement />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/race"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <RaceDetail />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
     </Routes>

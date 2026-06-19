@@ -10,6 +10,17 @@ import {
 
 const AuthContext = createContext(null);
 
+/**
+ * Derives the user role from Supabase session metadata.
+ * - admin:  app_metadata.role === 'admin' (set via migration / dashboard)
+ * - driver: any other authenticated user whose email is in the drivers table
+ */
+function deriveRole(user) {
+  if (!user) return { isAdmin: false, isDriver: false };
+  const isAdmin = user.app_metadata?.role === "admin";
+  return { isAdmin, isDriver: !isAdmin };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,12 +43,16 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const { isAdmin, isDriver } = deriveRole(user);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
         isAuthenticated: !!user,
+        isAdmin,
+        isDriver,
         login: loginFn,
         logout: logoutFn,
         changePassword: changePasswordFn,
