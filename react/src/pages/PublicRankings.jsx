@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSeason } from "@/context/SeasonContext";
@@ -11,6 +11,34 @@ import {
   parseLapTime,
 } from "@/lib/points";
 
+const getRaceTimestamp = (race) => {
+  if (!race || !race.race_datetime) return null;
+  const time = new Date(race.race_datetime).getTime();
+  return Number.isNaN(time) ? null : time;
+};
+
+const getWinner = (results) =>
+  results.find((r) => Number(r.finish_position) === 1) || null;
+
+const getFastestLap = (results) => {
+  let best = null;
+  for (const result of results) {
+    const time = parseLapTime(result.best_lap_time);
+    if (time === null) continue;
+    const finish = Number.isFinite(Number(result.finish_position))
+      ? Number(result.finish_position)
+      : Number.MAX_SAFE_INTEGER;
+    if (
+      !best ||
+      time < best.time ||
+      (time === best.time && finish < best.finish)
+    ) {
+      best = { result, time, finish };
+    }
+  }
+  return best ? best.result : null;
+};
+
 export function PublicRankings() {
   const { t } = useTranslation();
   const { seasons, selectedSeasonId, setSeasonId } = useSeason();
@@ -21,9 +49,9 @@ export function PublicRankings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedSeason, setSelectedSeason] = useState(null);
-
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       if (!selectedSeasonId) {
         setLoading(false);
@@ -34,48 +62,125 @@ export function PublicRankings() {
         setLoading(true);
         setError("");
 
-        const loadedCups = await listCups({
-          seasonId: selectedSeasonId,
-          order: { column: "start_date", ascending: true },
-        });
-        setCups(loadedCups);
+        const [loadedCups, loadedRaces] = await Promise.all([
+          listCups({
+            seasonId: selectedSeasonId,
+            order: { column: "start_date", ascending: true },
+          }),
+          listRaces({
+            filters: [
+              { column: "season_id", operator: "eq", value: selectedSeasonId },
+            ],
+            order: { column: "race_datetime", ascending: true },
+          }),
+        ]);
 
-        const loadedRaces = await listRaces({
-          filters: [
-            { column: "season_id", operator: "eq", value: selectedSeasonId },
-          ],
-          order: { column: "race_datetime", ascending: true },
-        });
+        if (cancelled) return;
+        setCups(loadedCups);
         setRaces(loadedRaces);
 
         if (loadedRaces.length) {
-          const raceIds = loadedRaces.map((r) => r.id);
-          const loadedResults = await listRaceResultsByRaceIds(raceIds);
+          const loadedResults = await listRaceResultsByRaceIds(
+            loadedRaces.map((r) => r.id),
+          );
+          if (cancelled) return;
           setRaceResults(loadedResults);
         } else {
           setRaceResults([]);
         }
       } catch (err) {
+        if (cancelled) return;
         console.error("Error loading rankings:", err);
-        setError(
-          err.message ||
-          t("common.errors.routeLoad", { message: "Unknown error" }),
-        );
+        setError(err.message || "Unknown error");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
-  }, [selectedSeasonId, t]);
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally omit `t`: it changes on language switch and would refetch data.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSeasonId]);
 
-  const raceResultsByRace = new Map();
-  raceResults.forEach((r) => {
-    if (!raceResultsByRace.has(r.race_id)) raceResultsByRace.set(r.race_id, []);
-    raceResultsByRace.get(r.race_id).push(r);
-  });
+  const raceResultsByRace = useMemo(() => {
+    const map = new Map();
+    for (const r of raceResults) {
+      const list = map.get(r.race_id);
+      if (list) list.push(r);
+      else map.set(r.race_id, [r]);
+    }
+    return map;
+  }, [raceResults]);
 
-  const now = Date.now();
+  const orderedCalendarRaces = useMemo(() => {
+    return [...races].sort((left, right) => {
+      const leftTime = getRaceTimestamp(left) ?? Number.MAX_SAFE_INTEGER;
+      const rightTime = getRaceTimestamp(right) ?? Number.MAX_SAFE_INTEGER;
+      if (leftTime !== rightTime) return leftTime - rightTime;
+      return String(left.name || "").localeCompare(String(right.name || ""));
+    });
+  }, [races]);
+
+  const sections = useMemo(() => {
+    const overallRaces = races.filter(
+      (race) => race.affects_championship !== false,
+    );
+    return [
+      {
+        id: "calendar",
+        label: t("publicRankings.calendar"),
+        type: "calendar",
+        races,
+      },
+      {
+        id: "overall",
+        label: t("publicRankings.overallChampionship"),
+        races: overallRaces,
+        ranking: "points",
+      },
+      ...cups.map((cup) => ({
+        id: `cup-${cup.id}`,
+        label: cup.name,
+        races: races.filter((race) => race.cup_id === cup.id),
+        ranking: "points",
+      })),
+      {
+        id: "penalties",
+        label: t("publicRankings.penalties"),
+        races: overallRaces,
+        ranking: "penalties",
+      },
+    ];
+  }, [races, cups, t]);
+
+  const rankingsBySection = useMemo(() => {
+    const out = {};
+    for (const section of sections) {
+      if (section.type === "calendar") continue;
+      const sectionResults = section.races.flatMap(
+        (r) => raceResultsByRace.get(r.id) || [],
+      );
+      if (!section.races.length || !sectionResults.length) {
+        out[section.id] = [];
+        continue;
+      }
+      out[section.id] =
+        section.ranking === "penalties"
+          ? calculatePenaltyRankings(section.races, sectionResults, {
+              type: "overall",
+            })
+          : calculateRankings(section.races, sectionResults, {
+              type: section.id === "overall" ? "overall" : "cup",
+            });
+    }
+    return out;
+  }, [sections, raceResultsByRace]);
+
+  // Stable per-data-load timestamp so "completed" doesn't flicker between renders.
+  const now = useMemo(() => Date.now(), [races]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getDriverDisplay = (result) => {
     if (!result) return null;
@@ -102,78 +207,6 @@ export function PublicRankings() {
       </div>
     );
   };
-
-  const getWinnerDriver = (results) => {
-    if (!results || !results.length) return null;
-    const winner = results.find(
-      (result) => Number(result.finish_position) === 1,
-    );
-    return getDriverDisplay(winner);
-  };
-
-  const getFastestLapDriver = (results) => {
-    if (!results || !results.length) return null;
-    let best = null;
-    results.forEach((result) => {
-      const time = parseLapTime(result.best_lap_time);
-      if (time === null) return;
-      const finish = Number.isFinite(Number(result.finish_position))
-        ? Number(result.finish_position)
-        : Number.MAX_SAFE_INTEGER;
-      if (
-        !best ||
-        time < best.time ||
-        (time === best.time && finish < best.finish)
-      ) {
-        best = { result, time, finish };
-      }
-    });
-    return best ? getDriverDisplay(best.result) : null;
-  };
-
-  const getRaceTimestamp = (race) => {
-    if (!race || !race.race_datetime) return null;
-    const time = new Date(race.race_datetime).getTime();
-    return Number.isNaN(time) ? null : time;
-  };
-
-  const overallRaces = races.filter(
-    (race) => race.affects_championship !== false,
-  );
-
-  const sections = [
-    {
-      id: "calendar",
-      label: t("publicRankings.calendar"),
-      type: "calendar",
-      races,
-    },
-    {
-      id: "overall",
-      label: t("publicRankings.overallChampionship"),
-      races: overallRaces,
-      ranking: "points",
-    },
-    ...cups.map((cup) => ({
-      id: `cup-${cup.id}`,
-      label: cup.name,
-      races: races.filter((race) => race.cup_id === cup.id),
-      ranking: "points",
-    })),
-    {
-      id: "penalties",
-      label: t("publicRankings.penalties"),
-      races: overallRaces,
-      ranking: "penalties",
-    },
-  ];
-
-  const orderedCalendarRaces = [...races].sort((left, right) => {
-    const leftTime = getRaceTimestamp(left) ?? Number.MAX_SAFE_INTEGER;
-    const rightTime = getRaceTimestamp(right) ?? Number.MAX_SAFE_INTEGER;
-    if (leftTime !== rightTime) return leftTime - rightTime;
-    return String(left.name || "").localeCompare(String(right.name || ""));
-  });
 
   return (
     <div className="container mt-4">
@@ -228,10 +261,12 @@ export function PublicRankings() {
 
           <div className="tab-content border border-top-0" id="rankings-content">
             {sections.map((section, index) => {
+              const paneClass = `tab-pane fade ${index === 0 ? "show active" : ""}`;
+
               if (section.type === "calendar") {
                 return (
                   <div
-                    className={`tab-pane fade ${index === 0 ? "show active" : ""}`}
+                    className={paneClass}
                     id={section.id}
                     role="tabpanel"
                     key={section.id}
@@ -253,12 +288,13 @@ export function PublicRankings() {
                               raceTime !== null && raceTime <= now;
                             const results =
                               raceResultsByRace.get(race.id) || [];
-                            const showResults = isCompleted && results.length;
+                            const showResults =
+                              isCompleted && results.length > 0;
                             const winner = showResults
-                              ? getWinnerDriver(results)
+                              ? getDriverDisplay(getWinner(results))
                               : null;
                             const fastest = showResults
-                              ? getFastestLapDriver(results)
+                              ? getDriverDisplay(getFastestLap(results))
                               : null;
 
                             return (
@@ -291,23 +327,12 @@ export function PublicRankings() {
                 );
               }
 
-              const sectionResults = raceResults.filter((result) =>
-                section.races.some((race) => race.id === result.race_id),
-              );
+              const rankings = rankingsBySection[section.id] || [];
 
-              const rankings =
-                section.ranking === "penalties"
-                  ? calculatePenaltyRankings(section.races, sectionResults, {
-                    type: "overall",
-                  })
-                  : calculateRankings(section.races, sectionResults, {
-                    type: section.id === "overall" ? "overall" : "cup",
-                  });
-
-              if (!section.races.length || !sectionResults.length) {
+              if (!rankings.length) {
                 return (
                   <div
-                    className={`tab-pane fade ${index === 0 ? "show active" : ""}`}
+                    className={paneClass}
                     id={section.id}
                     role="tabpanel"
                     key={section.id}
@@ -321,7 +346,7 @@ export function PublicRankings() {
 
               return (
                 <div
-                  className={`tab-pane fade ${index === 0 ? "show active" : ""}`}
+                  className={paneClass}
                   id={section.id}
                   role="tabpanel"
                   key={section.id}
