@@ -16,3 +16,6 @@ html, body, #root {
   flex-direction: column;
 }
 
+table.table thead th {
+    background-color: var(--season-accent) !important;
+}

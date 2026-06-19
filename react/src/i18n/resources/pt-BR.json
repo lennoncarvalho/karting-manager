@@ -157,7 +157,7 @@
   },
   "driverLogin": {
     "title": "Login Piloto",
-    "instructions": "Digite o email cadastrado pelo admin da sua equipe. Enviaremos um link mágico para entrar — sem senha.",
+    "instructions": "Digite o email cadastrado pelo admin da sua equipe.\nEnviaremos um link mágico para entrar, sem senha.",
     "sendLink": "Enviar link mágico",
     "sending": "Enviando...",
     "checkInbox": "Verifique sua caixa de entrada!",

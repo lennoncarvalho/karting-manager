@@ -102,7 +102,7 @@ export function DriverLoginPage() {
                       {serverError}
                     </div>
                   )}
-                  <p className="text-muted small mb-3">
+                  <p className="text-muted small mb-3" style={{ whiteSpace: "pre-line" }}>
                     {t("driverLogin.instructions")}
                   </p>
                   <form noValidate onSubmit={handleSubmit}>
