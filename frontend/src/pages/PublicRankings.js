@@ -19,7 +19,7 @@ const PublicRankings = {
     const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
-      <div class="d-flex gap-2 mb-3">
+      <div class="d-flex gap-2">
         <div class="h5 mb-0">${t('publicRankings.title')}</div>
         <div class="d-flex w-auto">
           <select class="form-select form-select-sm" id="season-name" aria-label="${t('publicRankings.seasonLabel')}">

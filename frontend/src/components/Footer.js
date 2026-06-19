@@ -14,7 +14,7 @@ export function renderFooter() {
   const currentLang = getCurrentLanguage();
 
   const footer = document.createElement('footer');
-  footer.className = 'mt-auto py-3 text-white';
+  footer.className = 'mt-5 py-3';
   footer.style.backgroundColor = 'var(--season-accent)';
   footer.setAttribute('role', 'contentinfo');
 

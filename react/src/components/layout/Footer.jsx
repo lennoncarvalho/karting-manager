@@ -7,11 +7,11 @@ export function Footer() {
 
   return (
     <footer
-      className="mt-5 py-3 text-white"
+      className="mt-5 p-4"
       style={{ backgroundColor: "var(--season-accent)" }}
       role="contentinfo"
     >
-      <div className="container-fluid">
+      <div className="container">
         <div className="row align-items-center">
           <div className="col-12 col-md-6 text-center text-md-start mb-2 mb-md-0">
             <div className="small">

@@ -33,7 +33,7 @@ export function Navbar() {
       className="navbar navbar-expand-lg navbar-dark"
       style={{ backgroundColor: "var(--season-accent)" }}
     >
-      <div className="container-fluid py-0 gap-3">
+      <div className="container">
         <Link
           to="/rankings"
           className="navbar-brand d-flex align-items-center"
