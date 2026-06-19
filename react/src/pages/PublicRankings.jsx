@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSeason } from "@/context/SeasonContext";
 import { DriverImage } from "@/components/driverImage";
+import { RaceDateTime } from "@/components/raceDateTime";
 import { listCups, listRaces, listRaceResultsByRaceIds } from "@/lib/api";
 import {
   calculateRankings,
@@ -263,19 +264,7 @@ export function PublicRankings() {
                             return (
                               <tr key={race.id}>
                                 <td>
-                                  {race.race_datetime
-                                    ? (() => {
-                                      const d = new Date(race.race_datetime);
-                                      const day = String(d.getDate()).padStart(2, "0");
-                                      const month = d.toLocaleString(
-                                        undefined,
-                                        { month: "short" },
-                                      ).replace(/\.$/, "");
-                                      const hour = String(d.getHours()).padStart(2, "0");
-                                      const min = String(d.getMinutes()).padStart(2, "0");
-                                      return `${day} ${month} ${hour}h${min}m`;
-                                    })()
-                                    : "-"}
+                                  <RaceDateTime value={race.race_datetime} />
                                 </td>
                                 <td>
                                   {race.id ? (

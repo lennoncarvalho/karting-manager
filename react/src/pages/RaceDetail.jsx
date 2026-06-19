@@ -106,16 +106,20 @@ export function RaceDetail() {
         <div className="card-body">
           <div className="row g-3">
             <div className="col-md-4">
+              <div className="small">{t("raceDetail.info.location")}</div>
+              <div>{race.location}</div>
+            </div>
+            <div className="col-md-4">
               <div className="small">{t("raceDetail.info.dateTime")}</div>
               <div>
                 {race.race_datetime ? formatDateTime(race.race_datetime) : "-"}
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <div className="small">{t("raceDetail.info.season")}</div>
               <div>{seasonName}</div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <div className="small">
                 {t("raceDetail.info.affectsChampionship")}
               </div>
@@ -373,8 +377,8 @@ export function RaceDetail() {
     <div className="container mt-4">
       <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3">
         <div className="w-50">
-          <h1 className="h3 mb-0">{t("raceDetail.title")}</h1>
-          <p className="mb-0">{race?.location || ""}</p>
+          <h5 className="mb-0">{t("raceDetail.title")}</h5>
+          <h6 className="mb-0">{race?.name || ""}</h6>
         </div>
         <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
           <button
