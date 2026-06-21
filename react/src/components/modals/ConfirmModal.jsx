@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import * as bootstrap from "bootstrap";
 
 function cleanupModal() {
   document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
@@ -14,25 +15,39 @@ export function ConfirmModal({ show, onConfirm, onCancel, message, title }) {
   const bsModalRef = useRef(null);
 
   useEffect(() => {
-    if (!modalRef.current) return;
+    if (!modalRef.current) return undefined;
 
-    if (show) {
+    // Instantiate once per mount; Bootstrap owns visibility from here on.
+    if (!bsModalRef.current) {
       bsModalRef.current = new bootstrap.Modal(modalRef.current, {
         backdrop: "static",
         keyboard: false,
       });
-      bsModalRef.current.show();
-    } else if (bsModalRef.current) {
-      bsModalRef.current.hide();
-      cleanupModal();
+    }
+
+    try {
+      if (show) {
+        bsModalRef.current.show();
+      } else {
+        bsModalRef.current.hide();
+        cleanupModal();
+      }
+    } catch {
+      // Element may have been detached by a parent re-render; ignore.
     }
 
     return () => {
-      if (bsModalRef.current) {
+      const inst = bsModalRef.current;
+      bsModalRef.current = null;
+      if (inst) {
         try {
-          bsModalRef.current.hide();
+          inst.hide();
         } catch {}
-        bsModalRef.current.dispose();
+        try {
+          // Guard: dispose() reads inst._element which can be null if
+          // Bootstrap already tore down internally.
+          if (inst._element) inst.dispose();
+        } catch {}
       }
       cleanupModal();
     };
@@ -53,15 +68,11 @@ export function ConfirmModal({ show, onConfirm, onCancel, message, title }) {
   return (
     <div
       ref={modalRef}
-      className={`modal fade ${show ? "show d-block" : ""}`}
+      className="modal fade"
       tabIndex="-1"
       role="dialog"
       aria-labelledby={`${modalTitle}Label`}
-      aria-hidden={!show}
-      style={{
-        backgroundColor: show ? "rgba(0,0,0,0.5)" : "transparent",
-        pointerEvents: show ? "auto" : "none",
-      }}
+      aria-hidden="true"
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">

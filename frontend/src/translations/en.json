@@ -405,7 +405,8 @@
       "fastestLap": "Fastest lap",
       "totalPoints": "Total Points",
       "penalties": "Penalties",
-      "bestPosition": "Best Position"
+      "bestPosition": "Best Position",
+      "discard": "Discard"
     }
   },
   "relative": {

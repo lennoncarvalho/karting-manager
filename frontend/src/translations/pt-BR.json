@@ -405,7 +405,8 @@
       "fastestLap": "Melhor volta",
       "totalPoints": "Pontos totais",
       "penalties": "Penalidades",
-      "bestPosition": "Melhor posição"
+      "bestPosition": "Melhor posição",
+      "discard": "Descarte"
     }
   },
   "relative": {

@@ -124,8 +124,18 @@ export function PublicRankings() {
     });
   }, [races]);
 
+  // Attach cup_name to each race so the points engine can label discards
+  // without needing the cups list passed down.
+  const racesWithCupName = useMemo(() => {
+    const cupNameById = new Map(cups.map((c) => [c.id, c.name]));
+    return races.map((r) => ({
+      ...r,
+      cup_name: r.cup_id != null ? cupNameById.get(r.cup_id) || null : null,
+    }));
+  }, [races, cups]);
+
   const sections = useMemo(() => {
-    const overallRaces = races.filter(
+    const overallRaces = racesWithCupName.filter(
       (race) => race.affects_championship !== false,
     );
     return [
@@ -144,8 +154,9 @@ export function PublicRankings() {
       ...cups.map((cup) => ({
         id: `cup-${cup.id}`,
         label: cup.name,
-        races: races.filter((race) => race.cup_id === cup.id),
+        races: racesWithCupName.filter((race) => race.cup_id === cup.id),
         ranking: "points",
+        cupId: cup.id,
       })),
       {
         id: "penalties",
@@ -154,7 +165,7 @@ export function PublicRankings() {
         ranking: "penalties",
       },
     ];
-  }, [races, cups, t]);
+  }, [races, racesWithCupName, cups, t]);
 
   const rankingsBySection = useMemo(() => {
     const out = {};
@@ -344,6 +355,16 @@ export function PublicRankings() {
                 );
               }
 
+              // Show the Discard column only when at least one driver has a
+              // discard for this section (i.e. the last race of a cup in
+              // scope has been reached). For the penalty tab discards aren't
+              // relevant.
+              const showDiscard =
+                section.ranking !== "penalties" &&
+                rankings.some(
+                  (r) => Array.isArray(r.discards) && r.discards.length > 0,
+                );
+
               return (
                 <div
                   className={paneClass}
@@ -360,6 +381,9 @@ export function PublicRankings() {
                           <th>{t("publicRankings.table.totalPoints")}</th>
                           <th>{t("publicRankings.table.penalties")}</th>
                           <th>{t("publicRankings.table.bestPosition")}</th>
+                          {showDiscard && (
+                            <th>{t("publicRankings.table.discard")}</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -383,6 +407,28 @@ export function PublicRankings() {
                             </td>
                             <td>{driver.penalties || 0}</td>
                             <td>{driver.bestPosition || "-"}</td>
+                            {showDiscard && (
+                              <td>
+                                {driver.discards && driver.discards.length ? (
+                                  driver.discards
+                                    .filter(
+                                      (d) =>
+                                        section.cupId == null ||
+                                        d.cupId === section.cupId,
+                                    )
+                                    .map((d) => (
+                                      <div key={d.raceId || d.cupId}>
+                                        {d.raceName || "-"}{" "}
+                                        <small className="text-muted">
+                                          (-{d.pointsRemoved})
+                                        </small>
+                                      </div>
+                                    ))
+                                ) : (
+                                  <span className="text-muted">-</span>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>

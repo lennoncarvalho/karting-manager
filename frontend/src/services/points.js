@@ -64,42 +64,60 @@ function getPoleWinner(results) {
   return pole ? pole.driver_id : null;
 }
 
-function getDiscardCount(races, options = {}) {
-  if (Number.isFinite(options.discardCount)) {
-    return Math.max(0, Math.floor(options.discardCount));
-  }
-  if (options.type === 'cup') {
-    return races.length > 1 ? 1 : 0;
-  }
-  if (options.type === 'overall') {
-    const cupIds = new Set();
-    races.forEach((race) => {
-      if (race.cup_id != null) {
-        cupIds.add(race.cup_id);
+// Sentinel finish position for "no-show" (no race_results row for the driver
+// for a counting race). Worse than any real finish position so it wins the
+// "worst result by finishing position" comparison used for discards.
+const NO_SHOW_FINISH = Number.MAX_SAFE_INTEGER;
+
+// Returns, for each cup_id present in `ordered`, the index of the worst race
+// for the given driver inside that cup — but only if the cup's last race
+// (by race_datetime) is in the past relative to `now`. Worst is computed by
+// finishing position (higher = worse, no-show = NO_SHOW_FINISH).
+function pickDiscardsByCup(ordered, finishByRace, driverId, now) {
+  // Group race indices by cup_id; only races with cup_id participate (rule:
+  // "one discard per cup for races that count to the ranking").
+  const byCup = new Map();
+  ordered.forEach((race, ri) => {
+    if (race.cup_id == null) return;
+    if (!byCup.has(race.cup_id)) {
+      byCup.set(race.cup_id, { name: race.cup_name || null, races: [] });
+    }
+    byCup.get(race.cup_id).races.push({ ri, race });
+  });
+  const discards = [];
+  byCup.forEach((cup, cupId) => {
+    if (cup.races.length < 2) return; // need at least 2 races to drop one
+    // Trigger only starting on the date of the last race of the cup.
+    const lastDt = cup.races.reduce((max, { race }) => {
+      const t = race.race_datetime ? new Date(race.race_datetime).getTime() : -Infinity;
+      return t > max ? t : max;
+    }, -Infinity);
+    if (!Number.isFinite(lastDt) || now < lastDt) return;
+    // Worst by finish_position; no-show counts as worst.
+    let worst = null;
+    cup.races.forEach(({ ri, race }) => {
+      const map = finishByRace.get(race.id);
+      const finish = (map && map.get(driverId) != null) ? map.get(driverId) : NO_SHOW_FINISH;
+      if (
+        !worst ||
+        finish > worst.finish ||
+        (finish === worst.finish &&
+          new Date(race.race_datetime).getTime() > new Date(worst.race.race_datetime).getTime())
+      ) {
+        worst = { ri, race, finish };
       }
     });
-    return cupIds.size;
-  }
-  const cupIds = new Set();
-  races.forEach((race) => {
-    if (race.cup_id != null) {
-      cupIds.add(race.cup_id);
+    if (worst) {
+      discards.push({
+        cupId,
+        raceIndex: worst.ri,
+        raceId: worst.race.id,
+        raceName: worst.race.name || null,
+        finish: worst.finish === NO_SHOW_FINISH ? null : worst.finish
+      });
     }
   });
-  if (cupIds.size === 1 && races.length > 1) {
-    return 1;
-  }
-  return cupIds.size;
-}
-
-function getDiscardIndices(basePoints, discardCount) {
-  if (!discardCount) {
-    return new Set();
-  }
-  const count = Math.min(discardCount, basePoints.length);
-  const sorted = basePoints.map((points, index) => ({ points, index }))
-    .sort((a, b) => (a.points - b.points) || (a.index - b.index));
-  return new Set(sorted.slice(0, count).map(entry => entry.index));
+  return discards;
 }
 
 export function calculateRankings(races, raceResults, options = {}) {
@@ -112,11 +130,55 @@ export function calculateRankings(races, raceResults, options = {}) {
     }
     resultsByRace.get(result.race_id).push(result);
   });
-  
+
+  // finish_position lookup per (raceId -> driverId -> finish) for discard
+  // selection and no-show detection.
+  const finishByRace = new Map();
+  raceResults.forEach((result) => {
+    if (!finishByRace.has(result.race_id)) finishByRace.set(result.race_id, new Map());
+    const fp = Number(result.finish_position);
+    finishByRace.get(result.race_id).set(result.driver_id, Number.isFinite(fp) ? fp : NO_SHOW_FINISH);
+  });
+
   const driverStats = new Map();
   const driverRacePoints = new Map();
-  const discardCount = getDiscardCount(orderedRaces, options);
-  
+  const now = typeof options.now === 'number' ? options.now : Date.now();
+
+  // Pre-pass: register every driver that appears in *any* race_result for the
+  // races in scope, so a "no-show" in a single race still has a stats entry
+  // and can have a discard slot considered against them.
+  raceResults.forEach((result) => {
+    const did = result.driver_id;
+    if (did == null) return;
+    if (!driverStats.has(did)) {
+      driverStats.set(did, {
+        driverId: did,
+        name: result.drivers ? result.drivers.name : 'Unknown',
+        picture: result.drivers ? result.drivers.picture_url : null,
+        totalPoints: 0,
+        bestPosition: null,
+        positionCounts: {},
+        poles: 0,
+        fastestLaps: 0,
+        penalties: 0,
+        firstPenaltyAt: null,
+        firstPenaltyFinish: null,
+        reachedAt: null,
+        racePoints: [],
+        disqualifiedCount: 0,
+        raceDirectionPenaltyPoints: 0,
+        suspended: false,
+        discards: []
+      });
+    }
+    if (!driverRacePoints.has(did)) {
+      driverRacePoints.set(did, {
+        basePoints: Array(orderedRaces.length).fill(0),
+        penalties: Array(orderedRaces.length).fill(0)
+      });
+    }
+  });
+
   orderedRaces.forEach((race, raceIndex) => {
     const results = resultsByRace.get(race.id) || [];
     if (!results.length) return;
@@ -126,33 +188,6 @@ export function calculateRankings(races, raceResults, options = {}) {
     
     results.forEach((result) => {
       const driverId = result.driver_id;
-      if (!driverStats.has(driverId)) {
-        driverStats.set(driverId, {
-          driverId,
-          name: result.drivers ? result.drivers.name : 'Unknown',
-          picture: result.drivers ? result.drivers.picture_url : null,
-          totalPoints: 0,
-          bestPosition: result.finish_position || null,
-          positionCounts: {},
-          poles: 0,
-          fastestLaps: 0,
-          penalties: 0,
-          firstPenaltyAt: null,
-          firstPenaltyFinish: null,
-          reachedAt: null,
-          racePoints: [],
-          disqualifiedCount: 0,
-          raceDirectionPenaltyPoints: 0,
-          suspended: false
-        });
-      }
-      if (!driverRacePoints.has(driverId)) {
-        driverRacePoints.set(driverId, {
-          basePoints: Array(orderedRaces.length).fill(0),
-          penalties: Array(orderedRaces.length).fill(0)
-        });
-      }
-      
       const stats = driverStats.get(driverId);
       const finishPosition = result.finish_position;
       const basePoints = getPositionPoints(finishPosition);
@@ -202,12 +237,28 @@ export function calculateRankings(races, raceResults, options = {}) {
       basePoints: Array(orderedRaces.length).fill(0),
       penalties: Array(orderedRaces.length).fill(0)
     };
-    const discardIndices = getDiscardIndices(ledger.basePoints, discardCount);
+    // Per-cup discard: drop the worst race (by finish_position; no-show is
+    // worst) for each cup whose last race has already happened.
+    const cupDiscards = pickDiscardsByCup(orderedRaces, finishByRace, entry.driverId, now);
+    const discardIndexMap = new Map(cupDiscards.map(d => [d.raceIndex, d]));
+    entry.discards = cupDiscards.map((d) => {
+      const bp = ledger.basePoints[d.raceIndex] || 0;
+      const pen = ledger.penalties[d.raceIndex] || 0;
+      // pointsRemoved = the total this race would have contributed before being
+      // discarded (base + penalty). Penalties are negative, so this matches the
+      // change in totalPoints for that race.
+      const pointsRemoved = bp + pen;
+      return {
+        cupId: d.cupId,
+        raceId: d.raceId,
+        raceName: d.raceName,
+        finish: d.finish,
+        pointsRemoved
+      };
+    });
     entry.racePoints = ledger.basePoints.map((base, index) => {
       const penalties = ledger.penalties[index] || 0;
-      if (discardIndices.has(index)) {
-        return penalties;
-      }
+      if (discardIndexMap.has(index)) return 0; // discarded race contributes nothing
       return base + penalties;
     });
     const totalPoints = entry.racePoints.reduce((sum, value) => sum + value, 0);

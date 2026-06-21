@@ -72,7 +72,15 @@ const PublicRankings = {
 
         const raceResults = await listRaceResultsByRaceIds(races.map(race => race.id));
 
-        const overallRaces = races.filter(race => race.affects_championship !== false);
+        // Attach cup_name to each race so the points engine can label discards
+        // without needing the cups list passed down.
+        const cupNameById = new Map(cups.map(cup => [cup.id, cup.name]));
+        const racesWithCupName = races.map(race => ({
+          ...race,
+          cup_name: race.cup_id != null ? (cupNameById.get(race.cup_id) || null) : null
+        }));
+
+        const overallRaces = racesWithCupName.filter(race => race.affects_championship !== false);
         const raceResultsByRace = new Map();
         raceResults.forEach((result) => {
           if (!raceResultsByRace.has(result.race_id)) {
@@ -150,8 +158,9 @@ const PublicRankings = {
           ...cups.map(cup => ({
             id: `cup-${cup.id}`,
             label: cup.name,
-            races: races.filter(race => race.cup_id === cup.id),
-            ranking: 'points'
+            races: racesWithCupName.filter(race => race.cup_id === cup.id),
+            ranking: 'points',
+            cupId: cup.id
           })),
           {
             id: 'penalties',
@@ -230,7 +239,26 @@ const PublicRankings = {
               </div>
             `;
           }
-          
+
+          // Show the Discard column only when at least one driver has a discard
+          // for this section (i.e. the last race of a cup in scope has been
+          // reached). The penalty tab never shows discards.
+          const showDiscard = section.ranking !== 'penalties'
+            && rankings.some(r => Array.isArray(r.discards) && r.discards.length > 0);
+
+          const renderDiscardCell = (driver) => {
+            if (!driver.discards || !driver.discards.length) {
+              return '<span class="text-muted">-</span>';
+            }
+            // Cup tabs filter to the matching cup; the overall tab shows all
+            // discards (one line per cup).
+            const filtered = driver.discards.filter(d => section.cupId == null || d.cupId === section.cupId);
+            if (!filtered.length) return '<span class="text-muted">-</span>';
+            return filtered.map(d => `
+              <div>${d.raceName || '-'} <small class="text-muted">(-${d.pointsRemoved})</small></div>
+            `).join('');
+          };
+
           return `
             <div class="tab-pane fade ${index === 0 ? 'show active' : ''}" id="${section.id}" role="tabpanel">
               <div class="table-responsive">
@@ -242,6 +270,7 @@ const PublicRankings = {
                       <th>${t('publicRankings.table.totalPoints')}</th>
                       <th>${t('publicRankings.table.penalties')}</th>
                       <th>${t('publicRankings.table.bestPosition')}</th>
+                      ${showDiscard ? `<th>${t('publicRankings.table.discard')}</th>` : ''}
                     </tr>
                   </thead>
                   <tbody>
@@ -263,6 +292,7 @@ const PublicRankings = {
                         <td class="fw-semibold">${driver.totalPoints}</td>
                         <td>${driver.penalties || 0}</td>
                         <td>${driver.bestPosition || '-'}</td>
+                        ${showDiscard ? `<td>${renderDiscardCell(driver)}</td>` : ''}
                       </tr>
                     `).join('')}
                   </tbody>
