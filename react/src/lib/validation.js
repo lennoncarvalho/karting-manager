@@ -1,11 +1,21 @@
+// Form validation helpers.
+//
+// Most field-level validation is now done with native HTML5 constraints
+// (`type="email"`, `type="color"`, `type="number"` with `min`/`step`,
+// `min`/`max` on date inputs, `required`, `pattern`) plus `onInvalid` +
+// `setCustomValidity` for i18n messages — see `DriverLoginPage.jsx` for the
+// canonical pattern.
+//
+// The helpers below cover the only cases the platform can't express
+// declaratively:
+//   - cross-field date ranges
+//   - the `m:ss.SSS` lap-time format (also validated outside `<input>`,
+//     e.g. on OCR results in `OcrImportModal`)
+//   - email — kept as defense-in-depth before hitting Supabase
+
 export function isValidEmail(email) {
   if (!email || typeof email !== "string") return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
-
-export function isValidHexColor(color) {
-  if (!color || typeof color !== "string") return false;
-  return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color.trim());
 }
 
 export function isValidDateRange(startDate, endDate) {
@@ -18,17 +28,6 @@ export function isValidCupDateRange(seasonStart, seasonEnd, cupStart, cupEnd) {
   const cS = new Date(cupStart);
   const cE = new Date(cupEnd);
   return cS >= sS && cE <= sE && cE >= cS;
-}
-
-export function isRequired(value) {
-  if (value === null || value === undefined) return false;
-  if (typeof value === "string") return value.trim().length > 0;
-  return true;
-}
-
-export function isPositiveInteger(value) {
-  const num = parseInt(value, 10);
-  return !isNaN(num) && num > 0;
 }
 
 export function isValidLapTime(lapTime) {

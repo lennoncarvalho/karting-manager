@@ -1,11 +1,8 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  isPositiveInteger,
-  isValidLapTime,
-  isRequired,
-} from "@/lib/validation";
 import { useToast } from "@/components/Notification";
+
+const LAP_TIME_PATTERN = "^(\\d{1,2}:)?\\d{1,2}:\\d{2}\\.\\d{1,3}$";
 
 const standardPenalties = [
   {
@@ -86,34 +83,17 @@ export function RaceResultModal({
     return [];
   });
 
+  const formRef = useRef(null);
+  const [driverError, setDriverError] = useState("");
+  const [finishError, setFinishError] = useState("");
+  const [gridError, setGridError] = useState("");
+  const [bestLapError, setBestLapError] = useState("");
+
   const existingDriverIds = new Set(
     existingResults.map((r) => r.driver_id).filter(Boolean),
   );
 
-  const handleSave = async () => {
-    const driverField = {};
-    const finishField = {};
-    const gridField = {};
-    const bestLapField = {};
-    let hasError = false;
-
-    if (!isRequired(driverId)) {
-      hasError = true;
-    }
-    if (!isPositiveInteger(finishPosition)) {
-      hasError = true;
-    }
-    if (gridStart && !isPositiveInteger(gridStart)) {
-      hasError = true;
-    }
-    if (bestLapTime && !isValidLapTime(bestLapTime)) {
-      hasError = true;
-    }
-
-    if (hasError) {
-      notify(t("notifications.pleaseFix"), "warning");
-      return;
-    }
+  const submitPayload = async () => {
 
     const penalties = [];
     standardPenaltyList.forEach((p) => {
@@ -175,6 +155,24 @@ export function RaceResultModal({
     if (onClose) onClose();
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submitPayload();
+  };
+
+  const handleSave = () => {
+    // Trigger native HTML5 validation. The form's onSubmit only fires when all
+    // constraints pass; otherwise onInvalid handlers populate localized errors.
+    if (formRef.current) {
+      if (!formRef.current.checkValidity()) {
+        formRef.current.reportValidity();
+        notify(t("notifications.pleaseFix"), "warning");
+        return;
+      }
+      formRef.current.requestSubmit();
+    }
+  };
+
   const addCustomPenaltyRow = () => {
     setCustomPenalties((prev) => [
       ...prev,
@@ -217,17 +215,25 @@ export function RaceResultModal({
           </div>
 
           <div className="modal-body">
-            <form>
+            <form ref={formRef} onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label" htmlFor="result-driver">
                     {t("raceResultModal.driver")}
                   </label>
                   <select
-                    className={`form-select ${!isRequired(driverId) ? "is-invalid" : ""}`}
+                    className={`form-select ${driverError ? "is-invalid" : ""}`}
                     id="result-driver"
                     value={driverId}
-                    onChange={(e) => setDriverId(e.target.value)}
+                    onChange={(e) => {
+                      setDriverId(e.target.value);
+                      if (driverError) setDriverError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setDriverError(t("validation.driverRequired"));
+                    }}
                     required
                   >
                     <option value="">
@@ -246,10 +252,8 @@ export function RaceResultModal({
                       </option>
                     ))}
                   </select>
-                  {!isRequired(driverId) && (
-                    <div className="invalid-feedback">
-                      {t("validation.driverRequired")}
-                    </div>
+                  {driverError && (
+                    <div className="invalid-feedback">{driverError}</div>
                   )}
                 </div>
 
@@ -259,17 +263,28 @@ export function RaceResultModal({
                   </label>
                   <input
                     type="number"
-                    className={`form-control ${!isPositiveInteger(finishPosition) ? "is-invalid" : ""}`}
+                    className={`form-control ${finishError ? "is-invalid" : ""}`}
                     id="result-finish"
                     min="1"
+                    step="1"
                     value={finishPosition}
-                    onChange={(e) => setFinishPosition(e.target.value)}
+                    onChange={(e) => {
+                      setFinishPosition(e.target.value);
+                      if (finishError) setFinishError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setFinishError(
+                        e.target.validity.valueMissing
+                          ? t("validation.finishPositionRequired")
+                          : t("validation.finishPositionPositive"),
+                      );
+                    }}
                     required
                   />
-                  {!isPositiveInteger(finishPosition) && (
-                    <div className="invalid-feedback">
-                      {t("validation.finishPositionPositive")}
-                    </div>
+                  {finishError && (
+                    <div className="invalid-feedback">{finishError}</div>
                   )}
                 </div>
 
@@ -279,16 +294,23 @@ export function RaceResultModal({
                   </label>
                   <input
                     type="number"
-                    className={`form-control ${gridStart && !isPositiveInteger(gridStart) ? "is-invalid" : ""}`}
+                    className={`form-control ${gridError ? "is-invalid" : ""}`}
                     id="result-grid"
                     min="1"
+                    step="1"
                     value={gridStart}
-                    onChange={(e) => setGridStart(e.target.value)}
+                    onChange={(e) => {
+                      setGridStart(e.target.value);
+                      if (gridError) setGridError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setGridError(t("validation.gridStartPositive"));
+                    }}
                   />
-                  {gridStart && !isPositiveInteger(gridStart) && (
-                    <div className="invalid-feedback">
-                      {t("validation.gridStartPositive")}
-                    </div>
+                  {gridError && (
+                    <div className="invalid-feedback">{gridError}</div>
                   )}
                 </div>
 
@@ -298,16 +320,23 @@ export function RaceResultModal({
                   </label>
                   <input
                     type="text"
-                    className={`form-control ${bestLapTime && !isValidLapTime(bestLapTime) ? "is-invalid" : ""}`}
+                    className={`form-control ${bestLapError ? "is-invalid" : ""}`}
                     id="result-best-lap"
                     placeholder={t("raceResultModal.bestLapPlaceholder")}
+                    pattern={LAP_TIME_PATTERN}
                     value={bestLapTime}
-                    onChange={(e) => setBestLapTime(e.target.value)}
+                    onChange={(e) => {
+                      setBestLapTime(e.target.value);
+                      if (bestLapError) setBestLapError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setBestLapError(t("validation.bestLapInvalid"));
+                    }}
                   />
-                  {bestLapTime && !isValidLapTime(bestLapTime) && (
-                    <div className="invalid-feedback">
-                      {t("validation.bestLapInvalid")}
-                    </div>
+                  {bestLapError && (
+                    <div className="invalid-feedback">{bestLapError}</div>
                   )}
                 </div>
 

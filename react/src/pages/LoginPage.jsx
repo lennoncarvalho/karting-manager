@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/Notification";
-import { isRequired } from "@/lib/validation";
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -23,22 +22,6 @@ export function LoginPage() {
     setEmailError("");
     setPasswordError("");
     setServerError("");
-
-    let hasError = false;
-
-    if (!isRequired(email)) {
-      setEmailError(t("validation.emailRequired"));
-      hasError = true;
-    }
-    if (!isRequired(password)) {
-      setPasswordError(t("validation.passwordRequired"));
-      hasError = true;
-    }
-
-    if (hasError) {
-      notify(t("notifications.pleaseFix"), "warning");
-      return;
-    }
 
     setSubmitting(true);
     try {
@@ -66,7 +49,7 @@ export function LoginPage() {
                   {serverError}
                 </div>
               )}
-              <form id="login-form" noValidate onSubmit={handleSubmit}>
+              <form id="login-form" onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
                     {t("common.labels.email")}
@@ -76,7 +59,20 @@ export function LoginPage() {
                     className={`form-control ${emailError ? "is-invalid" : ""}`}
                     id="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailError) setEmailError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setEmailError(
+                        e.target.validity.valueMissing
+                          ? t("validation.emailRequired")
+                          : t("validation.validEmailRequired"),
+                      );
+                    }}
+                    autoComplete="email"
                     required
                   />
                   {emailError && (
@@ -92,7 +88,16 @@ export function LoginPage() {
                     className={`form-control ${passwordError ? "is-invalid" : ""}`}
                     id="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setPasswordError(t("validation.passwordRequired"));
+                    }}
+                    autoComplete="current-password"
                     required
                   />
                   {passwordError && (

@@ -13,7 +13,6 @@ import {
   updateRace,
   deleteRace,
 } from "@/lib/api";
-import { isRequired } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function RaceManagement() {
@@ -150,35 +149,15 @@ export function RaceManagement() {
     setLocationError("");
     setDateTimeError("");
 
-    let hasError = false;
-    if (!isRequired(seasonId)) {
-      setSeasonError(t("validation.seasonRequired"));
-      hasError = true;
-    }
-    if (!isRequired(name)) {
-      setNameError(t("validation.raceNameRequired"));
-      hasError = true;
-    }
-    if (!isRequired(location)) {
-      setLocationError(t("validation.locationRequired"));
-      hasError = true;
-    }
-    if (!isRequired(raceDateTime)) {
-      setDateTimeError(t("validation.dateTimeRequired"));
-      hasError = true;
-    }
-
+    // Cross-field check (HTML can't express this natively): if a cup is
+    // selected, it must belong to the chosen season.
     if (cupId) {
       const cup = allCups.find((c) => c.id === cupId);
       if (!cup || cup.season_id !== seasonId) {
         setCupError(t("validation.cupBelongsSeason"));
-        hasError = true;
+        notify(t("notifications.pleaseFix"), "warning");
+        return;
       }
-    }
-
-    if (hasError) {
-      notify(t("notifications.pleaseFix"), "warning");
-      return;
     }
 
     const raceFilters = [];
@@ -344,7 +323,7 @@ export function RaceManagement() {
               </h2>
             </div>
             <div className="card-body">
-              <form id="race-form" noValidate onSubmit={handleSubmit}>
+              <form id="race-form" onSubmit={handleSubmit}>
                 <input type="hidden" id="race-id" value={formId} />
                 <div className="mb-3">
                   <label className="form-label" htmlFor="race-season">
@@ -357,6 +336,12 @@ export function RaceManagement() {
                     onChange={(e) => {
                       setFormSeason(e.target.value);
                       setFormCup("");
+                      if (seasonError) setSeasonError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setSeasonError(t("validation.seasonRequired"));
                     }}
                     required
                   >
@@ -403,7 +388,15 @@ export function RaceManagement() {
                     className={`form-control ${nameError ? "is-invalid" : ""}`}
                     id="race-name"
                     value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                      if (nameError) setNameError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setNameError(t("validation.raceNameRequired"));
+                    }}
                     required
                   />
                   {nameError && (
@@ -419,7 +412,15 @@ export function RaceManagement() {
                     className={`form-control ${locationError ? "is-invalid" : ""}`}
                     id="race-location"
                     value={formLocation}
-                    onChange={(e) => setFormLocation(e.target.value)}
+                    onChange={(e) => {
+                      setFormLocation(e.target.value);
+                      if (locationError) setLocationError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setLocationError(t("validation.locationRequired"));
+                    }}
                     required
                   />
                   {locationError && (
@@ -435,7 +436,15 @@ export function RaceManagement() {
                     className={`form-control ${dateTimeError ? "is-invalid" : ""}`}
                     id="race-datetime"
                     value={formDateTime}
-                    onChange={(e) => setFormDateTime(e.target.value)}
+                    onChange={(e) => {
+                      setFormDateTime(e.target.value);
+                      if (dateTimeError) setDateTimeError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setDateTimeError(t("validation.dateTimeRequired"));
+                    }}
                     required
                   />
                   {dateTimeError && (

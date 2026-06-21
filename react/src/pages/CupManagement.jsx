@@ -12,10 +12,8 @@ import {
 } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/formatting";
 import {
-  isRequired,
   isValidDateRange,
   isValidCupDateRange,
-  isValidHexColor,
 } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
@@ -101,20 +99,9 @@ export function CupManagement() {
     setStartError("");
     setEndError("");
 
+    // Cross-field checks (HTML can't express these natively).
     let hasError = false;
-    if (!isRequired(seasonId)) {
-      setSeasonError(t("validation.seasonRequired"));
-      hasError = true;
-    }
-    if (!isRequired(name)) {
-      setNameError(t("validation.cupNameRequired"));
-      hasError = true;
-    }
-    if (!isRequired(startDate)) {
-      setStartError(t("validation.startDateRequired"));
-      hasError = true;
-    }
-    if (!isRequired(endDate) || !isValidDateRange(startDate, endDate)) {
+    if (startDate && endDate && !isValidDateRange(startDate, endDate)) {
       setEndError(t("validation.endDateAfterStart"));
       hasError = true;
     }
@@ -122,6 +109,8 @@ export function CupManagement() {
     const season = allSeasons.find((s) => String(s.id) === seasonId);
     if (
       season &&
+      startDate &&
+      endDate &&
       !isValidCupDateRange(
         season.start_date,
         season.end_date,
@@ -199,6 +188,7 @@ export function CupManagement() {
   const seasonMap = Object.fromEntries(
     allSeasons.map((s) => [String(s.id), s]),
   );
+  const cupSeason = seasonMap[String(formSeason)];
 
   return (
     <div className="container mt-4">
@@ -217,7 +207,7 @@ export function CupManagement() {
               </h2>
             </div>
             <div className="card-body">
-              <form id="cup-form" noValidate onSubmit={handleSubmit}>
+              <form id="cup-form" onSubmit={handleSubmit}>
                 <input type="hidden" id="cup-id" value={formId} />
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-season">
@@ -227,7 +217,15 @@ export function CupManagement() {
                     className={`form-select ${seasonError ? "is-invalid" : ""}`}
                     id="cup-season"
                     value={formSeason}
-                    onChange={(e) => setFormSeason(e.target.value)}
+                    onChange={(e) => {
+                      setFormSeason(e.target.value);
+                      if (seasonError) setSeasonError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setSeasonError(t("validation.seasonRequired"));
+                    }}
                     required
                   >
                     <option value="">
@@ -252,7 +250,15 @@ export function CupManagement() {
                     className={`form-control ${nameError ? "is-invalid" : ""}`}
                     id="cup-name"
                     value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                      if (nameError) setNameError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setNameError(t("validation.cupNameRequired"));
+                    }}
                     required
                   />
                   {nameError && (
@@ -268,7 +274,17 @@ export function CupManagement() {
                     className={`form-control ${startError ? "is-invalid" : ""}`}
                     id="cup-start"
                     value={formStart}
-                    onChange={(e) => setFormStart(e.target.value)}
+                    min={cupSeason?.start_date || undefined}
+                    max={cupSeason?.end_date || undefined}
+                    onChange={(e) => {
+                      setFormStart(e.target.value);
+                      if (startError) setStartError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setStartError(t("validation.startDateRequired"));
+                    }}
                     required
                   />
                   {startError && (
@@ -284,7 +300,17 @@ export function CupManagement() {
                     className={`form-control ${endError ? "is-invalid" : ""}`}
                     id="cup-end"
                     value={formEnd}
-                    onChange={(e) => setFormEnd(e.target.value)}
+                    min={formStart || cupSeason?.start_date || undefined}
+                    max={cupSeason?.end_date || undefined}
+                    onChange={(e) => {
+                      setFormEnd(e.target.value);
+                      if (endError) setEndError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setEndError(t("validation.endDateAfterStart"));
+                    }}
                     required
                   />
                   {endError && (

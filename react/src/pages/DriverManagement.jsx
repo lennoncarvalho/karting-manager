@@ -10,7 +10,7 @@ import {
   uploadPicture,
 } from "@/lib/api";
 import { DriverImage } from "@/components/driverImage";
-import { isRequired, isValidEmail } from "@/lib/validation";
+import { isValidEmail } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function DriverManagement() {
@@ -90,29 +90,18 @@ export function DriverManagement() {
     setNameError("");
     setWeightError("");
 
-    let hasError = false;
-
-    if (!isRequired(email) || !isValidEmail(email)) {
+    // Defense-in-depth (native HTML5 type="email" already blocks bad input).
+    if (!isValidEmail(email)) {
       setEmailError(t("validation.validEmailRequired"));
-      hasError = true;
+      notify(t("notifications.pleaseFix"), "warning");
+      return;
     }
-    if (!isRequired(name)) {
-      setNameError(t("validation.driverNameRequired"));
-      hasError = true;
-    }
-    if (weightValue && Number.isNaN(weight)) {
-      setWeightError(t("validation.weightMustBeNumber"));
-      hasError = true;
-    }
+    // Cross-field uniqueness check (HTML can't express this).
     if (
       !formId &&
       drivers.some((d) => d.email.toLowerCase() === email.toLowerCase())
     ) {
       setEmailError(t("validation.emailExists"));
-      hasError = true;
-    }
-
-    if (hasError) {
       notify(t("notifications.pleaseFix"), "warning");
       return;
     }
@@ -201,7 +190,7 @@ export function DriverManagement() {
               </h2>
             </div>
             <div className="card-body">
-              <form id="driver-form" noValidate onSubmit={handleSubmit}>
+              <form id="driver-form" onSubmit={handleSubmit}>
                 <input type="hidden" id="driver-id" value={formId} />
                 <div className="mb-3">
                   <label className="form-label" htmlFor="driver-email">
@@ -212,7 +201,20 @@ export function DriverManagement() {
                     className={`form-control ${emailError ? "is-invalid" : ""}`}
                     id="driver-email"
                     value={formEmail}
-                    onChange={(e) => setFormEmail(e.target.value)}
+                    onChange={(e) => {
+                      setFormEmail(e.target.value);
+                      if (emailError) setEmailError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setEmailError(
+                        e.target.validity.valueMissing
+                          ? t("validation.emailRequired")
+                          : t("validation.validEmailRequired"),
+                      );
+                    }}
+                    autoComplete="email"
                     disabled={editing}
                     required
                   />
@@ -229,7 +231,15 @@ export function DriverManagement() {
                     className={`form-control ${nameError ? "is-invalid" : ""}`}
                     id="driver-name"
                     value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                      if (nameError) setNameError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setNameError(t("validation.driverNameRequired"));
+                    }}
                     required
                   />
                   {nameError && (
@@ -309,7 +319,15 @@ export function DriverManagement() {
                     step="0.1"
                     placeholder={t("driverManagement.form.weightPlaceholder")}
                     value={formWeight}
-                    onChange={(e) => setFormWeight(e.target.value)}
+                    onChange={(e) => {
+                      setFormWeight(e.target.value);
+                      if (weightError) setWeightError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setWeightError(t("validation.weightMustBeNumber"));
+                    }}
                   />
                   {weightError && (
                     <div className="invalid-feedback">{weightError}</div>

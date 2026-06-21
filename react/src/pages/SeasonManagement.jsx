@@ -9,11 +9,7 @@ import {
   deleteSeason,
 } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/formatting";
-import {
-  isRequired,
-  isValidDateRange,
-  isValidHexColor,
-} from "@/lib/validation";
+import { isValidDateRange } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function SeasonManagement() {
@@ -34,7 +30,6 @@ export function SeasonManagement() {
   const [nameError, setNameError] = useState("");
   const [startError, setStartError] = useState("");
   const [endError, setEndError] = useState("");
-  const [colorError, setColorError] = useState("");
 
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -66,7 +61,6 @@ export function SeasonManagement() {
     setNameError("");
     setStartError("");
     setEndError("");
-    setColorError("");
     setEditing(false);
   };
 
@@ -84,27 +78,11 @@ export function SeasonManagement() {
     setNameError("");
     setStartError("");
     setEndError("");
-    setColorError("");
 
-    let hasError = false;
-    if (!isRequired(name)) {
-      setNameError(t("validation.seasonNameRequired"));
-      hasError = true;
-    }
-    if (!isRequired(start)) {
-      setStartError(t("validation.startDateRequired"));
-      hasError = true;
-    }
-    if (!isRequired(end) || !isValidDateRange(start, end)) {
+    // Cross-field check: end must be >= start. Native min on the end input
+    // handles instant UX feedback; keep JS guard for defense-in-depth.
+    if (start && end && !isValidDateRange(start, end)) {
       setEndError(t("validation.endDateAfterStart"));
-      hasError = true;
-    }
-    if (!isValidHexColor(color)) {
-      setColorError(t("validation.accentColorValid"));
-      hasError = true;
-    }
-
-    if (hasError) {
       notify(t("notifications.pleaseFix"), "warning");
       return;
     }
@@ -180,7 +158,7 @@ export function SeasonManagement() {
               </h2>
             </div>
             <div className="card-body">
-              <form id="season-form" noValidate onSubmit={handleSubmit}>
+              <form id="season-form" onSubmit={handleSubmit}>
                 <input type="hidden" id="season-id" value={formId} />
                 <div className="mb-3">
                   <label className="form-label" htmlFor="season-name">
@@ -191,7 +169,15 @@ export function SeasonManagement() {
                     className={`form-control ${nameError ? "is-invalid" : ""}`}
                     id="season-name"
                     value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    onChange={(e) => {
+                      setFormName(e.target.value);
+                      if (nameError) setNameError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setNameError(t("validation.seasonNameRequired"));
+                    }}
                     required
                   />
                   {nameError && (
@@ -207,7 +193,15 @@ export function SeasonManagement() {
                     className={`form-control ${startError ? "is-invalid" : ""}`}
                     id="season-start"
                     value={formStart}
-                    onChange={(e) => setFormStart(e.target.value)}
+                    onChange={(e) => {
+                      setFormStart(e.target.value);
+                      if (startError) setStartError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setStartError(t("validation.startDateRequired"));
+                    }}
                     required
                   />
                   {startError && (
@@ -223,7 +217,16 @@ export function SeasonManagement() {
                     className={`form-control ${endError ? "is-invalid" : ""}`}
                     id="season-end"
                     value={formEnd}
-                    onChange={(e) => setFormEnd(e.target.value)}
+                    min={formStart || undefined}
+                    onChange={(e) => {
+                      setFormEnd(e.target.value);
+                      if (endError) setEndError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setEndError(t("validation.endDateAfterStart"));
+                    }}
                     required
                   />
                   {endError && (
@@ -256,15 +259,12 @@ export function SeasonManagement() {
                   </label>
                   <input
                     type="color"
-                    className={`form-control form-control-color ${colorError ? "is-invalid" : ""}`}
+                    className="form-control form-control-color"
                     id="season-color"
                     value={formColor}
                     onChange={(e) => setFormColor(e.target.value)}
                     required
                   />
-                  {colorError && (
-                    <div className="invalid-feedback">{colorError}</div>
-                  )}
                 </div>
                 <div className="d-flex flex-column flex-sm-row gap-2">
                   <button

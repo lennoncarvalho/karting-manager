@@ -3,7 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
-import { isRequired } from "@/lib/validation";
+import { isValidEmail } from "@/lib/validation";
 
 export function DriverLoginPage() {
   const { t } = useTranslation();
@@ -26,8 +26,10 @@ export function DriverLoginPage() {
     setEmailError("");
     setServerError("");
 
-    if (!isRequired(email)) {
-      setEmailError(t("validation.emailRequired"));
+    // Defense-in-depth: native HTML5 already blocks invalid emails on submit,
+    // but keep this guard so no bad input ever reaches Supabase.
+    if (!isValidEmail(email)) {
+      setEmailError(t("validation.validEmailRequired"));
       return;
     }
 
@@ -105,7 +107,7 @@ export function DriverLoginPage() {
                   <p className="text-muted small mb-3" style={{ whiteSpace: "pre-line" }}>
                     {t("driverLogin.instructions")}
                   </p>
-                  <form noValidate onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                       <label htmlFor="driver-email" className="form-label">
                         {t("common.labels.email")}
@@ -115,7 +117,19 @@ export function DriverLoginPage() {
                         className={`form-control form-control-lg ${emailError ? "is-invalid" : ""}`}
                         id="driver-email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (emailError) setEmailError("");
+                          e.target.setCustomValidity("");
+                        }}
+                        onInvalid={(e) => {
+                          e.preventDefault();
+                          setEmailError(
+                            e.target.validity.valueMissing
+                              ? t("validation.emailRequired")
+                              : t("validation.validEmailRequired"),
+                          );
+                        }}
                         autoComplete="email"
                         inputMode="email"
                         required

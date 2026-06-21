@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useAuth } from "@/context/AuthContext";
-import { isRequired, isValidEmail, isValidDateRange } from "@/lib/validation";
+import { isValidEmail } from "@/lib/validation";
 import { changePassword, createAdmin } from "@/lib/auth";
 import { useLoading } from "@/context/LoadingContext";
 import { Link } from "react-router-dom";
@@ -48,18 +48,8 @@ export function AdminDashboard() {
     setNewPasswordError("");
     setConfirmPasswordError("");
 
-    let hasError = false;
-
-    if (!isRequired(newPassword)) {
-      setNewPasswordError(t("validation.newPasswordRequired"));
-      hasError = true;
-    }
     if (newPassword !== confirmPassword) {
       setConfirmPasswordError(t("validation.passwordsMustMatch"));
-      hasError = true;
-    }
-
-    if (hasError) {
       notify(t("notifications.pleaseFix"), "warning");
       return;
     }
@@ -87,18 +77,11 @@ export function AdminDashboard() {
 
     const email = adminEmail.trim();
     const password = adminTempPassword;
-    let hasError = false;
 
-    if (!isRequired(email) || !isValidEmail(email)) {
+    // Defense-in-depth: native HTML5 validation already blocks invalid emails,
+    // but keep this guard so no bad input ever reaches Supabase.
+    if (!isValidEmail(email)) {
       setAdminEmailError(t("validation.validEmailRequired"));
-      hasError = true;
-    }
-    if (!isRequired(password)) {
-      setAdminPasswordError(t("validation.tempPasswordRequired"));
-      hasError = true;
-    }
-
-    if (hasError) {
       notify(t("notifications.pleaseFix"), "warning");
       return;
     }
@@ -209,11 +192,7 @@ export function AdminDashboard() {
               </h2>
             </div>
             <div className="card-body">
-              <form
-                id="password-form"
-                noValidate
-                onSubmit={handlePasswordSubmit}
-              >
+              <form id="password-form" onSubmit={handlePasswordSubmit}>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="new-password">
                     {t("adminDashboard.changePassword.newPassword")}
@@ -224,7 +203,16 @@ export function AdminDashboard() {
                     id="new-password"
                     required
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (newPasswordError) setNewPasswordError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setNewPasswordError(t("validation.newPasswordRequired"));
+                    }}
+                    autoComplete="new-password"
                   />
                   {newPasswordError && (
                     <div className="invalid-feedback">{newPasswordError}</div>
@@ -240,7 +228,18 @@ export function AdminDashboard() {
                     id="confirm-password"
                     required
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (confirmPasswordError) setConfirmPasswordError("");
+                      e.target.setCustomValidity("");
+                    }}
+                    onInvalid={(e) => {
+                      e.preventDefault();
+                      setConfirmPasswordError(
+                        t("validation.newPasswordRequired"),
+                      );
+                    }}
+                    autoComplete="new-password"
                   />
                   {confirmPasswordError && (
                     <div className="invalid-feedback">
@@ -273,11 +272,7 @@ export function AdminDashboard() {
             <div className="card-body">
               {isFirstAdmin ? (
                 <>
-                  <form
-                    id="admin-form"
-                    noValidate
-                    onSubmit={handleInviteSubmit}
-                  >
+                  <form id="admin-form" onSubmit={handleInviteSubmit}>
                     <div className="mb-3">
                       <label className="form-label" htmlFor="admin-email">
                         {t("common.labels.email")}
@@ -288,7 +283,20 @@ export function AdminDashboard() {
                         id="admin-email"
                         required
                         value={adminEmail}
-                        onChange={(e) => setAdminEmail(e.target.value)}
+                        onChange={(e) => {
+                          setAdminEmail(e.target.value);
+                          if (adminEmailError) setAdminEmailError("");
+                          e.target.setCustomValidity("");
+                        }}
+                        onInvalid={(e) => {
+                          e.preventDefault();
+                          setAdminEmailError(
+                            e.target.validity.valueMissing
+                              ? t("validation.emailRequired")
+                              : t("validation.validEmailRequired"),
+                          );
+                        }}
+                        autoComplete="email"
                       />
                       {adminEmailError && (
                         <div className="invalid-feedback">
@@ -306,7 +314,18 @@ export function AdminDashboard() {
                         id="admin-password"
                         required
                         value={adminTempPassword}
-                        onChange={(e) => setAdminTempPassword(e.target.value)}
+                        onChange={(e) => {
+                          setAdminTempPassword(e.target.value);
+                          if (adminPasswordError) setAdminPasswordError("");
+                          e.target.setCustomValidity("");
+                        }}
+                        onInvalid={(e) => {
+                          e.preventDefault();
+                          setAdminPasswordError(
+                            t("validation.tempPasswordRequired"),
+                          );
+                        }}
+                        autoComplete="new-password"
                       />
                       {adminPasswordError && (
                         <div className="invalid-feedback">

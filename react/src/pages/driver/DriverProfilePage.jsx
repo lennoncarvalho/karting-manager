@@ -269,7 +269,7 @@ export function DriverProfilePage() {
               </div>
 
               {/* Editable fields */}
-              <form noValidate onSubmit={handleSave}>
+              <form onSubmit={handleSave}>
                 <div className="mb-3">
                   <label htmlFor="dp-nickname" className="form-label">
                     {t("common.labels.nickname")}
