@@ -351,6 +351,7 @@
     "providerAuto": "Auto (Azure Document Intelligence + Tesseract)",
     "providerTesseract": "Tesseract (no navegador)",
     "chooseImage": "Escolha uma imagem",
+    "imageHint": "Para uma importação bem-sucedida, use uma foto de boa qualidade. Deixe-a em preto e branco, recorte áreas indesejadas e mantenha apenas o nome do piloto, posição e tempo.",
     "runOcr": "Executar OCR",
     "cropTitle": "Recorte e melhoria",
     "enhance": "Melhorar para OCR",
