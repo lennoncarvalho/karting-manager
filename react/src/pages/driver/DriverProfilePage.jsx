@@ -165,10 +165,7 @@ export function DriverProfilePage() {
 
   if (loading || fetching) {
     return (
-      <div
-        className="d-flex align-items-center justify-content-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="d-flex align-items-center justify-content-center min-vh-60">
         <div className="spinner-border spinner-border-sm" role="status">
           <span className="visually-hidden">{t("common.status.loading")}</span>
         </div>
@@ -185,8 +182,7 @@ export function DriverProfilePage() {
             <div className="card shadow-sm">
               <div className="card-body py-5">
                 <i
-                  className="bi bi-exclamation-circle d-block mb-3"
-                  style={{ fontSize: "2.5rem", color: "var(--bs-warning)" }}
+                  className="bi bi-exclamation-circle d-block mb-3 fs-1 text-warning"
                 ></i>
                 <p className="fw-semibold mb-1">
                   {t("driverProfile.notRegistered")}
@@ -235,8 +231,7 @@ export function DriverProfilePage() {
                 <div>
                   <label
                     htmlFor="avatar-upload"
-                    className="btn btn-sm btn-outline-primary"
-                    style={{ minHeight: "40px", lineHeight: "28px" }}
+                    className="btn btn-sm btn-outline-primary min-h-10 d-flex align-items-center"
                   >
                     {uploading
                       ? t("driverProfile.uploading")
@@ -353,9 +348,8 @@ export function DriverProfilePage() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100 py-2"
+                  className="btn btn-primary w-100 py-2 min-h-12"
                   disabled={saving}
-                  style={{ minHeight: "48px" }}
                 >
                   {saving
                     ? t("common.status.updating")

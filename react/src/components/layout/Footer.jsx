@@ -7,7 +7,7 @@ export function Footer() {
 
   return (
     <footer
-      className="mt-5 p-4"
+      className="mt-5 p-4 bg-custom-accent"
       style={{ backgroundColor: "var(--season-accent)" }}
       role="contentinfo"
     >
@@ -49,7 +49,7 @@ export function Footer() {
                 className="text-white text-decoration-none"
                 aria-label={t("footer.githubAria")}
               >
-                <i className="bi bi-github" style={{ fontSize: "1.5rem" }}></i>
+                <i className="bi bi-github fs-4"></i>
               </a>
               <div
                 className="d-flex align-items-center gap-2"
@@ -59,7 +59,7 @@ export function Footer() {
                 <span className="small me-1">{t("footer.selectLanguage")}</span>
                 <button
                   type="button"
-                  className={`btn btn-link text-white p-1 fs-5 ${currentLang === "pt-BR" ? "opacity-100" : "opacity-50"}`}
+                  className={`btn btn-link text-white p-1 ${currentLang === "pt-BR" ? "opacity-100" : "opacity-50"}`}
                   onClick={() => i18n.changeLanguage("pt-BR")}
                   aria-label={t("footer.languagePortuguese")}
                   aria-pressed={currentLang === "pt-BR"}
@@ -68,7 +68,7 @@ export function Footer() {
                 </button>
                 <button
                   type="button"
-                  className={`btn btn-link text-white p-1 fs-5 ${currentLang === "en" ? "opacity-100" : "opacity-50"}`}
+                  className={`btn btn-link text-white p-1 ${currentLang === "en" ? "opacity-100" : "opacity-50"}`}
                   onClick={() => i18n.changeLanguage("en")}
                   aria-label={t("footer.languageEnglish")}
                   aria-pressed={currentLang === "en"}

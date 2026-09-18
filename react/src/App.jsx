@@ -29,8 +29,7 @@ function AdminRoute({ children }) {
   if (loading) {
     return (
       <div
-        className="d-flex align-items-center justify-content-center"
-        style={{ minHeight: "60vh" }}
+        className="d-flex align-items-center justify-content-center min-vh-60"
       >
         <div className="spinner-border spinner-border-sm" role="status">
           <span className="visually-hidden">Loading...</span>

@@ -34,5 +34,15 @@ export default defineConfig({
     minify: 'esbuild',
     // Required for Sentry to symbolicate stack traces in production.
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          bootstrap: ['bootstrap'],
+          sentry: ['@sentry/react', '@sentry/vite-plugin'],
+          i18n: ['react-i18next', 'i18next'],
+        },
+      },
+    },
   },
 });

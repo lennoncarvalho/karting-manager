@@ -35,8 +35,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={{ notify }}>
       {children}
       <div
-        className="position-fixed top-0 end-0 m-3"
-        style={{ zIndex: 9999 }}
+        className="position-fixed top-0 end-0 m-3 z-5"
         aria-live="polite"
       >
         {toasts.map((toast) => (

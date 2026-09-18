@@ -37,8 +37,7 @@ export function AuthCallback() {
 
   return (
     <div
-      className="d-flex flex-column align-items-center justify-content-center"
-      style={{ minHeight: "60vh" }}
+      className="d-flex flex-column align-items-center justify-content-center min-vh-60"
     >
       {error ? (
         <div className="text-center">

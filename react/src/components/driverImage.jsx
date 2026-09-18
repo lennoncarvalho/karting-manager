@@ -20,12 +20,17 @@ export function DriverImage({
 }) {
   const phUrl = getDriverPlaceholderUrl(seed, placeholderSize, style);
   const imgUrl = src || phUrl;
+  const imgSizeClass = {
+    32: "w-8 h-8",
+    36: "w-9 h-9",
+    120: "w-30 h-30",
+  }[size] || `w-${Math.round(size / 4)} h-${Math.round(size / 4)}`;
+
   return (
     <img
       src={imgUrl}
       alt={alt || "Driver"}
-      className={className}
-      style={{ width: size, height: size, objectFit: "cover" }}
+      className={`${className} ${imgSizeClass} object-cover rounded`}
       loading="lazy"
       decoding="async"
       onError={(e) => {

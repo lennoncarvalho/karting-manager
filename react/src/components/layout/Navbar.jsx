@@ -30,7 +30,7 @@ export function Navbar() {
 
   return (
     <nav
-      className="navbar navbar-expand-lg navbar-dark"
+      className="navbar navbar-expand-lg navbar-dark bg-custom-accent"
       style={{ backgroundColor: "var(--season-accent)" }}
     >
       <div className="container">
@@ -39,7 +39,7 @@ export function Navbar() {
           className="navbar-brand d-flex align-items-center"
           aria-label={t("nav.brandAria")}
         >
-          <img src={logoUrl} alt="" height="80" style={{ maxHeight: "60px" }} />
+          <img src={logoUrl} alt="" height="80" className="max-h-15" />
         </Link>
 
         <button

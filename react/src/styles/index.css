@@ -19,3 +19,27 @@ html, body, #root {
 table.table thead th {
     background-color: var(--season-accent) !important;
 }
+
+.bg-custom-accent {
+  background-color: var(--season-accent);
+}
+
+.white-space-pre-line {
+  white-space: pre-line;
+}
+
+.z-3 {
+  z-index: 3 !important;
+}
+
+.z-5 {
+  z-index: 5 !important;
+}
+
+.w-3 {
+  width: 3rem !important;
+}
+
+.h-3 {
+  height: 3rem !important;
+}

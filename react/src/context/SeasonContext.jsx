@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { listSeasons } from "@/lib/api";
+import { listSeasons, invalidateSeasonCache } from "@/lib/api";
 import { getStoredSeasonId, setStoredSeasonId } from "@/lib/theme";
 import { useTranslation } from "react-i18next";
 
@@ -92,6 +92,7 @@ export function SeasonProvider({ children }) {
             newSeason.accent_color,
           );
         }
+        invalidateSeasonCache();
       }
     } else {
       document.documentElement.style.removeProperty("--season-accent");
