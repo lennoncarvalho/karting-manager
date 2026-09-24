@@ -182,9 +182,11 @@ export function RaceDetail() {
                   (result.drivers ? result.drivers.email : null) ||
                   (result.drivers ? result.drivers.name : null)
                 }
-                alt={result.drivers
-                  ? result.drivers.name
-                  : t("common.labels.driver")}
+                alt={
+                  result.drivers
+                    ? result.drivers.name
+                    : t("common.labels.driver")
+                }
                 className="rounded-circle"
                 size={32}
               />
@@ -407,28 +409,21 @@ export function RaceDetail() {
 
       {renderRaceInfo()}
 
-      <div className="card shadow-sm">
-        <div className="card-header text-white">
-          <h2 className="h6 mb-0">{t("raceDetail.resultsTitle")}</h2>
-        </div>
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-striped align-middle">
-              <thead>
-                <tr>
-                  <th>{t("raceDetail.table.position")}</th>
-                  <th>{t("raceDetail.table.driver")}</th>
-                  <th>{t("raceDetail.table.grid")}</th>
-                  <th>{t("raceDetail.table.bestLap")}</th>
-                  <th>{t("raceDetail.table.penalties")}</th>
-                  <th>{t("raceDetail.table.dq")}</th>
-                  <th className="text-end">{t("raceDetail.table.actions")}</th>
-                </tr>
-              </thead>
-              <tbody id="results-table-body">{renderResults()}</tbody>
-            </table>
-          </div>
-        </div>
+      <div className="table-responsive">
+        <table className="table table-striped align-middle table-bordered">
+          <thead>
+            <tr>
+              <th>{t("raceDetail.table.position")}</th>
+              <th>{t("raceDetail.table.driver")}</th>
+              <th>{t("raceDetail.table.grid")}</th>
+              <th>{t("raceDetail.table.bestLap")}</th>
+              <th>{t("raceDetail.table.penalties")}</th>
+              <th>{t("raceDetail.table.dq")}</th>
+              <th className="text-end">{t("raceDetail.table.actions")}</th>
+            </tr>
+          </thead>
+          <tbody id="results-table-body">{renderResults()}</tbody>
+        </table>
       </div>
 
       {showResultModal && (

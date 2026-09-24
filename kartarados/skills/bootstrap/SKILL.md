@@ -52,7 +52,7 @@ Preload the cached accent color BEFORE first paint by reading from localStorage 
 - **Page container**: `<main class="container mt-4 mb-5">` for centered content with default padding.
 - **Section heading**: `<div class="d-flex align-items-center gap-2 mb-3">` with the title and any inline controls.
 - **Forms**: Bootstrap `form-control`, `form-select`, `form-check`, `form-label`. Use `form-floating` for compact label-on-top inputs.
-- **Tables**: `<table class="table table-striped align-middle">` wrapped in `<div class="table-responsive">`.
+- **Tables**: `<table class="table table-striped align-middle mb-0">` wrapped in `<div class="table-responsive">`.
 - **Buttons**: `btn btn-primary` / `btn-outline-secondary` / `btn-danger`. Inside `kt-button` shared component, derive class from `variant` input.
 - **Modals**: Open via `NgbModal.open(MyComponent)` — never hand-roll Bootstrap modal markup in Angular.
 

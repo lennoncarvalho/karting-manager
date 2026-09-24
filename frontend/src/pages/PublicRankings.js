@@ -15,7 +15,7 @@ import * as Sentry from "@sentry/browser";
 const PublicRankings = {
   async render(container) {
     container.innerHTML = '';
-    
+
     const main = document.createElement('main');
     main.className = 'container mt-4';
     main.innerHTML = `
@@ -31,11 +31,11 @@ const PublicRankings = {
       <div class="tab-content" id="rankings-content"></div>
     `;
     container.appendChild(main);
-    
+
     const seasonSelect = main.querySelector('#season-name');
     const tabs = main.querySelector('#rankings-tabs');
     const content = main.querySelector('#rankings-content');
-    
+
     const renderLoading = () => {
       tabs.innerHTML = '';
       content.innerHTML = `
@@ -45,14 +45,14 @@ const PublicRankings = {
         </div>
       `;
     };
-    
+
     const renderEmpty = (message = t('publicRankings.noRacesOrResults')) => {
       tabs.innerHTML = '';
       content.innerHTML = `
         <div class="alert alert-info">${message}</div>
       `;
     };
-    
+
     try {
       renderLoading();
 
@@ -169,7 +169,7 @@ const PublicRankings = {
             ranking: 'penalties'
           }
         ];
-        
+
         tabs.innerHTML = sections.map((section, index) => `
           <li class="nav-item" role="presentation">
             <button class="nav-link ${index === 0 ? 'active' : ''} text-nowrap" id="${section.id}-tab" data-bs-toggle="tab" data-bs-target="#${section.id}" type="button" role="tab">
@@ -177,7 +177,7 @@ const PublicRankings = {
             </button>
           </li>
         `).join('');
-        
+
         content.innerHTML = sections.map((section, index) => {
           if (section.type === 'calendar') {
             const orderedRaces = [...section.races].sort((left, right) => {
@@ -189,7 +189,7 @@ const PublicRankings = {
             return `
               <div class="tab-pane fade ${index === 0 ? 'show active' : ''}" id="${section.id}" role="tabpanel">
                 <div class="table-responsive">
-                  <table class="table table-striped align-middle">
+                  <table class="table table-striped align-middle mb-0">
                     <thead>
                       <tr>
                         <th>${t('publicRankings.table.raceDate')}</th>
@@ -231,7 +231,7 @@ const PublicRankings = {
             : calculateRankings(section.races, sectionResults, {
               type: section.id === 'overall' ? 'overall' : 'cup'
             });
-          
+
           if (!section.races.length || !sectionResults.length) {
             return `
               <div class="tab-pane fade ${index === 0 ? 'show active' : ''}" id="${section.id}" role="tabpanel">
@@ -262,7 +262,7 @@ const PublicRankings = {
           return `
             <div class="tab-pane fade ${index === 0 ? 'show active' : ''}" id="${section.id}" role="tabpanel">
               <div class="table-responsive">
-                <table class="table table-striped align-middle">
+                <table class="table table-striped align-middle mb-0">
                   <thead>
                     <tr>
                       <th>${t('publicRankings.table.position')}</th>

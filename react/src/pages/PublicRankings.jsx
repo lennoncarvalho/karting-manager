@@ -212,7 +212,6 @@ export function PublicRankings() {
           seed={driver.seed || driver.name}
           alt={driver.name}
           className="rounded-circle"
-          size={32}
         />
         <span>{driver.name}</span>
       </div>
@@ -283,7 +282,7 @@ export function PublicRankings() {
                     key={section.id}
                   >
                     <div className="table-responsive">
-                      <table className="table table-striped align-middle">
+                      <table className="table table-striped align-middle mb-0">
                         <thead>
                           <tr>
                             <th>{t("publicRankings.table.raceDate")}</th>
@@ -373,7 +372,7 @@ export function PublicRankings() {
                   key={section.id}
                 >
                   <div className="table-responsive">
-                    <table className="table table-striped align-middle">
+                    <table className="table table-striped align-middle mb-0">
                       <thead>
                         <tr>
                           <th>{t("publicRankings.table.position")}</th>
@@ -397,7 +396,6 @@ export function PublicRankings() {
                                   seed={driver.driverId || driver.name}
                                   alt={driver.name}
                                   className="rounded-circle"
-                                  size={36}
                                 />
                                 <span>{driver.name}</span>
                               </div>

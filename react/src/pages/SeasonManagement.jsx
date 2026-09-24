@@ -292,91 +292,84 @@ export function SeasonManagement() {
         </div>
 
         <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header text-white">
-              <h2 className="h6 mb-0">{t("seasonManagement.list.title")}</h2>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>{t("seasonManagement.table.name")}</th>
-                      <th>{t("seasonManagement.table.start")}</th>
-                      <th>{t("seasonManagement.table.end")}</th>
-                      <th>{t("seasonManagement.table.accent")}</th>
-                      <th className="text-end">
-                        {t("seasonManagement.table.actions")}
-                      </th>
+          <div className="table-responsive">
+            <table className="table table-striped align-middle table-bordered">
+              <thead>
+                <tr>
+                  <th>{t("seasonManagement.table.name")}</th>
+                  <th>{t("seasonManagement.table.start")}</th>
+                  <th>{t("seasonManagement.table.end")}</th>
+                  <th>{t("seasonManagement.table.accent")}</th>
+                  <th className="text-end">
+                    {t("seasonManagement.table.actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingList ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                        ></div>
+                        <span>{t("common.status.loadingSeasons")}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : !seasons.length ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      {t("seasonManagement.list.empty")}
+                    </td>
+                  </tr>
+                ) : (
+                  seasons.map((season) => (
+                    <tr key={season.id}>
+                      <td>{season.name}</td>
+                      <td>
+                        {season.start_date
+                          ? formatDisplayDate(season.start_date)
+                          : "-"}
+                      </td>
+                      <td>
+                        {season.end_date
+                          ? formatDisplayDate(season.end_date)
+                          : "-"}
+                      </td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: season.accent_color,
+                            color: accentContrast(season.accent_color),
+                          }}
+                        >
+                          {season.accent_color}
+                        </span>
+                      </td>
+                      <td className="text-end">
+                        <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleEdit(season)}
+                          >
+                            {t("common.actions.edit")}
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleDeleteRequest(season)}
+                          >
+                            {t("common.actions.delete")}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {loadingList ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          <div className="d-flex align-items-center justify-content-center gap-2">
-                            <div
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                            ></div>
-                            <span>{t("common.status.loadingSeasons")}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : !seasons.length ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          {t("seasonManagement.list.empty")}
-                        </td>
-                      </tr>
-                    ) : (
-                      seasons.map((season) => (
-                        <tr key={season.id}>
-                          <td>{season.name}</td>
-                          <td>
-                            {season.start_date
-                              ? formatDisplayDate(season.start_date)
-                              : "-"}
-                          </td>
-                          <td>
-                            {season.end_date
-                              ? formatDisplayDate(season.end_date)
-                              : "-"}
-                          </td>
-                          <td>
-                            <span
-                              className="badge"
-                              style={{
-                                backgroundColor: season.accent_color,
-                                color: accentContrast(season.accent_color),
-                              }}
-                            >
-                              {season.accent_color}
-                            </span>
-                          </td>
-                          <td className="text-end">
-                            <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(season)}
-                              >
-                                {t("common.actions.edit")}
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteRequest(season)}
-                              >
-                                {t("common.actions.delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

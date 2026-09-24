@@ -373,89 +373,80 @@ export function DriverManagement() {
         </div>
 
         <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header text-white">
-              <h2 className="h6 mb-0">{t("driverManagement.list.title")}</h2>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>{t("driverManagement.table.driver")}</th>
-                      <th>{t("driverManagement.table.weight")}</th>
-                      <th>{t("driverManagement.table.nickname")}</th>
-                      <th>{t("driverManagement.table.birthDate")}</th>
-                      <th className="text-end">
-                        {t("driverManagement.table.actions")}
-                      </th>
+          <div className="table-responsive">
+            <table className="table table-striped align-middle table-bordered">
+              <thead>
+                <tr>
+                  <th>{t("driverManagement.table.driver")}</th>
+                  <th>{t("driverManagement.table.weight")}</th>
+                  <th>{t("driverManagement.table.nickname")}</th>
+                  <th>{t("driverManagement.table.birthDate")}</th>
+                  <th className="text-end">
+                    {t("driverManagement.table.actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingList ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                        ></div>
+                        <span>{t("common.status.loadingDrivers")}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : !drivers.length ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      {t("driverManagement.list.empty")}
+                    </td>
+                  </tr>
+                ) : (
+                  drivers.map((driver) => (
+                    <tr key={driver.id}>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <DriverImage
+                            src={driver.picture_url}
+                            seed={driver.id || driver.email || driver.name}
+                            alt={driver.name}
+                            className="rounded-circle"
+                          />
+                          <span>{driver.name}</span>
+                        </div>
+                      </td>
+                      <td>
+                        {driver.weight !== null && driver.weight !== undefined
+                          ? driver.weight
+                          : "-"}
+                      </td>
+                      <td>{driver.nickname || "-"}</td>
+                      <td>{driver.birth_date || "-"}</td>
+                      <td className="text-end">
+                        <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleEdit(driver)}
+                          >
+                            {t("common.actions.edit")}
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleDeleteRequest(driver)}
+                          >
+                            {t("common.actions.delete")}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {loadingList ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          <div className="d-flex align-items-center justify-content-center gap-2">
-                            <div
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                            ></div>
-                            <span>{t("common.status.loadingDrivers")}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : !drivers.length ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          {t("driverManagement.list.empty")}
-                        </td>
-                      </tr>
-                    ) : (
-                      drivers.map((driver) => (
-                        <tr key={driver.id}>
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <DriverImage
-                                src={driver.picture_url}
-                                seed={driver.id || driver.email || driver.name}
-                                alt={driver.name}
-                                className="rounded-circle"
-                                size={36}
-                              />
-                              <span>{driver.name}</span>
-                            </div>
-                          </td>
-                          <td>
-                            {driver.weight !== null &&
-                            driver.weight !== undefined
-                              ? driver.weight
-                              : "-"}
-                          </td>
-                          <td>{driver.nickname || "-"}</td>
-                          <td>{driver.birth_date || "-"}</td>
-                          <td className="text-end">
-                            <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(driver)}
-                              >
-                                {t("common.actions.edit")}
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteRequest(driver)}
-                              >
-                                {t("common.actions.delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
