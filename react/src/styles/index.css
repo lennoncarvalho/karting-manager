@@ -18,10 +18,139 @@ html, body, #root {
 
 table.table thead th {
     background-color: var(--season-accent) !important;
+    color: var(--season-accent-contrast, #fff);
 }
 
 .bg-custom-accent {
   background-color: var(--season-accent);
+  color: var(--season-accent-contrast, #fff);
+  --bs-navbar-color: var(--season-accent-contrast, #fff);
+  --bs-navbar-hover-color: color-mix(
+    in srgb,
+    var(--season-accent-contrast, #fff) 85%,
+    transparent
+  );
+  --bs-navbar-active-color: var(--season-accent-contrast, #fff);
+  --bs-navbar-brand-color: var(--season-accent-contrast, #fff);
+  --bs-navbar-brand-hover-color: var(--season-accent-contrast, #fff);
+
+  .navbar-toggler-icon {
+    filter: brightness(calc(1 - 0.85 * var(--season-accent-is-light, 0)));
+  }
+}
+
+.text-accent-contrast {
+  color: var(--season-accent-contrast, #fff) !important;
+}
+
+:root {
+  --bs-link-color: var(--season-accent, #6ea8fe);
+  --bs-link-hover-color: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 80%,
+    white
+  );
+}
+
+.nav-tabs {
+  --bs-nav-tabs-border-color: transparent;
+  --bs-nav-tabs-link-active-color: var(--season-accent-contrast, #fff);
+  --bs-nav-tabs-link-active-bg: var(--season-accent, #6ea8fe);
+  --bs-nav-tabs-link-active-border-color: transparent;
+}
+
+a {
+  color: var(--season-accent, #6ea8fe);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 50%,
+    transparent
+  );
+}
+
+a:hover,
+a:focus {
+  color: color-mix(in srgb, var(--season-accent, #6ea8fe) 80%, white);
+}
+
+.nav-pills {
+  --bs-nav-pills-link-active-color: var(--season-accent-contrast, #fff);
+  --bs-nav-pills-link-active-bg: var(--season-accent, #6ea8fe);
+}
+
+.btn-primary {
+  --bs-btn-color: var(--season-accent-contrast, #fff);
+  --bs-btn-bg: var(--season-accent, #6ea8fe);
+  --bs-btn-border-color: var(--season-accent, #6ea8fe);
+  --bs-btn-focus-shadow-rgb: var(--season-accent-rgb, 110, 168, 254);
+  --bs-btn-hover-color: var(--season-accent-contrast, #fff);
+  --bs-btn-hover-bg: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 85%,
+    black
+  );
+  --bs-btn-hover-border-color: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 80%,
+    black
+  );
+  --bs-btn-active-color: var(--season-accent-contrast, #fff);
+  --bs-btn-active-bg: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 75%,
+    black
+  );
+  --bs-btn-active-border-color: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 70%,
+    black
+  );
+  --bs-btn-disabled-bg: var(--season-accent, #6ea8fe);
+  --bs-btn-disabled-border-color: var(--season-accent, #6ea8fe);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--season-accent, #6ea8fe);
+  --bs-btn-border-color: var(--season-accent, #6ea8fe);
+  --bs-btn-focus-shadow-rgb: var(--season-accent-rgb, 110, 168, 254);
+  --bs-btn-hover-color: var(--season-accent-contrast, #fff);
+  --bs-btn-hover-bg: var(--season-accent, #6ea8fe);
+  --bs-btn-hover-border-color: var(--season-accent, #6ea8fe);
+  --bs-btn-active-color: var(--season-accent-contrast, #fff);
+  --bs-btn-active-bg: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 85%,
+    black
+  );
+  --bs-btn-active-border-color: color-mix(
+    in srgb,
+    var(--season-accent, #6ea8fe) 80%,
+    black
+  );
+  --bs-btn-disabled-bg: var(--season-accent, #6ea8fe);
+  --bs-btn-disabled-border-color: var(--season-accent, #6ea8fe);
+}
+
+.dropdown-menu {
+  --bs-dropdown-link-active-color: var(--season-accent-contrast, #fff);
+  --bs-dropdown-link-active-bg: var(--season-accent, #6ea8fe);
+}
+
+.pagination {
+  --bs-pagination-active-color: var(--season-accent-contrast, #fff);
+  --bs-pagination-active-bg: var(--season-accent, #6ea8fe);
+  --bs-pagination-active-border-color: var(--season-accent, #6ea8fe);
+}
+
+.list-group {
+  --bs-list-group-active-color: var(--season-accent-contrast, #fff);
+  --bs-list-group-active-bg: var(--season-accent, #6ea8fe);
+  --bs-list-group-active-border-color: var(--season-accent, #6ea8fe);
+}
+
+.progress {
+  --bs-progress-bar-color: var(--season-accent-contrast, #fff);
+  --bs-progress-bar-bg: var(--season-accent, #6ea8fe);
 }
 
 .white-space-pre-line {

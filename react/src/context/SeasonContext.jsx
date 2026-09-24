@@ -1,9 +1,27 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { listSeasons, invalidateSeasonCache } from "@/lib/api";
-import { getStoredSeasonId, setStoredSeasonId } from "@/lib/theme";
+import {
+  getStoredSeasonId,
+  setStoredSeasonId,
+  accentContrast,
+  accentRgb,
+} from "@/lib/theme";
 import { useTranslation } from "react-i18next";
 
 const SeasonContext = createContext(null);
+
+function applyAccent(color) {
+  const element = document.documentElement;
+  const contrast = accentContrast(color);
+  element.style.setProperty("--season-accent", color);
+  element.style.setProperty("--season-accent-contrast", contrast);
+  element.style.setProperty(
+    "--season-accent-is-light",
+    contrast === "#212529" ? "1" : "0",
+  );
+  const rgb = accentRgb(color);
+  if (rgb) element.style.setProperty("--season-accent-rgb", rgb);
+}
 
 function calculateDefaultSeason(ongoingSeasons) {
   if (!Array.isArray(ongoingSeasons) || ongoingSeasons.length === 0)
@@ -54,9 +72,7 @@ export function SeasonProvider({ children }) {
 
         if (selected) {
           const element = document.documentElement;
-          if (selected.accent_color) {
-            element.style.setProperty("--season-accent", selected.accent_color);
-          }
+          if (selected.accent_color) applyAccent(selected.accent_color);
         }
       } catch (err) {
         console.error("Failed to load seasons:", err);
@@ -86,16 +102,15 @@ export function SeasonProvider({ children }) {
             prev.map((s) => (String(s.id) === id.toString() ? newSeason : s)),
           );
         }
-        if (newSeason.accent_color) {
-          document.documentElement.style.setProperty(
-            "--season-accent",
-            newSeason.accent_color,
-          );
-        }
+        if (newSeason.accent_color) applyAccent(newSeason.accent_color);
         invalidateSeasonCache();
       }
     } else {
-      document.documentElement.style.removeProperty("--season-accent");
+      const element = document.documentElement;
+      element.style.removeProperty("--season-accent");
+      element.style.removeProperty("--season-accent-contrast");
+      element.style.removeProperty("--season-accent-is-light");
+      element.style.removeProperty("--season-accent-rgb");
     }
   };
 

@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/formatting";
 import { isValidDateRange } from "@/lib/validation";
+import { accentContrast } from "@/lib/theme";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function SeasonManagement() {
@@ -347,7 +348,7 @@ export function SeasonManagement() {
                               className="badge"
                               style={{
                                 backgroundColor: season.accent_color,
-                                color: "#fff",
+                                color: accentContrast(season.accent_color),
                               }}
                             >
                               {season.accent_color}
