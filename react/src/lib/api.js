@@ -129,9 +129,38 @@ function applyListOptions(query, { order, limit, offset, filters } = {}) {
   return query;
 }
 
+async function insertOne(supabase, table, payload) {
+  const { data, error } = await supabase
+    .from(table)
+    .insert([payload])
+    .select("*")
+    .single();
+  if (error) throw new Error(handleApiError(error));
+  return data;
+}
+
+async function updateOne(supabase, table, id, updates) {
+  const { data, error } = await supabase
+    .from(table)
+    .update(updates)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(handleApiError(error));
+  return data;
+}
+
+async function deleteById(supabase, table, id) {
+  const { error } = await supabase.from(table).delete().eq("id", id);
+  if (error) throw new Error(handleApiError(error));
+}
+
 export async function listSeasons(options = {}) {
   return executeWithRetry(async () => {
-    const query = applyListOptions(supabase.from("seasons").select("*"), options);
+    const query = applyListOptions(
+      supabase.from("seasons").select("*"),
+      options,
+    );
     const { data, error } = await query;
     if (error) throw new Error(handleApiError(error));
     if (!options.filters?.length)
@@ -161,15 +190,9 @@ export async function getSeasonById(id) {
 
 export async function createSeason(payload) {
   const supabase = await getAuthenticatedClient();
-  const result = await executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("seasons")
-      .insert([payload])
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  const result = await executeWithRetry(() =>
+    insertOne(supabase, "seasons", payload),
+  );
   cacheSeasonById(result);
   invalidateSeasonCache();
   return result;
@@ -177,16 +200,9 @@ export async function createSeason(payload) {
 
 export async function updateSeason(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const result = await executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("seasons")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  const result = await executeWithRetry(() =>
+    updateOne(supabase, "seasons", id, updates),
+  );
   cacheSeasonById(result);
   invalidateSeasonCache();
   return result;
@@ -194,16 +210,16 @@ export async function updateSeason(id, updates) {
 
 export async function deleteSeason(id) {
   const supabase = await getAuthenticatedClient();
-  await executeWithRetry(async () => {
-    const { error } = await supabase.from("seasons").delete().eq("id", id);
-    if (error) throw new Error(handleApiError(error));
-  });
+  await executeWithRetry(() => deleteById(supabase, "seasons", id));
   invalidateSeasonCache();
 }
 
 export async function listDrivers(options = {}) {
   return executeWithRetry(async () => {
-    const query = applyListOptions(supabase.from("drivers").select("*"), options);
+    const query = applyListOptions(
+      supabase.from("drivers").select("*"),
+      options,
+    );
     const { data, error } = await query;
     if (error) throw new Error(handleApiError(error));
     return data;
@@ -229,24 +245,12 @@ export async function createDriver(payload) {
 
 export async function updateDriver(id, updates) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("drivers")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() => updateOne(supabase, "drivers", id, updates));
 }
 
 export async function deleteDriver(id) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { error } = await supabase.from("drivers").delete().eq("id", id);
-    if (error) throw new Error(handleApiError(error));
-  });
+  return executeWithRetry(() => deleteById(supabase, "drivers", id));
 }
 
 export async function listCups(options = {}) {
@@ -267,37 +271,17 @@ export async function listCups(options = {}) {
 
 export async function createCup(payload) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("cups")
-      .insert([payload])
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() => insertOne(supabase, "cups", payload));
 }
 
 export async function updateCup(id, updates) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("cups")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() => updateOne(supabase, "cups", id, updates));
 }
 
 export async function deleteCup(id) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { error } = await supabase.from("cups").delete().eq("id", id);
-    if (error) throw new Error(handleApiError(error));
-  });
+  return executeWithRetry(() => deleteById(supabase, "cups", id));
 }
 
 export async function listRaces(options = {}) {
@@ -319,37 +303,17 @@ export async function listRaces(options = {}) {
 
 export async function createRace(payload) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("races")
-      .insert([payload])
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() => insertOne(supabase, "races", payload));
 }
 
 export async function updateRace(id, updates) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("races")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() => updateOne(supabase, "races", id, updates));
 }
 
 export async function deleteRace(id) {
   const supabase = await getAuthenticatedClient();
-  return executeWithRetry(async () => {
-    const { error } = await supabase.from("races").delete().eq("id", id);
-    if (error) throw new Error(handleApiError(error));
-  });
+  return executeWithRetry(() => deleteById(supabase, "races", id));
 }
 
 async function saveRaceResultLog(supabase, row) {
@@ -388,61 +352,37 @@ export async function listRaceResultsByRaceIds(raceIds = []) {
   });
 }
 
-export async function createRaceResult(payload) {
-  const supabase = await getAuthenticatedClient();
+async function fetchRaceResultCurrent(supabase, id) {
   return executeWithRetry(async () => {
     const { data, error } = await supabase
       .from("race_results")
-      .insert([payload])
       .select("*")
+      .eq("id", id)
       .single();
     if (error) throw new Error(handleApiError(error));
     return data;
   });
+}
+
+export async function createRaceResult(payload) {
+  const supabase = await getAuthenticatedClient();
+  return executeWithRetry(() => insertOne(supabase, "race_results", payload));
 }
 
 export async function updateRaceResult(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data: current, error: currentError } = await executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
-  if (currentError) throw new Error(handleApiError(currentError));
+  const current = await fetchRaceResultCurrent(supabase, id);
   await saveRaceResultLog(supabase, current);
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(() =>
+    updateOne(supabase, "race_results", id, updates),
+  );
 }
 
 export async function deleteRaceResult(id) {
   const supabase = await getAuthenticatedClient();
-  const { data: current, error: currentError } = await executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
-  if (currentError) throw new Error(handleApiError(currentError));
+  const current = await fetchRaceResultCurrent(supabase, id);
   await saveRaceResultLog(supabase, current);
-  return executeWithRetry(async () => {
-    const { error } = await supabase.from("race_results").delete().eq("id", id);
-    if (error) throw new Error(handleApiError(error));
-  });
+  return executeWithRetry(() => deleteById(supabase, "race_results", id));
 }
 
 export async function createPenalties(penalties) {
