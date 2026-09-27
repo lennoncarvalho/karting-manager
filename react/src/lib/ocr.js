@@ -9,7 +9,8 @@ function hasConfig() {
 }
 
 function azureUrl() {
-  const base = AZURE_ENDPOINT.replace(/\/+$/, "");
+  let base = AZURE_ENDPOINT;
+  while (base.endsWith("/")) base = base.slice(0, -1);
   return `${base}/documentintelligence/documentModels/prebuilt-layout:analyze?api-version=${AZURE_VER}`;
 }
 
@@ -71,7 +72,7 @@ async function runAzure(file) {
       throw new Error("Azure analysis failed");
     }
     attempts++;
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   throw new Error("Azure OCR timed out");
 }

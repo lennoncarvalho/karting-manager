@@ -1,0 +1,7 @@
+language: en
+reviews:
+  profile: iterative
+  auto_review:
+    enabled: true
+path_filters:
+  - "react/**"

@@ -11,7 +11,9 @@ function readStorage(key) {
 function writeStorage(key, value) {
   try {
     localStorage.setItem(key, value);
-  } catch {}
+  } catch {
+    /* best-effort storage write; ignore quota/unavailable errors */
+  }
 }
 
 export function getStoredSeasonId() {

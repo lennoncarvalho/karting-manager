@@ -3,7 +3,7 @@ import i18next from "i18next";
 const dateTimeFormatterCache = new Map();
 
 function hasTimezoneSuffix(value) {
-  return /[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
+  return /([zZ]|[+-]\d{2}:?\d{2})$/.test(value);
 }
 
 function hasTime(value) {
@@ -50,7 +50,6 @@ export function formatDateTime(datetime) {
   return formatWithParts(d, true);
 }
 
-
 export function formatDateTimeForInput(datetime) {
   const d = parseDateValue(datetime, { assumeUtcWhenNoTz: true });
   if (!d) return "";
@@ -61,7 +60,6 @@ export function formatDateTimeForInput(datetime) {
   const min = String(d.getMinutes()).padStart(2, "0");
   return `${y}-${m}-${day}T${h}:${min}`;
 }
-
 
 function formatWithParts(date, includeTime) {
   if (!date) return "";
@@ -91,7 +89,7 @@ function formatWithPartsCore(date, includeTime, t) {
   let month = map.month || "";
   const year = map.year || "";
   if (!day || !month || !year) return formatter.format(date).replace(",", "");
-  if (locale === "pt-BR" && month) {
+  if (locale === "pt-BR") {
     month = month.replace(".", "");
     month = month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
   }

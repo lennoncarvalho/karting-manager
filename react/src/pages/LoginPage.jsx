@@ -44,11 +44,11 @@ export function LoginPage() {
               <h1 className="h5 mb-0">{t("login.title")}</h1>
             </div>
             <div className="card-body">
-              {serverError && (
+              {serverError ? (
                 <div className="alert alert-danger" role="alert">
                   {serverError}
                 </div>
-              )}
+              ) : null}
               <form id="login-form" onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
@@ -75,9 +75,9 @@ export function LoginPage() {
                     autoComplete="email"
                     required
                   />
-                  {emailError && (
+                  {emailError ? (
                     <div className="invalid-feedback">{emailError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
@@ -100,9 +100,9 @@ export function LoginPage() {
                     autoComplete="current-password"
                     required
                   />
-                  {passwordError && (
+                  {passwordError ? (
                     <div className="invalid-feedback">{passwordError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <button
                   type="submit"

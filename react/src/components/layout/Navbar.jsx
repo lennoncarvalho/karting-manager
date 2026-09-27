@@ -104,7 +104,7 @@ export function Navbar() {
             ))}
           </ul>
 
-          {isAuthenticated && user && (
+          {isAuthenticated && user ? (
             <ul className="navbar-nav">
               <li className="nav-item dropdown">
                 <a
@@ -121,20 +121,20 @@ export function Navbar() {
                   className="dropdown-menu dropdown-menu-end"
                   aria-labelledby="navbarDropdown"
                 >
-                  {isAdmin && (
+                  {isAdmin ? (
                     <li>
                       <Link className="dropdown-item" to="/admin">
                         {t("nav.settings")}
                       </Link>
                     </li>
-                  )}
-                  {isDriver && (
+                  ) : null}
+                  {isDriver ? (
                     <li>
                       <Link className="dropdown-item" to="/driver/profile">
                         {t("nav.myProfile")}
                       </Link>
                     </li>
-                  )}
+                  ) : null}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
@@ -153,7 +153,7 @@ export function Navbar() {
                 </ul>
               </li>
             </ul>
-          )}
+          ) : null}
         </div>
       </div>
     </nav>

@@ -20,8 +20,7 @@ const SELF_EDITABLE_FIELDS = [
 export function DriverProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isAdmin, isDriver, loading, logout } =
-    useAuth();
+  const { user, isAuthenticated, isAdmin, loading, logout } = useAuth();
   const { notify } = useToast();
   const fileInputRef = useRef(null);
 
@@ -181,9 +180,7 @@ export function DriverProfilePage() {
           <div className="col-md-6 col-lg-5 text-center">
             <div className="card shadow-sm">
               <div className="card-body py-5">
-                <i
-                  className="bi bi-exclamation-circle d-block mb-3 fs-1 text-warning"
-                ></i>
+                <i className="bi bi-exclamation-circle d-block mb-3 fs-1 text-warning"></i>
                 <p className="fw-semibold mb-1">
                   {t("driverProfile.notRegistered")}
                 </p>
@@ -191,6 +188,7 @@ export function DriverProfilePage() {
                   {t("driverProfile.notRegisteredDetail")}
                 </p>
                 <button
+                  type="button"
                   className="btn btn-outline-secondary"
                   onClick={handleSignOut}
                 >
@@ -212,6 +210,7 @@ export function DriverProfilePage() {
             <div className="card-header text-white d-flex justify-content-between align-items-center">
               <h1 className="h5 mb-0">{t("driverProfile.title")}</h1>
               <button
+                type="button"
                 className="btn btn-sm btn-outline-light"
                 onClick={handleSignOut}
               >

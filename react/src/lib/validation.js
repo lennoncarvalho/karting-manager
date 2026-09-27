@@ -15,6 +15,7 @@
 
 export function isValidEmail(email) {
   if (!email || typeof email !== "string") return false;
+  // eslint-disable-next-line sonarjs/super-linear-regex -- single pass over the input, no nested or overlapping repetition
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 

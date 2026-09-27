@@ -1,13 +1,15 @@
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   & * {
     transition:
-            color .5s,
-            border-bottom-color .5s,
-            border-left-color .5s,
-            border-top-color .5s,
-            border-rightcolor .5s,
-            background-color .5s;
+      color 0.5s,
+      border-bottom-color 0.5s,
+      border-left-color 0.5s,
+      border-top-color 0.5s,
+      border-rightcolor 0.5s,
+      background-color 0.5s;
   }
 }
 
@@ -17,8 +19,8 @@ html, body, #root {
 }
 
 table.table thead th {
-    background-color: var(--season-accent) !important;
-    color: var(--season-accent-contrast, #fff);
+  background-color: var(--season-accent) !important;
+  color: var(--season-accent-contrast, #fff);
 }
 
 .bg-custom-accent {

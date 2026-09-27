@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
@@ -20,11 +20,9 @@ import { isValidLapTime } from "@/lib/validation";
 import { RaceResultModal } from "@/components/modals/RaceResultModal";
 import { OcrImportModal } from "@/components/modals/OcrImportModal";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
-import { matchDriverName } from "@/lib/matching";
 
 export function RaceDetail() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { notify } = useToast();
   const { withLoading: loading } = useLoading();
@@ -36,7 +34,7 @@ export function RaceDetail() {
   const [results, setResults] = useState([]);
   const [seasonName, setSeasonName] = useState("");
   const [loadingList, setLoadingList] = useState(true);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
 
   const [showResultModal, setShowResultModal] = useState(false);
   const [editingResult, setEditingResult] = useState(null);
@@ -210,12 +208,14 @@ export function RaceDetail() {
           <td className="text-end">
             <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
               <button
+                type="button"
                 className="btn btn-sm btn-outline-primary"
                 onClick={() => handleEditResult(result)}
               >
                 {t("common.actions.edit")}
               </button>
               <button
+                type="button"
                 className="btn btn-sm btn-outline-danger"
                 onClick={() => setShowConfirmDelete(result.id)}
               >
@@ -384,6 +384,7 @@ export function RaceDetail() {
         </div>
         <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
           <button
+            type="button"
             className="btn btn-primary w-100 w-sm-auto"
             onClick={() => {
               setEditingResult(null);
@@ -393,6 +394,7 @@ export function RaceDetail() {
             {t("raceDetail.addResult")}
           </button>
           <button
+            type="button"
             className="btn btn-outline-primary w-100 w-sm-auto"
             onClick={() => setShowOcrModal(true)}
           >
@@ -426,7 +428,7 @@ export function RaceDetail() {
         </table>
       </div>
 
-      {showResultModal && (
+      {showResultModal ? (
         <RaceResultModal
           drivers={drivers}
           existingResults={results}
@@ -437,9 +439,9 @@ export function RaceDetail() {
             setEditingResult(null);
           }}
         />
-      )}
+      ) : null}
 
-      {showOcrModal && (
+      {showOcrModal ? (
         <OcrImportModal
           raceId={raceId}
           drivers={drivers}
@@ -447,7 +449,7 @@ export function RaceDetail() {
           onSave={handleOcrSave}
           onClose={() => setShowOcrModal(false)}
         />
-      )}
+      ) : null}
 
       <ConfirmModal
         show={!!showConfirmDelete}

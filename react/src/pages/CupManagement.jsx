@@ -18,7 +18,7 @@ export function CupManagement() {
   const { t } = useTranslation();
   const { notify } = useToast();
   const { withLoading: loading } = useLoading();
-  const { seasons, selectedSeasonId, setSeasonId } = useSeason();
+  const { selectedSeasonId } = useSeason();
 
   const [cups, setCups] = useState([]);
   const [allSeasons, setAllSeasons] = useState([]);
@@ -187,6 +187,45 @@ export function CupManagement() {
   );
   const cupSeason = seasonMap[String(formSeason)];
 
+  const cupsRows = !cups.length ? (
+    <tr>
+      <td colSpan="5" className="text-center">
+        {t("cupManagement.list.empty")}
+      </td>
+    </tr>
+  ) : (
+    cups.map((cup) => (
+      <tr key={cup.id}>
+        <td>{cup.name}</td>
+        <td>
+          {seasonMap[cup.season_id]
+            ? seasonMap[cup.season_id].name
+            : t("common.misc.unknown")}
+        </td>
+        <td>{cup.start_date ? formatDisplayDate(cup.start_date) : "-"}</td>
+        <td>{cup.end_date ? formatDisplayDate(cup.end_date) : "-"}</td>
+        <td className="text-end">
+          <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => handleEdit(cup)}
+            >
+              {t("common.actions.edit")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => handleDeleteRequest(cup)}
+            >
+              {t("common.actions.delete")}
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  );
+
   return (
     <div className="container mt-4">
       <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
@@ -234,9 +273,9 @@ export function CupManagement() {
                       </option>
                     ))}
                   </select>
-                  {seasonError && (
+                  {seasonError ? (
                     <div className="invalid-feedback">{seasonError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-name">
@@ -258,9 +297,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {nameError && (
+                  {nameError ? (
                     <div className="invalid-feedback">{nameError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-start">
@@ -284,9 +323,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {startError && (
+                  {startError ? (
                     <div className="invalid-feedback">{startError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-end">
@@ -310,9 +349,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {endError && (
+                  {endError ? (
                     <div className="invalid-feedback">{endError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="d-flex flex-column flex-sm-row gap-2">
                   <button
@@ -323,7 +362,7 @@ export function CupManagement() {
                       ? t("common.actions.update")
                       : t("common.actions.create")}
                   </button>
-                  {editing && (
+                  {editing ? (
                     <button
                       type="button"
                       className="btn btn-outline-secondary w-100 w-sm-auto"
@@ -331,7 +370,7 @@ export function CupManagement() {
                     >
                       {t("common.actions.cancel")}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </form>
             </div>
@@ -365,47 +404,8 @@ export function CupManagement() {
                       </div>
                     </td>
                   </tr>
-                ) : !cups.length ? (
-                  <tr>
-                    <td colSpan="5" className="text-center">
-                      {t("cupManagement.list.empty")}
-                    </td>
-                  </tr>
                 ) : (
-                  cups.map((cup) => (
-                    <tr key={cup.id}>
-                      <td>{cup.name}</td>
-                      <td>
-                        {seasonMap[cup.season_id]
-                          ? seasonMap[cup.season_id].name
-                          : t("common.misc.unknown")}
-                      </td>
-                      <td>
-                        {cup.start_date
-                          ? formatDisplayDate(cup.start_date)
-                          : "-"}
-                      </td>
-                      <td>
-                        {cup.end_date ? formatDisplayDate(cup.end_date) : "-"}
-                      </td>
-                      <td className="text-end">
-                        <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleEdit(cup)}
-                          >
-                            {t("common.actions.edit")}
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDeleteRequest(cup)}
-                          >
-                            {t("common.actions.delete")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  cupsRows
                 )}
               </tbody>
             </table>

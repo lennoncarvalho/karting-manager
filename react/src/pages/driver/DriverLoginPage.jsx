@@ -73,9 +73,7 @@ export function DriverLoginPage() {
               {emailSent ? (
                 /* Confirmation message after magic link is sent */
                 <div className="text-center py-3">
-                  <i
-                    className="bi bi-envelope-check d-block mb-3 fs-1"
-                  ></i>
+                  <i className="bi bi-envelope-check d-block mb-3 fs-1"></i>
                   <p className="mb-1 fw-semibold">
                     {t("driverLogin.checkInbox")}
                   </p>
@@ -95,11 +93,11 @@ export function DriverLoginPage() {
                 </div>
               ) : (
                 <>
-                  {serverError && (
+                  {serverError ? (
                     <div className="alert alert-danger" role="alert">
                       {serverError}
                     </div>
-                  )}
+                  ) : null}
                   <p className="text-muted small mb-3 white-space-pre-line">
                     {t("driverLogin.instructions")}
                   </p>
@@ -130,9 +128,9 @@ export function DriverLoginPage() {
                         inputMode="email"
                         required
                       />
-                      {emailError && (
+                      {emailError ? (
                         <div className="invalid-feedback">{emailError}</div>
-                      )}
+                      ) : null}
                     </div>
                     <button
                       type="submit"

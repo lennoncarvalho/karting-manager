@@ -71,7 +71,6 @@ export function SeasonProvider({ children }) {
         setSeasons(allSeasons);
 
         if (selected) {
-          const element = document.documentElement;
           if (selected.accent_color) applyAccent(selected.accent_color);
         }
       } catch (err) {

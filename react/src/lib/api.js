@@ -1,7 +1,6 @@
-import { supabase, APP_URL } from "./supabase";
+import { supabase } from "./supabase";
 import * as Sentry from "@sentry/react";
 
-let isRefreshing = false;
 let refreshPromise = null;
 
 export function getSupabaseClient() {
@@ -19,14 +18,12 @@ async function getAuthenticatedClient() {
 async function refreshToken() {
   if (refreshPromise) return refreshPromise;
 
-  isRefreshing = true;
   refreshPromise = supabase.auth.refreshSession();
   try {
     const { data, error } = await refreshPromise;
     if (error) throw error;
     return data.session;
   } finally {
-    isRefreshing = false;
     refreshPromise = null;
   }
 }
@@ -79,7 +76,9 @@ function readStorageJson(key) {
 function writeStorageJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  } catch {
+    /* best-effort cache write; ignore quota/unavailable errors */
+  }
 }
 
 const SEASONS_CACHE_KEY = "seasonsCache";
@@ -113,7 +112,9 @@ export function invalidateSeasonCache() {
   try {
     localStorage.removeItem(SEASONS_CACHE_KEY);
     localStorage.removeItem(SEASONS_CACHE_BY_ID_KEY);
-  } catch {}
+  } catch {
+    /* best-effort cache clear; ignore quota/unavailable errors */
+  }
 }
 
 function applyListOptions(query, { order, limit, offset, filters } = {}) {
@@ -321,7 +322,8 @@ async function saveRaceResultLog(supabase, row) {
     data: { session },
   } = await supabase.auth.getSession();
   const userId = session?.user?.id ?? null;
-  const { drivers, penalties, ...columns } = row;
+  // eslint-disable-next-line sonarjs/no-unused-vars -- intentionally stripped from the audit-log row
+  const { drivers: _drivers, penalties: _penalties, ...columns } = row;
   const { error } = await supabase
     .from("race_results_log")
     .insert([{ ...columns, changed_by_user_id: userId }]);
@@ -402,6 +404,7 @@ export async function uploadPicture(file) {
   const supabase = getSupabaseClient();
   return executeWithRetry(async () => {
     const ext = file.name.split(".").pop();
+    // eslint-disable-next-line sonarjs/pseudo-random -- collision-avoidance suffix for storage filenames, not security-sensitive
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { data, error } = await supabase.storage
       .from("driver-pictures")

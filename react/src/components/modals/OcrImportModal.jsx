@@ -20,13 +20,17 @@ function readDraft(key) {
 function writeDraft(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  } catch {
+    /* best-effort draft persist; ignore quota/unavailable errors */
+  }
 }
 
 function clearDraft(key) {
   try {
     localStorage.removeItem(key);
-  } catch {}
+  } catch {
+    /* best-effort draft clear; ignore quota/unavailable errors */
+  }
 }
 
 export function OcrImportModal({
@@ -271,11 +275,13 @@ export function OcrImportModal({
             </div>
 
             <div className="mt-3 d-flex flex-column flex-md-row gap-2 align-items-md-center">
-              <div className="alert alert-warning" role="alert">{t("ocrImport.imageHint")}</div>
+              <div className="alert alert-warning" role="alert">
+                {t("ocrImport.imageHint")}
+              </div>
               <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={runOcrFlow}
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={runOcrFlow}
               >
                 {t("ocrImport.runOcr")}
               </button>
@@ -286,21 +292,22 @@ export function OcrImportModal({
                 {status === "noRows" && t("ocrImport.statusNoRows")}
                 {status === "idle" && t("ocrImport.statusIdle")}
               </div>
-              
             </div>
 
-            {selectedFile && (
+            {selectedFile ? (
               <div className="mt-3">
                 <img
-                  src={previewUrl}
+                  src={
+                    previewUrl /* blob: URL of the locally selected file — cannot contain HTML */
+                  }
                   alt={selectedFile.name}
                   className="img-fluid w-100 rounded"
                 />
               </div>
-            )}
+            ) : null}
 
-            {hasRows && (
-                <div className="mt-4 table-responsive">
+            {hasRows ? (
+              <div className="mt-4 table-responsive">
                 <table className="table table-sm table-striped align-middle">
                   <thead>
                     <tr>
@@ -367,7 +374,7 @@ export function OcrImportModal({
                   </tbody>
                 </table>
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="modal-footer">

@@ -25,11 +25,9 @@ function parseLine(line) {
   let nameEnd = lapIdx;
   if (lapIdx - 1 > index && POSITION_REGEX.test(tokens[lapIdx - 1]))
     nameEnd = lapIdx - 1;
-  const name = tokens
-    .slice(index, nameEnd)
-    .join(" ")
-    .replace(/\.+$/, "")
-    .trim();
+  let name = tokens.slice(index, nameEnd).join(" ").trim();
+  while (name.endsWith(".")) name = name.slice(0, -1);
+  name = name.trim();
   if (!name) return null;
   return { position, name, bestLapTime: tokens[lapIdx] };
 }

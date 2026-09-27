@@ -21,7 +21,10 @@ export function AuthCallback() {
     if (!user) {
       // No session established — magic link may have expired or been invalid
       setError(t("authCallback.failed"));
-      const timer = setTimeout(() => navigate("/driver/login", { replace: true }), 3000);
+      const timer = setTimeout(
+        () => navigate("/driver/login", { replace: true }),
+        3000,
+      );
       return () => clearTimeout(timer);
     }
 
@@ -36,9 +39,7 @@ export function AuthCallback() {
   }, [loading, user, isAdmin, isDriver, navigate, t]);
 
   return (
-    <div
-      className="d-flex flex-column align-items-center justify-content-center min-vh-60"
-    >
+    <div className="d-flex flex-column align-items-center justify-content-center min-vh-60">
       {error ? (
         <div className="text-center">
           <div className="alert alert-danger">{error}</div>
@@ -47,7 +48,9 @@ export function AuthCallback() {
       ) : (
         <div className="text-center">
           <div className="spinner-border spinner-border-sm mb-3" role="status">
-            <span className="visually-hidden">{t("common.status.loading")}</span>
+            <span className="visually-hidden">
+              {t("common.status.loading")}
+            </span>
           </div>
           <p className="text-muted">{t("authCallback.verifying")}</p>
         </div>

@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 export function AdminDashboard() {
   const { t } = useTranslation();
   const { notify } = useToast();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { withLoading: loading } = useLoading();
 
   const [newPassword, setNewPassword] = useState("");
@@ -214,9 +214,9 @@ export function AdminDashboard() {
                     }}
                     autoComplete="new-password"
                   />
-                  {newPasswordError && (
+                  {newPasswordError ? (
                     <div className="invalid-feedback">{newPasswordError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="confirm-password">
@@ -241,11 +241,11 @@ export function AdminDashboard() {
                     }}
                     autoComplete="new-password"
                   />
-                  {confirmPasswordError && (
+                  {confirmPasswordError ? (
                     <div className="invalid-feedback">
                       {confirmPasswordError}
                     </div>
-                  )}
+                  ) : null}
                 </div>
                 <button
                   type="submit"
@@ -298,11 +298,11 @@ export function AdminDashboard() {
                         }}
                         autoComplete="email"
                       />
-                      {adminEmailError && (
+                      {adminEmailError ? (
                         <div className="invalid-feedback">
                           {adminEmailError}
                         </div>
-                      )}
+                      ) : null}
                     </div>
                     <div className="mb-3">
                       <label className="form-label" htmlFor="admin-password">
@@ -327,11 +327,11 @@ export function AdminDashboard() {
                         }}
                         autoComplete="new-password"
                       />
-                      {adminPasswordError && (
+                      {adminPasswordError ? (
                         <div className="invalid-feedback">
                           {adminPasswordError}
                         </div>
-                      )}
+                      ) : null}
                     </div>
                     <button
                       type="submit"

@@ -42,6 +42,7 @@ export function SeasonManagement() {
       });
       setSeasons(data);
     } catch (err) {
+      console.error("Failed to load seasons:", err);
       setSeasons([]);
     } finally {
       setLoadingList(false);
@@ -142,6 +143,70 @@ export function SeasonManagement() {
     }
   };
 
+  let seasonsBody;
+  if (loadingList) {
+    seasonsBody = (
+      <tr>
+        <td colSpan="5" className="text-center">
+          <div className="d-flex align-items-center justify-content-center gap-2">
+            <div
+              className="spinner-border spinner-border-sm"
+              role="status"
+            ></div>
+            <span>{t("common.status.loadingSeasons")}</span>
+          </div>
+        </td>
+      </tr>
+    );
+  } else if (!seasons.length) {
+    seasonsBody = (
+      <tr>
+        <td colSpan="5" className="text-center">
+          {t("seasonManagement.list.empty")}
+        </td>
+      </tr>
+    );
+  } else {
+    seasonsBody = seasons.map((season) => (
+      <tr key={season.id}>
+        <td>{season.name}</td>
+        <td>
+          {season.start_date ? formatDisplayDate(season.start_date) : "-"}
+        </td>
+        <td>{season.end_date ? formatDisplayDate(season.end_date) : "-"}</td>
+        <td>
+          <span
+            className="badge"
+            style={{
+              backgroundColor: season.accent_color,
+              color: accentContrast(season.accent_color),
+            }}
+          >
+            {season.accent_color}
+          </span>
+        </td>
+        <td className="text-end">
+          <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => handleEdit(season)}
+            >
+              {t("common.actions.edit")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => handleDeleteRequest(season)}
+            >
+              {t("common.actions.delete")}
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  }
+
   return (
     <div className="container mt-4">
       <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
@@ -181,9 +246,9 @@ export function SeasonManagement() {
                     }}
                     required
                   />
-                  {nameError && (
+                  {nameError ? (
                     <div className="invalid-feedback">{nameError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="season-start">
@@ -205,9 +270,9 @@ export function SeasonManagement() {
                     }}
                     required
                   />
-                  {startError && (
+                  {startError ? (
                     <div className="invalid-feedback">{startError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="season-end">
@@ -230,9 +295,9 @@ export function SeasonManagement() {
                     }}
                     required
                   />
-                  {endError && (
+                  {endError ? (
                     <div className="invalid-feedback">{endError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <div className="form-check form-switch">
@@ -276,7 +341,7 @@ export function SeasonManagement() {
                       ? t("common.actions.update")
                       : t("common.actions.create")}
                   </button>
-                  {editing && (
+                  {editing ? (
                     <button
                       type="button"
                       className="btn btn-outline-secondary w-100 w-sm-auto"
@@ -284,7 +349,7 @@ export function SeasonManagement() {
                     >
                       {t("common.actions.cancel")}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </form>
             </div>
@@ -305,70 +370,7 @@ export function SeasonManagement() {
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                {loadingList ? (
-                  <tr>
-                    <td colSpan="5" className="text-center">
-                      <div className="d-flex align-items-center justify-content-center gap-2">
-                        <div
-                          className="spinner-border spinner-border-sm"
-                          role="status"
-                        ></div>
-                        <span>{t("common.status.loadingSeasons")}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : !seasons.length ? (
-                  <tr>
-                    <td colSpan="5" className="text-center">
-                      {t("seasonManagement.list.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  seasons.map((season) => (
-                    <tr key={season.id}>
-                      <td>{season.name}</td>
-                      <td>
-                        {season.start_date
-                          ? formatDisplayDate(season.start_date)
-                          : "-"}
-                      </td>
-                      <td>
-                        {season.end_date
-                          ? formatDisplayDate(season.end_date)
-                          : "-"}
-                      </td>
-                      <td>
-                        <span
-                          className="badge"
-                          style={{
-                            backgroundColor: season.accent_color,
-                            color: accentContrast(season.accent_color),
-                          }}
-                        >
-                          {season.accent_color}
-                        </span>
-                      </td>
-                      <td className="text-end">
-                        <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleEdit(season)}
-                          >
-                            {t("common.actions.edit")}
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => handleDeleteRequest(season)}
-                          >
-                            {t("common.actions.delete")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
+              <tbody>{seasonsBody}</tbody>
             </table>
           </div>
         </div>

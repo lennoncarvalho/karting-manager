@@ -24,21 +24,18 @@ export function LoadingProvider({ children }) {
   return (
     <LoadingContext.Provider value={{ show, hide, withLoading }}>
       {children}
-      {isBusy && (
+      {isBusy ? (
         <div
           id="global-loading-overlay"
           className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-black-50 z-3"
           aria-live="polite"
           aria-busy="true"
         >
-          <div
-            className="spinner-border text-light w-3"
-            role="status"
-          >
+          <div className="spinner-border text-light w-3" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      )}
+      ) : null}
     </LoadingContext.Provider>
   );
 }
