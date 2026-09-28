@@ -1,7 +1,8 @@
 language: en
 reviews:
-  profile: iterative
+  profile: chill
   auto_review:
     enabled: true
-path_filters:
-  - "react/**"
+  path_filters:
+    - "react/**"
+
