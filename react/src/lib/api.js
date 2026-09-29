@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/react";
 
 let refreshPromise = null;
 
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(
     message,
     { status = null, code = null, cause = null, jwt = false } = {},
