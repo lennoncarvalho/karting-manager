@@ -31,16 +31,27 @@ export default defineConfig({
   build: {
     outDir: "dist",
     assetsDir: "assets",
-    minify: "esbuild",
+    // Vite 8 (rolldown) uses its native minifier by default.
     // Required for Sentry to symbolicate stack traces in production.
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          bootstrap: ["bootstrap"],
-          sentry: ["@sentry/react"],
-          i18n: ["react-i18next", "i18next"],
+        // Vite 8 (rolldown) only supports function-form manualChunks.
+        manualChunks(id) {
+          const match = id.match(/node_modules\/((@[^/]+\/)?[^/]+)/);
+          if (!match) return;
+          const pkg = match[1];
+          if (
+            pkg === "react" ||
+            pkg === "react-dom" ||
+            pkg === "react-router" ||
+            pkg === "react-router-dom"
+          ) {
+            return "vendor";
+          }
+          if (pkg === "bootstrap") return "bootstrap";
+          if (pkg === "@sentry/react") return "sentry";
+          if (pkg === "react-i18next" || pkg === "i18next") return "i18n";
         },
       },
     },
