@@ -7,7 +7,7 @@ Two apps in the repo, all for the same go-kart championship manager:
 | Directory | Stack | Status |
 |---|---|---|
 | `frontend/` | Vanilla JS + Vite | Legacy (read-only reference — source of truth) |
-| `react/` | React 18 + Vite | Active rewrite |
+| `react/` | React 19 + Vite 8 | Active rewrite |
 | `kartarados/` | Specs + skills only | Reference, not active code |
 
 **`frontend/` is read-only source of truth.** Consult it for business rules, UI patterns, and behavior — never modify files there. All development is in `react/`.
