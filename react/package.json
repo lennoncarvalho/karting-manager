@@ -21,7 +21,7 @@
     "bootstrap-icons": "^1.11.3",
     "i18next": "^24.2.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.3.0",
     "react-i18next": "^15.4.0",
     "react-router-dom": "^7.18.4",
     "tesseract.js": "^7.0.0"
@@ -30,7 +30,7 @@
     "@eslint/js": "^9.39.5",
     "@sentry/vite-plugin": "^5.3.0",
     "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.39.5",
     "eslint-plugin-promise": "^7.3.0",
