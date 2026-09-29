@@ -3,6 +3,19 @@ import * as Sentry from "@sentry/react";
 
 let refreshPromise = null;
 
+export class ApiError extends Error {
+  constructor(
+    message,
+    { status = null, code = null, cause = null, jwt = false } = {},
+  ) {
+    super(message, { cause });
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.jwt = jwt;
+  }
+}
+
 export function getSupabaseClient() {
   return supabase;
 }
@@ -11,42 +24,63 @@ async function getAuthenticatedClient() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
+  if (!session)
+    throw new ApiError("Not authenticated", { code: "NOT_AUTHENTICATED" });
   return supabase;
 }
 
 async function refreshToken() {
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = supabase.auth.refreshSession();
-  try {
-    const { data, error } = await refreshPromise;
+  refreshPromise = (async () => {
+    const { data, error } = await supabase.auth.refreshSession();
     if (error) throw error;
     return data.session;
+  })();
+  try {
+    return await refreshPromise;
   } finally {
     refreshPromise = null;
   }
 }
 
-async function executeWithRetry(requestFn, maxRetries = 3, delay = 1000) {
+function isJwtError(error) {
+  return Boolean(error?.jwt) || Boolean(error?.message?.includes("JWT"));
+}
+
+function isTransientError(error) {
+  if (error?.code === "NOT_AUTHENTICATED") return false;
+  if (typeof error?.status === "number") {
+    return error.status === 408 || error.status === 429 || error.status >= 500;
+  }
+  return true;
+}
+
+async function executeWithRetry(requestFn, { retryTransport = false } = {}) {
+  const maxRetries = 3;
+  const delay = 1000;
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await requestFn();
     } catch (error) {
-      if (error.message?.includes("JWT") && attempt < maxRetries) {
+      if (isJwtError(error) && attempt < maxRetries) {
         try {
           await refreshToken();
           continue;
         } catch (refreshError) {
           Sentry.captureException(refreshError);
-          throw new Error("Session expired. Please log in again.");
+          throw new ApiError("Session expired. Please log in again.", {
+            cause: refreshError,
+          });
         }
       }
-      if (attempt === maxRetries) {
-        Sentry.captureException(error);
-        throw error;
+      if (attempt < maxRetries && retryTransport && isTransientError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+        continue;
       }
-      await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+      if (isTransientError(error)) Sentry.captureException(error);
+      throw error;
     }
   }
 }
@@ -62,6 +96,15 @@ function handleApiError(error) {
   if (error.message?.includes("violates check constraint"))
     return "Invalid data provided. Please check your input.";
   return error.message || "An unexpected error occurred. Please try again.";
+}
+
+function toApiError(error) {
+  return new ApiError(handleApiError(error), {
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    cause: error,
+    jwt: Boolean(error?.message?.includes("JWT")),
+  });
 }
 
 function readStorageJson(key) {
@@ -136,7 +179,7 @@ async function insertOne(supabase, table, payload) {
     .insert([payload])
     .select("*")
     .single();
-  if (error) throw new Error(handleApiError(error));
+  if (error) throw toApiError(error);
   return data;
 }
 
@@ -147,28 +190,31 @@ async function updateOne(supabase, table, id, updates) {
     .eq("id", id)
     .select("*")
     .single();
-  if (error) throw new Error(handleApiError(error));
+  if (error) throw toApiError(error);
   return data;
 }
 
 async function deleteById(supabase, table, id) {
   const { error } = await supabase.from(table).delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
+  if (error) throw toApiError(error);
 }
 
 export async function listSeasons(options = {}) {
-  return executeWithRetry(async () => {
-    const query = applyListOptions(
-      supabase.from("seasons").select("*"),
-      options,
-    );
-    const { data, error } = await query;
-    if (error) throw new Error(handleApiError(error));
-    if (!options.filters?.length)
-      writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(data));
-    cacheSeasonsById(data);
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const query = applyListOptions(
+        supabase.from("seasons").select("*"),
+        options,
+      );
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      if (!options.filters?.length)
+        writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(data));
+      cacheSeasonsById(data);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function getSeasonById(id) {
@@ -176,17 +222,20 @@ export async function getSeasonById(id) {
   const key = String(id);
   const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
   if (cache[key]) return cache[key];
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("seasons")
-      .select("*")
-      .eq("id", id)
-      .limit(1);
-    if (error) throw new Error(handleApiError(error));
-    const season = data?.[0] || null;
-    if (season) cacheSeasonById(season);
-    return season;
-  });
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("seasons")
+        .select("*")
+        .eq("id", id)
+        .limit(1);
+      if (error) throw toApiError(error);
+      const season = data?.[0] || null;
+      if (season) cacheSeasonById(season);
+      return season;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createSeason(payload) {
@@ -216,15 +265,18 @@ export async function deleteSeason(id) {
 }
 
 export async function listDrivers(options = {}) {
-  return executeWithRetry(async () => {
-    const query = applyListOptions(
-      supabase.from("drivers").select("*"),
-      options,
-    );
-    const { data, error } = await query;
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const query = applyListOptions(
+        supabase.from("drivers").select("*"),
+        options,
+      );
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createDriver(payload) {
@@ -237,8 +289,15 @@ export async function createDriver(payload) {
       .single();
     if (error) {
       if (error.code === "23505" || error.status === 409)
-        throw new Error("Email already exists. Please use a different email.");
-      throw new Error(handleApiError(error));
+        throw new ApiError(
+          "Email already exists. Please use a different email.",
+          {
+            status: error.status ?? 409,
+            code: error.code ?? "23505",
+            cause: error,
+          },
+        );
+      throw toApiError(error);
     }
     return data;
   });
@@ -255,19 +314,22 @@ export async function deleteDriver(id) {
 }
 
 export async function listCups(options = {}) {
-  return executeWithRetry(async () => {
-    const { seasonId, filters, ...rest } = options;
-    const f = filters ? [...filters] : [];
-    if (seasonId)
-      f.push({ column: "season_id", operator: "eq", value: seasonId });
-    const query = applyListOptions(supabase.from("cups").select("*"), {
-      ...rest,
-      filters: f,
-    });
-    const { data, error } = await query;
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const { seasonId, filters, ...rest } = options;
+      const f = filters ? [...filters] : [];
+      if (seasonId)
+        f.push({ column: "season_id", operator: "eq", value: seasonId });
+      const query = applyListOptions(supabase.from("cups").select("*"), {
+        ...rest,
+        filters: f,
+      });
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createCup(payload) {
@@ -286,20 +348,23 @@ export async function deleteCup(id) {
 }
 
 export async function listRaces(options = {}) {
-  return executeWithRetry(async () => {
-    const { seasonId, cupId, filters, ...rest } = options;
-    const f = filters ? [...filters] : [];
-    if (seasonId)
-      f.push({ column: "season_id", operator: "eq", value: seasonId });
-    if (cupId) f.push({ column: "cup_id", operator: "eq", value: cupId });
-    const query = applyListOptions(supabase.from("races").select("*"), {
-      ...rest,
-      filters: f,
-    });
-    const { data, error } = await query;
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const { seasonId, cupId, filters, ...rest } = options;
+      const f = filters ? [...filters] : [];
+      if (seasonId)
+        f.push({ column: "season_id", operator: "eq", value: seasonId });
+      if (cupId) f.push({ column: "cup_id", operator: "eq", value: cupId });
+      const query = applyListOptions(supabase.from("races").select("*"), {
+        ...rest,
+        filters: f,
+      });
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createRace(payload) {
@@ -327,43 +392,52 @@ async function saveRaceResultLog(supabase, row) {
   const { error } = await supabase
     .from("race_results_log")
     .insert([{ ...columns, changed_by_user_id: userId }]);
-  if (error) throw new Error(handleApiError(error));
+  if (error) throw toApiError(error);
 }
 
 export async function listRaceResults(raceId) {
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .select("*, drivers(*), penalties(*)")
-      .eq("race_id", raceId)
-      .order("finish_position", { ascending: true });
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*, drivers(*), penalties(*)")
+        .eq("race_id", raceId)
+        .order("finish_position", { ascending: true });
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function listRaceResultsByRaceIds(raceIds = []) {
   if (!raceIds.length) return [];
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .select("*, drivers(*), penalties(*)")
-      .in("race_id", raceIds);
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*, drivers(*), penalties(*)")
+        .in("race_id", raceIds);
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 async function fetchRaceResultCurrent(supabase, id) {
-  return executeWithRetry(async () => {
-    const { data, error } = await supabase
-      .from("race_results")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw new Error(handleApiError(error));
-    return data;
-  });
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createRaceResult(payload) {
@@ -395,7 +469,7 @@ export async function createPenalties(penalties) {
       .from("penalties")
       .insert(penalties)
       .select("*");
-    if (error) throw new Error(handleApiError(error));
+    if (error) throw toApiError(error);
     return data;
   });
 }
@@ -409,7 +483,12 @@ export async function uploadPicture(file) {
     const { data, error } = await supabase.storage
       .from("driver-pictures")
       .upload(fileName, file);
-    if (error) throw new Error(error.message || "Failed to upload image");
+    if (error)
+      throw new ApiError(error.message || "Failed to upload image", {
+        status: error.status ?? null,
+        code: error.code ?? null,
+        cause: error,
+      });
     const { data: publicData } = supabase.storage
       .from("driver-pictures")
       .getPublicUrl(data.path);
