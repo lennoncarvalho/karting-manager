@@ -22,8 +22,10 @@ fi
 : "${SENTRY_AUTH_TOKEN:=}"
 : "${SENTRY_ENVIRONMENT:=production}"
 
+# Escape a value for use as a sed replacement AND inside a JS single-quoted
+# string literal (the generated line is: export const X = 'VALUE';).
 escape_sed() {
-  printf '%s' "$1" | sed -e 's/[&|]/\\&/g'
+  printf '%s' "$1" | sed -e 's/[&|]/\\&/g' -e 's/\\/\\\\/g' -e "s/'/\\\\'/g"
 }
 
 supabase_url_escaped="$(escape_sed "$SUPABASE_URL")"
