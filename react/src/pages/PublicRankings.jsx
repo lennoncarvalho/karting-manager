@@ -368,25 +368,22 @@ export function PublicRankings() {
                     </thead>
                     <tbody>
                       {rankings.map((driver, i) => {
-                        const discardsCell =
-                          driver.discards && driver.discards.length ? (
-                            driver.discards
-                              .filter(
-                                (d) =>
-                                  section.cupId == null ||
-                                  d.cupId === section.cupId,
-                              )
-                              .map((d) => (
-                                <div key={d.raceId || d.cupId}>
-                                  {d.raceName || "-"}{" "}
-                                  <small className="text-muted">
-                                    (-{d.pointsRemoved})
-                                  </small>
-                                </div>
-                              ))
-                          ) : (
-                            <span className="text-muted">-</span>
-                          );
+                        const filteredDiscards = (driver.discards || []).filter(
+                          (d) =>
+                            section.cupId == null || d.cupId === section.cupId,
+                        );
+                        const discardsCell = filteredDiscards.length ? (
+                          filteredDiscards.map((d) => (
+                            <div key={d.raceId || d.cupId}>
+                              {d.raceName || "-"}{" "}
+                              <small className="text-muted">
+                                (-{d.pointsRemoved})
+                              </small>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-muted">-</span>
+                        );
 
                         return (
                           <tr key={driver.driverId}>
