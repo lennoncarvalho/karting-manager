@@ -8,7 +8,7 @@ body,
       border-bottom-color 0.5s,
       border-left-color 0.5s,
       border-top-color 0.5s,
-      border-rightcolor 0.5s,
+      border-right-color 0.5s,
       background-color 0.5s;
   }
 }
@@ -46,10 +46,11 @@ table.table thead th {
 }
 
 :root {
-  --bs-link-color: var(--season-accent, #6ea8fe);
+  --season-accent-link: var(--season-accent, #6ea8fe);
+  --bs-link-color: var(--season-accent-link, var(--season-accent, #6ea8fe));
   --bs-link-hover-color: color-mix(
     in srgb,
-    var(--season-accent, #6ea8fe) 80%,
+    var(--season-accent-link, var(--season-accent, #6ea8fe)) 80%,
     white
   );
 }
@@ -62,17 +63,21 @@ table.table thead th {
 }
 
 a {
-  color: var(--season-accent, #6ea8fe);
+  color: var(--season-accent-link, var(--season-accent, #6ea8fe));
   text-decoration-color: color-mix(
     in srgb,
-    var(--season-accent, #6ea8fe) 50%,
+    var(--season-accent-link, var(--season-accent, #6ea8fe)) 50%,
     transparent
   );
 }
 
 a:hover,
 a:focus {
-  color: color-mix(in srgb, var(--season-accent, #6ea8fe) 80%, white);
+  color: color-mix(
+    in srgb,
+    var(--season-accent-link, var(--season-accent, #6ea8fe)) 80%,
+    white
+  );
 }
 
 .nav-pills {
@@ -160,11 +165,11 @@ a:focus {
 }
 
 .z-3 {
-  z-index: 3 !important;
+  z-index: 1065 !important;
 }
 
 .z-5 {
-  z-index: 5 !important;
+  z-index: 9999 !important;
 }
 
 .w-3 {
@@ -173,4 +178,16 @@ a:focus {
 
 .h-3 {
   height: 3rem !important;
+}
+
+.min-vh-60 {
+  min-height: 60vh;
+}
+
+.min-h-12 {
+  min-height: 3rem;
+}
+
+.max-h-15 {
+  max-height: 15rem;
 }

@@ -13,14 +13,20 @@ const SeasonContext = createContext(null);
 function applyAccent(color) {
   const element = document.documentElement;
   const contrast = accentContrast(color);
+  const isLight = contrast !== "#fff";
   element.style.setProperty("--season-accent", color);
   element.style.setProperty("--season-accent-contrast", contrast);
+  element.style.setProperty("--season-accent-is-light", isLight ? "1" : "0");
   element.style.setProperty(
-    "--season-accent-is-light",
-    contrast === "#212529" ? "1" : "0",
+    "--season-accent-link",
+    isLight ? "#212529" : color,
   );
   const rgb = accentRgb(color);
-  if (rgb) element.style.setProperty("--season-accent-rgb", rgb);
+  if (rgb) {
+    element.style.setProperty("--season-accent-rgb", rgb);
+  } else {
+    element.style.removeProperty("--season-accent-rgb");
+  }
 }
 
 function calculateDefaultSeason(ongoingSeasons) {
@@ -109,6 +115,7 @@ export function SeasonProvider({ children }) {
       element.style.removeProperty("--season-accent");
       element.style.removeProperty("--season-accent-contrast");
       element.style.removeProperty("--season-accent-is-light");
+      element.style.removeProperty("--season-accent-link");
       element.style.removeProperty("--season-accent-rgb");
     }
   };
