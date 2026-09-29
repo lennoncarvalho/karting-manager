@@ -42,12 +42,16 @@ export function ConfirmModal({ show, onConfirm, onCancel, message, title }) {
       if (inst) {
         try {
           inst.hide();
-        } catch {}
+        } catch {
+          /* hide() can throw if the modal is already hidden */
+        }
         try {
           // Guard: dispose() reads inst._element which can be null if
           // Bootstrap already tore down internally.
           if (inst._element) inst.dispose();
-        } catch {}
+        } catch {
+          /* dispose() can throw if Bootstrap already tore down */
+        }
       }
       cleanupModal();
     };

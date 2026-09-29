@@ -13,9 +13,7 @@ export function RaceDateTime({ value, fallback = "-" }) {
 
   const locale = i18n.language || "pt-BR";
   const day = String(d.getDate()).padStart(2, "0");
-  let month = d
-    .toLocaleString(locale, { month: "short" })
-    .replace(/\.$/, "");
+  let month = d.toLocaleString(locale, { month: "short" }).replace(/\.$/, "");
   // Capitalize first letter (pt-BR returns lowercase "mai", "jun", ...).
   if (month) month = month.charAt(0).toUpperCase() + month.slice(1);
   const hour = String(d.getHours()).padStart(2, "0");

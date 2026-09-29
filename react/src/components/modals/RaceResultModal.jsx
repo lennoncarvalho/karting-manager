@@ -94,7 +94,6 @@ export function RaceResultModal({
   );
 
   const submitPayload = async () => {
-
     const penalties = [];
     standardPenaltyList.forEach((p) => {
       if (p.count > 0) {
@@ -148,7 +147,9 @@ export function RaceResultModal({
       setBestLapTime("");
       setDisqualified(false);
       setComments("");
-      setStandardPenaltyList(standardPenalties.map((p) => ({ ...p, count: 0 })));
+      setStandardPenaltyList(
+        standardPenalties.map((p) => ({ ...p, count: 0 })),
+      );
       setCustomPenalties([]);
     }
 
@@ -252,9 +253,9 @@ export function RaceResultModal({
                       </option>
                     ))}
                   </select>
-                  {driverError && (
+                  {driverError ? (
                     <div className="invalid-feedback">{driverError}</div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="col-md-3">
@@ -283,9 +284,9 @@ export function RaceResultModal({
                     }}
                     required
                   />
-                  {finishError && (
+                  {finishError ? (
                     <div className="invalid-feedback">{finishError}</div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="col-md-3">
@@ -309,9 +310,9 @@ export function RaceResultModal({
                       setGridError(t("validation.gridStartPositive"));
                     }}
                   />
-                  {gridError && (
+                  {gridError ? (
                     <div className="invalid-feedback">{gridError}</div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="col-md-6">
@@ -335,9 +336,9 @@ export function RaceResultModal({
                       setBestLapError(t("validation.bestLapInvalid"));
                     }}
                   />
-                  {bestLapError && (
+                  {bestLapError ? (
                     <div className="invalid-feedback">{bestLapError}</div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="col-md-6 d-flex align-items-end">

@@ -1,13 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   // Kartarados React app — entry is the Vite root mount file.
-  "entry": [
-    "src/main.jsx"
-  ],
-  "ignorePatterns": [
-    "dist/**",
-    "node_modules/**"
-  ],
+  "entry": ["src/main.jsx"],
+  "ignorePatterns": ["dist/**", "node_modules/**"],
   "duplicates": {
     // Pair-only duplicates are too noisy for a small app; require 3+ instances.
     "minOccurrences": 3,

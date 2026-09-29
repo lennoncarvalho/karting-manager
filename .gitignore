@@ -19,6 +19,7 @@ frontend/src/config.local.js
 # Dependencies (if using npm/yarn later)
 node_modules/
 package-lock.json
+!react/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

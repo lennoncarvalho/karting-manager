@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
@@ -17,10 +17,9 @@ import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function RaceManagement() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { notify } = useToast();
   const { withLoading: loading } = useLoading();
-  const { seasons, setSeasonId } = useSeason();
+  const { seasons } = useSeason();
 
   const [races, setRaces] = useState([]);
   const [allCups, setAllCups] = useState([]);
@@ -250,6 +249,82 @@ export function RaceManagement() {
   const cupMap = Object.fromEntries(allCups.map((c) => [c.id, c]));
   const availableCups = cupOptions(formSeason);
 
+  let racesBody;
+  if (loadingList) {
+    racesBody = (
+      <tr>
+        <td colSpan="5" className="text-center">
+          <div className="d-flex align-items-center justify-content-center gap-2">
+            <div
+              className="spinner-border spinner-border-sm"
+              role="status"
+            ></div>
+            <span>{t("common.status.loadingRaces")}</span>
+          </div>
+        </td>
+      </tr>
+    );
+  } else if (!races.length) {
+    racesBody = (
+      <tr>
+        <td colSpan="5" className="text-center">
+          {t("raceManagement.list.empty")}
+        </td>
+      </tr>
+    );
+  } else {
+    racesBody = races.map((race) => {
+      let cupCell = "-";
+      if (race.cup_id) {
+        cupCell = cupMap[race.cup_id]
+          ? cupMap[race.cup_id].name
+          : t("common.misc.unknown");
+      }
+      return (
+        <tr key={race.id}>
+          <td>
+            <div>
+              <Link
+                className="fw-semibold d-block"
+                to={`/admin/race?id=${race.id}`}
+              >
+                {race.name}
+              </Link>
+              <small className="d-block">{race.location}</small>
+            </div>
+          </td>
+          <td>
+            {seasonMap[race.season_id]
+              ? seasonMap[race.season_id].name
+              : t("common.misc.unknown")}
+          </td>
+          <td>{cupCell}</td>
+          <td>
+            {race.race_datetime ? formatDateTime(race.race_datetime) : "-"}
+          </td>
+          <td className="text-end">
+            <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => handleEdit(race)}
+              >
+                {t("common.actions.edit")}
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => handleDeleteRequest(race)}
+              >
+                {t("common.actions.delete")}
+              </button>
+            </div>
+          </td>
+        </tr>
+      );
+    });
+  }
+
   return (
     <div className="container mt-4">
       <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
@@ -299,6 +374,7 @@ export function RaceManagement() {
             </div>
             <div className="col-md-2">
               <button
+                type="button"
                 className="btn btn-outline-primary w-100"
                 onClick={() => {
                   setFilterSeason("");
@@ -354,9 +430,9 @@ export function RaceManagement() {
                       </option>
                     ))}
                   </select>
-                  {seasonError && (
+                  {seasonError ? (
                     <div className="invalid-feedback">{seasonError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="race-cup">
@@ -375,9 +451,9 @@ export function RaceManagement() {
                       </option>
                     ))}
                   </select>
-                  {cupError && (
+                  {cupError ? (
                     <div className="invalid-feedback">{cupError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="race-name">
@@ -399,9 +475,9 @@ export function RaceManagement() {
                     }}
                     required
                   />
-                  {nameError && (
+                  {nameError ? (
                     <div className="invalid-feedback">{nameError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="race-location">
@@ -423,9 +499,9 @@ export function RaceManagement() {
                     }}
                     required
                   />
-                  {locationError && (
+                  {locationError ? (
                     <div className="invalid-feedback">{locationError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="race-datetime">
@@ -447,9 +523,9 @@ export function RaceManagement() {
                     }}
                     required
                   />
-                  {dateTimeError && (
+                  {dateTimeError ? (
                     <div className="invalid-feedback">{dateTimeError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="form-check mb-3">
                   <input
@@ -472,7 +548,7 @@ export function RaceManagement() {
                       ? t("common.actions.update")
                       : t("common.actions.create")}
                   </button>
-                  {editing && (
+                  {editing ? (
                     <button
                       type="button"
                       className="btn btn-outline-secondary w-100 w-sm-auto"
@@ -480,7 +556,7 @@ export function RaceManagement() {
                     >
                       {t("common.actions.cancel")}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </form>
             </div>
@@ -488,97 +564,21 @@ export function RaceManagement() {
         </div>
 
         <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header text-white">
-              <h2 className="h6 mb-0">{t("raceManagement.list.title")}</h2>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>{t("raceManagement.table.race")}</th>
-                      <th>{t("raceManagement.table.season")}</th>
-                      <th>{t("raceManagement.table.cup")}</th>
-                      <th>{t("raceManagement.table.date")}</th>
-                      <th className="text-end">
-                        {t("raceManagement.table.actions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingList ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          <div className="d-flex align-items-center justify-content-center gap-2">
-                            <div
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                            ></div>
-                            <span>{t("common.status.loadingRaces")}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : !races.length ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          {t("raceManagement.list.empty")}
-                        </td>
-                      </tr>
-                    ) : (
-                      races.map((race) => (
-                        <tr key={race.id}>
-                          <td>
-                            <div>
-                              <Link
-                                className="fw-semibold d-block"
-                                to={`/admin/race?id=${race.id}`}
-                              >
-                                {race.name}
-                              </Link>
-                              <small className="d-block">{race.location}</small>
-                            </div>
-                          </td>
-                          <td>
-                            {seasonMap[race.season_id]
-                              ? seasonMap[race.season_id].name
-                              : t("common.misc.unknown")}
-                          </td>
-                          <td>
-                            {race.cup_id
-                              ? cupMap[race.cup_id]
-                                ? cupMap[race.cup_id].name
-                                : t("common.misc.unknown")
-                              : "-"}
-                          </td>
-                          <td>
-                            {race.race_datetime
-                              ? formatDateTime(race.race_datetime)
-                              : "-"}
-                          </td>
-                          <td className="text-end">
-                            <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(race)}
-                              >
-                                {t("common.actions.edit")}
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteRequest(race)}
-                              >
-                                {t("common.actions.delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="table-responsive">
+            <table className="table table-striped align-middle table-bordered">
+              <thead>
+                <tr>
+                  <th>{t("raceManagement.table.race")}</th>
+                  <th>{t("raceManagement.table.season")}</th>
+                  <th>{t("raceManagement.table.cup")}</th>
+                  <th>{t("raceManagement.table.date")}</th>
+                  <th className="text-end">
+                    {t("raceManagement.table.actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>{racesBody}</tbody>
+            </table>
           </div>
         </div>
       </div>

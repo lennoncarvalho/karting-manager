@@ -20,8 +20,7 @@ const SELF_EDITABLE_FIELDS = [
 export function DriverProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isAdmin, isDriver, loading, logout } =
-    useAuth();
+  const { user, isAuthenticated, isAdmin, loading, logout } = useAuth();
   const { notify } = useToast();
   const fileInputRef = useRef(null);
 
@@ -165,10 +164,7 @@ export function DriverProfilePage() {
 
   if (loading || fetching) {
     return (
-      <div
-        className="d-flex align-items-center justify-content-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="d-flex align-items-center justify-content-center min-vh-60">
         <div className="spinner-border spinner-border-sm" role="status">
           <span className="visually-hidden">{t("common.status.loading")}</span>
         </div>
@@ -184,10 +180,7 @@ export function DriverProfilePage() {
           <div className="col-md-6 col-lg-5 text-center">
             <div className="card shadow-sm">
               <div className="card-body py-5">
-                <i
-                  className="bi bi-exclamation-circle d-block mb-3"
-                  style={{ fontSize: "2.5rem", color: "var(--bs-warning)" }}
-                ></i>
+                <i className="bi bi-exclamation-circle d-block mb-3 fs-1 text-warning"></i>
                 <p className="fw-semibold mb-1">
                   {t("driverProfile.notRegistered")}
                 </p>
@@ -195,6 +188,7 @@ export function DriverProfilePage() {
                   {t("driverProfile.notRegisteredDetail")}
                 </p>
                 <button
+                  type="button"
                   className="btn btn-outline-secondary"
                   onClick={handleSignOut}
                 >
@@ -216,6 +210,7 @@ export function DriverProfilePage() {
             <div className="card-header text-white d-flex justify-content-between align-items-center">
               <h1 className="h5 mb-0">{t("driverProfile.title")}</h1>
               <button
+                type="button"
                 className="btn btn-sm btn-outline-light"
                 onClick={handleSignOut}
               >
@@ -235,8 +230,7 @@ export function DriverProfilePage() {
                 <div>
                   <label
                     htmlFor="avatar-upload"
-                    className="btn btn-sm btn-outline-primary"
-                    style={{ minHeight: "40px", lineHeight: "28px" }}
+                    className="btn btn-sm btn-outline-primary min-h-10 d-flex align-items-center"
                   >
                     {uploading
                       ? t("driverProfile.uploading")
@@ -353,9 +347,8 @@ export function DriverProfilePage() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100 py-2"
+                  className="btn btn-primary w-100 py-2 min-h-12"
                   disabled={saving}
-                  style={{ minHeight: "48px" }}
                 >
                   {saving
                     ? t("common.status.updating")

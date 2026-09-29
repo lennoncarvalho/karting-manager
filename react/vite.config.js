@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 // Upload sourcemaps to Sentry only when an auth token is available
 // (e.g. CI / production builds). Dev builds stay token-free.
@@ -12,8 +12,8 @@ export default defineConfig({
     ...(sentryAuthToken
       ? [
           sentryVitePlugin({
-            org: process.env.SENTRY_ORG || 'lennon-carvalho',
-            project: process.env.SENTRY_PROJECT || 'javascript-react',
+            org: process.env.SENTRY_ORG || "lennon-carvalho",
+            project: process.env.SENTRY_PROJECT || "javascript-react",
             authToken: sentryAuthToken,
           }),
         ]
@@ -21,18 +21,28 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src',
+      "@": "/src",
     },
   },
   server: {
     port: 8000,
-    host: 'localhost',
+    host: "localhost",
   },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    minify: 'esbuild',
+    outDir: "dist",
+    assetsDir: "assets",
+    minify: "esbuild",
     // Required for Sentry to symbolicate stack traces in production.
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          bootstrap: ["bootstrap"],
+          sentry: ["@sentry/react"],
+          i18n: ["react-i18next", "i18next"],
+        },
+      },
+    },
   },
 });

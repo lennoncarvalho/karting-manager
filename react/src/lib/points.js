@@ -63,9 +63,11 @@ function getFastestLapWinner(results) {
   results.forEach((result) => {
     const time = parseLapTime(result.best_lap_time);
     if (time === null) return;
-    if (!best || time < best.time) {
-      best = { id: result.driver_id, time, finish: result.finish_position };
-    } else if (time === best.time && result.finish_position < best.finish) {
+    if (
+      !best ||
+      time < best.time ||
+      (time === best.time && result.finish_position < best.finish)
+    ) {
       best = { id: result.driver_id, time, finish: result.finish_position };
     }
   });
@@ -110,8 +112,7 @@ function pickDiscardsByCup(ordered, finishByRace, driverId, now) {
     // Worst by finish_position; no-show counts as worst.
     let worst = null;
     cup.races.forEach(({ ri, race }) => {
-      const finish =
-        finishByRace.get(race.id)?.get(driverId) ?? NO_SHOW_FINISH;
+      const finish = finishByRace.get(race.id)?.get(driverId) ?? NO_SHOW_FINISH;
       if (
         !worst ||
         finish > worst.finish ||
@@ -155,8 +156,7 @@ export function calculateRankings(races, raceResults, options = {}) {
   });
   const stats = new Map();
   const ledger = new Map();
-  const now =
-    typeof options.now === "number" ? options.now : Date.now();
+  const now = typeof options.now === "number" ? options.now : Date.now();
 
   // Pre-pass: register every driver that appears in *any* race_result for the
   // races in scope, so a "no-show" in a single race still has a stats entry

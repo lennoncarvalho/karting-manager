@@ -41,11 +41,11 @@ A vanilla JavaScript web application for managing go-kart racing championships w
      ```
 
 3. **Setup Database**
-   - See `specs/001-championship-manager/quickstart.md` → "Database Setup"
+   - See `kartarados/specs/001-championship-manager/quickstart.md` → "Database Setup"
    - Run the SQL scripts in Supabase SQL Editor
 
 4. **Create First Admin**
-   - See `specs/001-championship-manager/quickstart.md` → "Create First Admin"
+   - See `kartarados/specs/001-championship-manager/quickstart.md` → "Create First Admin"
    - **First Admin Password**: [GENERATE RANDOM PASSWORD AND DOCUMENT HERE]
 
 5. **Start Development Server**
@@ -121,7 +121,7 @@ The app runs locally and connects to your remote Supabase project:
 - ✅ No local database setup needed
 - ✅ CORS automatically handled by Supabase
 
-See `specs/001-championship-manager/quickstart.md` → "Local Development Setup" for details.
+See `kartarados/specs/001-championship-manager/quickstart.md` → "Local Development Setup" for details.
 
 ## Assets (important)
 
@@ -141,12 +141,12 @@ This ensures assets work in both `npm run dev` and the built `dist/` output.
 
 ## Documentation
 
-- **Specification**: `specs/001-championship-manager/spec.md`
-- **Implementation Plan**: `specs/001-championship-manager/plan.md`
-- **Tasks**: `specs/001-championship-manager/tasks.md`
-- **Data Model**: `specs/001-championship-manager/data-model.md`
-- **API Contracts**: `specs/001-championship-manager/contracts/api-contracts.md`
-- **Quick Start**: `specs/001-championship-manager/quickstart.md`
+- **Specification**: `kartarados/specs/001-championship-manager/spec.md`
+- **Implementation Plan**: `kartarados/specs/001-championship-manager/plan.md`
+- **Tasks**: `kartarados/specs/001-championship-manager/tasks.md`
+- **Data Model**: `kartarados/specs/001-championship-manager/data-model.md`
+- **API Contracts**: `kartarados/specs/001-championship-manager/contracts/api-contracts.md`
+- **Quick Start**: `kartarados/specs/001-championship-manager/quickstart.md`
 
 ## Constitution
 
@@ -156,10 +156,10 @@ This project follows the Kartarados Constitution principles:
 - User Experience Consistency
 - Performance Requirements
 
-See `.specify/memory/constitution.md` for details.
+See `kartarados/.specify/memory/constitution.md` for details.
 
 ## License
 
 - Free to use for your own club.
-- Youre welcome to fork it and submit PRs with improvements.
-- Not for comercial use.
+- You're welcome to fork it and submit PRs with improvements.
+- Not for commercial use.

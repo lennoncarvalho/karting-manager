@@ -212,12 +212,212 @@ export function PublicRankings() {
           seed={driver.seed || driver.name}
           alt={driver.name}
           className="rounded-circle"
-          size={32}
         />
         <span>{driver.name}</span>
       </div>
     );
   };
+
+  let rankingsContent;
+  if (loading) {
+    rankingsContent = (
+      <div className="d-flex align-items-center gap-2">
+        <div className="spinner-border spinner-border-sm" role="status"></div>
+        <span>{t("common.status.loadingRankings")}</span>
+      </div>
+    );
+  } else if (!selectedSeasonId) {
+    rankingsContent = (
+      <div className="alert alert-info">
+        {t("publicRankings.noAvailableSeasonsYet")}
+      </div>
+    );
+  } else {
+    rankingsContent = (
+      <>
+        <ul className="nav nav-tabs" id="rankings-tabs" role="tablist">
+          {sections.map((section, index) => (
+            <li className="nav-item" role="presentation" key={section.id}>
+              <button
+                className={`nav-link ${index === 0 ? "active" : ""} text-nowrap`}
+                data-bs-toggle="tab"
+                data-bs-target={`#${section.id}`}
+                type="button"
+                role="tab"
+                id={`${section.id}-tab`}
+              >
+                {section.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="tab-content border border-top-0" id="rankings-content">
+          {sections.map((section, index) => {
+            const paneClass = `tab-pane fade ${index === 0 ? "show active" : ""}`;
+
+            if (section.type === "calendar") {
+              return (
+                <div
+                  className={paneClass}
+                  id={section.id}
+                  role="tabpanel"
+                  key={section.id}
+                >
+                  <div className="table-responsive">
+                    <table className="table table-striped align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{t("publicRankings.table.raceDate")}</th>
+                          <th>{t("publicRankings.table.raceName")}</th>
+                          <th>{t("publicRankings.table.winner")}</th>
+                          <th>{t("publicRankings.table.fastestLap")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orderedCalendarRaces.map((race) => {
+                          const raceTime = getRaceTimestamp(race);
+                          const isCompleted =
+                            raceTime !== null && raceTime <= now;
+                          const results = raceResultsByRace.get(race.id) || [];
+                          const showResults = isCompleted && results.length > 0;
+                          const winner = showResults
+                            ? getDriverDisplay(getWinner(results))
+                            : null;
+                          const fastest = showResults
+                            ? getDriverDisplay(getFastestLap(results))
+                            : null;
+
+                          return (
+                            <tr key={race.id}>
+                              <td>
+                                <RaceDateTime value={race.race_datetime} />
+                              </td>
+                              <td>
+                                {race.id ? (
+                                  <Link
+                                    className="fw-semibold d-block"
+                                    to={`/admin/race?id=${race.id}`}
+                                  >
+                                    {race.name || "-"}
+                                  </Link>
+                                ) : (
+                                  race.name || "-"
+                                )}
+                                <small>{race.location || "-"}</small>
+                              </td>
+                              <td>{renderDriverCell(winner)}</td>
+                              <td>{renderDriverCell(fastest)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            }
+
+            const rankings = rankingsBySection[section.id] || [];
+
+            if (!rankings.length) {
+              return (
+                <div
+                  className={paneClass}
+                  id={section.id}
+                  role="tabpanel"
+                  key={section.id}
+                >
+                  <div className="alert alert-info">
+                    {t("publicRankings.noResultsTab")}
+                  </div>
+                </div>
+              );
+            }
+
+            // Show the Discard column only when at least one driver has a
+            // discard for this section (i.e. the last race of a cup in
+            // scope has been reached). For the penalty tab discards aren't
+            // relevant.
+            const showDiscard =
+              section.ranking !== "penalties" &&
+              rankings.some(
+                (r) => Array.isArray(r.discards) && r.discards.length > 0,
+              );
+
+            return (
+              <div
+                className={paneClass}
+                id={section.id}
+                role="tabpanel"
+                key={section.id}
+              >
+                <div className="table-responsive">
+                  <table className="table table-striped align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>{t("publicRankings.table.position")}</th>
+                        <th>{t("publicRankings.table.driver")}</th>
+                        <th>{t("publicRankings.table.totalPoints")}</th>
+                        <th>{t("publicRankings.table.penalties")}</th>
+                        <th>{t("publicRankings.table.bestPosition")}</th>
+                        {showDiscard ? (
+                          <th>{t("publicRankings.table.discard")}</th>
+                        ) : null}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rankings.map((driver, i) => {
+                        const filteredDiscards = (driver.discards || []).filter(
+                          (d) =>
+                            section.cupId == null || d.cupId === section.cupId,
+                        );
+                        const discardsCell = filteredDiscards.length ? (
+                          filteredDiscards.map((d) => (
+                            <div key={d.raceId || d.cupId}>
+                              {d.raceName || "-"}{" "}
+                              <small className="text-muted">
+                                (-{d.pointsRemoved})
+                              </small>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-muted">-</span>
+                        );
+
+                        return (
+                          <tr key={driver.driverId}>
+                            <td>{i + 1}</td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <DriverImage
+                                  src={driver.picture}
+                                  seed={driver.driverId || driver.name}
+                                  alt={driver.name}
+                                  className="rounded-circle"
+                                />
+                                <span>{driver.name}</span>
+                              </div>
+                            </td>
+                            <td className="fw-semibold">
+                              {driver.totalPoints}
+                            </td>
+                            <td>{driver.penalties || 0}</td>
+                            <td>{driver.bestPosition || "-"}</td>
+                            {showDiscard ? <td>{discardsCell}</td> : null}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="container mt-4">
@@ -240,206 +440,9 @@ export function PublicRankings() {
         </div>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error ? <div className="alert alert-danger">{error}</div> : null}
 
-      {loading ? (
-        <div className="d-flex align-items-center gap-2">
-          <div className="spinner-border spinner-border-sm" role="status"></div>
-          <span>{t("common.status.loadingRankings")}</span>
-        </div>
-      ) : !selectedSeasonId ? (
-        <div className="alert alert-info">
-          {t("publicRankings.noAvailableSeasonsYet")}
-        </div>
-      ) : (
-        <>
-          <ul className="nav nav-tabs" id="rankings-tabs" role="tablist">
-            {sections.map((section, index) => (
-              <li className="nav-item" role="presentation" key={section.id}>
-                <button
-                  className={`nav-link ${index === 0 ? "active" : ""} text-nowrap`}
-                  data-bs-toggle="tab"
-                  data-bs-target={`#${section.id}`}
-                  type="button"
-                  role="tab"
-                  id={`${section.id}-tab`}
-                >
-                  {section.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          <div className="tab-content border border-top-0" id="rankings-content">
-            {sections.map((section, index) => {
-              const paneClass = `tab-pane fade ${index === 0 ? "show active" : ""}`;
-
-              if (section.type === "calendar") {
-                return (
-                  <div
-                    className={paneClass}
-                    id={section.id}
-                    role="tabpanel"
-                    key={section.id}
-                  >
-                    <div className="table-responsive">
-                      <table className="table table-striped align-middle">
-                        <thead>
-                          <tr>
-                            <th>{t("publicRankings.table.raceDate")}</th>
-                            <th>{t("publicRankings.table.raceName")}</th>
-                            <th>{t("publicRankings.table.winner")}</th>
-                            <th>{t("publicRankings.table.fastestLap")}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {orderedCalendarRaces.map((race) => {
-                            const raceTime = getRaceTimestamp(race);
-                            const isCompleted =
-                              raceTime !== null && raceTime <= now;
-                            const results =
-                              raceResultsByRace.get(race.id) || [];
-                            const showResults =
-                              isCompleted && results.length > 0;
-                            const winner = showResults
-                              ? getDriverDisplay(getWinner(results))
-                              : null;
-                            const fastest = showResults
-                              ? getDriverDisplay(getFastestLap(results))
-                              : null;
-
-                            return (
-                              <tr key={race.id}>
-                                <td>
-                                  <RaceDateTime value={race.race_datetime} />
-                                </td>
-                                <td>
-                                  {race.id ? (
-                                    <Link
-                                      className="fw-semibold d-block"
-                                      to={`/admin/race?id=${race.id}`}
-                                    >
-                                      {race.name || "-"}
-                                    </Link>
-                                  ) : (
-                                    race.name || "-"
-                                  )}
-                                  <small>{race.location || "-"}</small>
-                                </td>
-                                <td>{renderDriverCell(winner)}</td>
-                                <td>{renderDriverCell(fastest)}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              }
-
-              const rankings = rankingsBySection[section.id] || [];
-
-              if (!rankings.length) {
-                return (
-                  <div
-                    className={paneClass}
-                    id={section.id}
-                    role="tabpanel"
-                    key={section.id}
-                  >
-                    <div className="alert alert-info">
-                      {t("publicRankings.noResultsTab")}
-                    </div>
-                  </div>
-                );
-              }
-
-              // Show the Discard column only when at least one driver has a
-              // discard for this section (i.e. the last race of a cup in
-              // scope has been reached). For the penalty tab discards aren't
-              // relevant.
-              const showDiscard =
-                section.ranking !== "penalties" &&
-                rankings.some(
-                  (r) => Array.isArray(r.discards) && r.discards.length > 0,
-                );
-
-              return (
-                <div
-                  className={paneClass}
-                  id={section.id}
-                  role="tabpanel"
-                  key={section.id}
-                >
-                  <div className="table-responsive">
-                    <table className="table table-striped align-middle">
-                      <thead>
-                        <tr>
-                          <th>{t("publicRankings.table.position")}</th>
-                          <th>{t("publicRankings.table.driver")}</th>
-                          <th>{t("publicRankings.table.totalPoints")}</th>
-                          <th>{t("publicRankings.table.penalties")}</th>
-                          <th>{t("publicRankings.table.bestPosition")}</th>
-                          {showDiscard && (
-                            <th>{t("publicRankings.table.discard")}</th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rankings.map((driver, i) => (
-                          <tr key={driver.driverId}>
-                            <td>{i + 1}</td>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                <DriverImage
-                                  src={driver.picture}
-                                  seed={driver.driverId || driver.name}
-                                  alt={driver.name}
-                                  className="rounded-circle"
-                                  size={36}
-                                />
-                                <span>{driver.name}</span>
-                              </div>
-                            </td>
-                            <td className="fw-semibold">
-                              {driver.totalPoints}
-                            </td>
-                            <td>{driver.penalties || 0}</td>
-                            <td>{driver.bestPosition || "-"}</td>
-                            {showDiscard && (
-                              <td>
-                                {driver.discards && driver.discards.length ? (
-                                  driver.discards
-                                    .filter(
-                                      (d) =>
-                                        section.cupId == null ||
-                                        d.cupId === section.cupId,
-                                    )
-                                    .map((d) => (
-                                      <div key={d.raceId || d.cupId}>
-                                        {d.raceName || "-"}{" "}
-                                        <small className="text-muted">
-                                          (-{d.pointsRemoved})
-                                        </small>
-                                      </div>
-                                    ))
-                                ) : (
-                                  <span className="text-muted">-</span>
-                                )}
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+      {rankingsContent}
     </div>
   );
 }

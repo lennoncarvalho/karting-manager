@@ -1,5 +1,20 @@
-import { supabase, APP_URL } from "./supabase";
+import { supabase } from "./supabase";
 import * as Sentry from "@sentry/react";
+
+let refreshPromise = null;
+
+class ApiError extends Error {
+  constructor(
+    message,
+    { status = null, code = null, cause = null, jwt = false } = {},
+  ) {
+    super(message, { cause });
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.jwt = jwt;
+  }
+}
 
 export function getSupabaseClient() {
   return supabase;
@@ -9,8 +24,65 @@ async function getAuthenticatedClient() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
+  if (!session)
+    throw new ApiError("Not authenticated", { code: "NOT_AUTHENTICATED" });
   return supabase;
+}
+
+async function refreshToken() {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) throw error;
+    return data.session;
+  })();
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+}
+
+function isJwtError(error) {
+  return Boolean(error?.jwt) || Boolean(error?.message?.includes("JWT"));
+}
+
+function isTransientError(error) {
+  if (error?.code === "NOT_AUTHENTICATED") return false;
+  if (typeof error?.status === "number") {
+    return error.status === 408 || error.status === 429 || error.status >= 500;
+  }
+  return true;
+}
+
+async function executeWithRetry(requestFn, { retryTransport = false } = {}) {
+  const maxRetries = 3;
+  const delay = 1000;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await requestFn();
+    } catch (error) {
+      if (isJwtError(error) && attempt < maxRetries) {
+        try {
+          await refreshToken();
+          continue;
+        } catch (refreshError) {
+          Sentry.captureException(refreshError);
+          throw new ApiError("Session expired. Please log in again.", {
+            cause: refreshError,
+          });
+        }
+      }
+      if (attempt < maxRetries && retryTransport && isTransientError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, delay * attempt));
+        continue;
+      }
+      if (isTransientError(error)) Sentry.captureException(error);
+      throw error;
+    }
+  }
 }
 
 function handleApiError(error) {
@@ -26,6 +98,15 @@ function handleApiError(error) {
   return error.message || "An unexpected error occurred. Please try again.";
 }
 
+function toApiError(error) {
+  return new ApiError(handleApiError(error), {
+    status: error?.status ?? null,
+    code: error?.code ?? null,
+    cause: error,
+    jwt: Boolean(error?.message?.includes("JWT")),
+  });
+}
+
 function readStorageJson(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -38,7 +119,9 @@ function readStorageJson(key) {
 function writeStorageJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
+  } catch {
+    /* best-effort cache write; ignore quota/unavailable errors */
+  }
 }
 
 const SEASONS_CACHE_KEY = "seasonsCache";
@@ -68,6 +151,15 @@ function cacheSeasonsById(seasons) {
   writeStorageJson(SEASONS_CACHE_BY_ID_KEY, cache);
 }
 
+export function invalidateSeasonCache() {
+  try {
+    localStorage.removeItem(SEASONS_CACHE_KEY);
+    localStorage.removeItem(SEASONS_CACHE_BY_ID_KEY);
+  } catch {
+    /* best-effort cache clear; ignore quota/unavailable errors */
+  }
+}
+
 function applyListOptions(query, { order, limit, offset, filters } = {}) {
   if (filters)
     filters.forEach((f) => {
@@ -81,14 +173,48 @@ function applyListOptions(query, { order, limit, offset, filters } = {}) {
   return query;
 }
 
-export async function listSeasons(options = {}) {
-  const query = applyListOptions(supabase.from("seasons").select("*"), options);
-  const { data, error } = await query;
-  if (error) throw new Error(handleApiError(error));
-  if (!options.filters?.length)
-    writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(data));
-  cacheSeasonsById(data);
+async function insertOne(supabase, table, payload) {
+  const { data, error } = await supabase
+    .from(table)
+    .insert([payload])
+    .select("*")
+    .single();
+  if (error) throw toApiError(error);
   return data;
+}
+
+async function updateOne(supabase, table, id, updates) {
+  const { data, error } = await supabase
+    .from(table)
+    .update(updates)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw toApiError(error);
+  return data;
+}
+
+async function deleteById(supabase, table, id) {
+  const { error } = await supabase.from(table).delete().eq("id", id);
+  if (error) throw toApiError(error);
+}
+
+export async function listSeasons(options = {}) {
+  return executeWithRetry(
+    async () => {
+      const query = applyListOptions(
+        supabase.from("seasons").select("*"),
+        options,
+      );
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      if (!options.filters?.length)
+        writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(data));
+      cacheSeasonsById(data);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function getSeasonById(id) {
@@ -96,195 +222,164 @@ export async function getSeasonById(id) {
   const key = String(id);
   const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
   if (cache[key]) return cache[key];
-  const { data, error } = await supabase
-    .from("seasons")
-    .select("*")
-    .eq("id", id)
-    .limit(1);
-  if (error) throw new Error(handleApiError(error));
-  const season = data?.[0] || null;
-  if (season) cacheSeasonById(season);
-  return season;
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("seasons")
+        .select("*")
+        .eq("id", id)
+        .limit(1);
+      if (error) throw toApiError(error);
+      const season = data?.[0] || null;
+      if (season) cacheSeasonById(season);
+      return season;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createSeason(payload) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("seasons")
-    .insert([payload])
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  cacheSeasonById(data);
-  const list = readStorageJson(SEASONS_CACHE_KEY) || [];
-  const updated = list.map((item) =>
-    String(item.id) === String(data.id) ? data : item,
+  const result = await executeWithRetry(() =>
+    insertOne(supabase, "seasons", payload),
   );
-  if (!updated.some((i) => String(i.id) === String(data.id)))
-    updated.push(data);
-  writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(updated));
-  return data;
+  cacheSeasonById(result);
+  invalidateSeasonCache();
+  return result;
 }
 
 export async function updateSeason(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("seasons")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  cacheSeasonById(data);
-  const list = readStorageJson(SEASONS_CACHE_KEY) || [];
-  const updated = list.map((item) =>
-    String(item.id) === String(id) ? data : item,
+  const result = await executeWithRetry(() =>
+    updateOne(supabase, "seasons", id, updates),
   );
-  writeStorageJson(SEASONS_CACHE_KEY, sortSeasonsByEndDate(updated));
-  return data;
+  cacheSeasonById(result);
+  invalidateSeasonCache();
+  return result;
 }
 
 export async function deleteSeason(id) {
   const supabase = await getAuthenticatedClient();
-  const { error } = await supabase.from("seasons").delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
-  try {
-    const cache = readStorageJson(SEASONS_CACHE_BY_ID_KEY) || {};
-    delete cache[String(id)];
-    writeStorageJson(SEASONS_CACHE_BY_ID_KEY, cache);
-  } catch {}
-  const list = readStorageJson(SEASONS_CACHE_KEY) || [];
-  writeStorageJson(
-    SEASONS_CACHE_KEY,
-    sortSeasonsByEndDate(list.filter((i) => String(i.id) !== String(id))),
-  );
+  await executeWithRetry(() => deleteById(supabase, "seasons", id));
+  invalidateSeasonCache();
 }
 
 export async function listDrivers(options = {}) {
-  const query = applyListOptions(supabase.from("drivers").select("*"), options);
-  const { data, error } = await query;
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(
+    async () => {
+      const query = applyListOptions(
+        supabase.from("drivers").select("*"),
+        options,
+      );
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createDriver(payload) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("drivers")
-    .insert([payload])
-    .select("*")
-    .single();
-  if (error) {
-    if (error.code === "23505" || error.status === 409)
-      throw new Error("Email already exists. Please use a different email.");
-    throw new Error(handleApiError(error));
-  }
-  return data;
+  return executeWithRetry(async () => {
+    const { data, error } = await supabase
+      .from("drivers")
+      .insert([payload])
+      .select("*")
+      .single();
+    if (error) {
+      if (error.code === "23505" || error.status === 409)
+        throw new ApiError(
+          "Email already exists. Please use a different email.",
+          {
+            status: error.status ?? 409,
+            code: error.code ?? "23505",
+            cause: error,
+          },
+        );
+      throw toApiError(error);
+    }
+    return data;
+  });
 }
 
 export async function updateDriver(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("drivers")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => updateOne(supabase, "drivers", id, updates));
 }
 
 export async function deleteDriver(id) {
   const supabase = await getAuthenticatedClient();
-  const { error } = await supabase.from("drivers").delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
+  return executeWithRetry(() => deleteById(supabase, "drivers", id));
 }
 
 export async function listCups(options = {}) {
-  const { seasonId, filters, ...rest } = options;
-  const f = filters ? [...filters] : [];
-  if (seasonId)
-    f.push({ column: "season_id", operator: "eq", value: seasonId });
-  const query = applyListOptions(supabase.from("cups").select("*"), {
-    ...rest,
-    filters: f,
-  });
-  const { data, error } = await query;
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(
+    async () => {
+      const { seasonId, filters, ...rest } = options;
+      const f = filters ? [...filters] : [];
+      if (seasonId)
+        f.push({ column: "season_id", operator: "eq", value: seasonId });
+      const query = applyListOptions(supabase.from("cups").select("*"), {
+        ...rest,
+        filters: f,
+      });
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createCup(payload) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("cups")
-    .insert([payload])
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => insertOne(supabase, "cups", payload));
 }
 
 export async function updateCup(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("cups")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => updateOne(supabase, "cups", id, updates));
 }
 
 export async function deleteCup(id) {
   const supabase = await getAuthenticatedClient();
-  const { error } = await supabase.from("cups").delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
+  return executeWithRetry(() => deleteById(supabase, "cups", id));
 }
 
 export async function listRaces(options = {}) {
-  const { seasonId, cupId, filters, ...rest } = options;
-  const f = filters ? [...filters] : [];
-  if (seasonId)
-    f.push({ column: "season_id", operator: "eq", value: seasonId });
-  if (cupId) f.push({ column: "cup_id", operator: "eq", value: cupId });
-  const query = applyListOptions(supabase.from("races").select("*"), {
-    ...rest,
-    filters: f,
-  });
-  const { data, error } = await query;
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(
+    async () => {
+      const { seasonId, cupId, filters, ...rest } = options;
+      const f = filters ? [...filters] : [];
+      if (seasonId)
+        f.push({ column: "season_id", operator: "eq", value: seasonId });
+      if (cupId) f.push({ column: "cup_id", operator: "eq", value: cupId });
+      const query = applyListOptions(supabase.from("races").select("*"), {
+        ...rest,
+        filters: f,
+      });
+      const { data, error } = await query;
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createRace(payload) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("races")
-    .insert([payload])
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => insertOne(supabase, "races", payload));
 }
 
 export async function updateRace(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("races")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => updateOne(supabase, "races", id, updates));
 }
 
 export async function deleteRace(id) {
   const supabase = await getAuthenticatedClient();
-  const { error } = await supabase.from("races").delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
+  return executeWithRetry(() => deleteById(supabase, "races", id));
 }
 
 async function saveRaceResultLog(supabase, row) {
@@ -292,98 +387,111 @@ async function saveRaceResultLog(supabase, row) {
     data: { session },
   } = await supabase.auth.getSession();
   const userId = session?.user?.id ?? null;
-  const { drivers, penalties, ...columns } = row;
+  // eslint-disable-next-line sonarjs/no-unused-vars -- intentionally stripped from the audit-log row
+  const { drivers: _drivers, penalties: _penalties, ...columns } = row;
   const { error } = await supabase
     .from("race_results_log")
     .insert([{ ...columns, changed_by_user_id: userId }]);
-  if (error) throw new Error(handleApiError(error));
+  if (error) throw toApiError(error);
 }
 
 export async function listRaceResults(raceId) {
-  const { data, error } = await supabase
-    .from("race_results")
-    .select("*, drivers(*), penalties(*)")
-    .eq("race_id", raceId)
-    .order("finish_position", { ascending: true });
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*, drivers(*), penalties(*)")
+        .eq("race_id", raceId)
+        .order("finish_position", { ascending: true });
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function listRaceResultsByRaceIds(raceIds = []) {
   if (!raceIds.length) return [];
-  const { data, error } = await supabase
-    .from("race_results")
-    .select("*, drivers(*), penalties(*)")
-    .in("race_id", raceIds);
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*, drivers(*), penalties(*)")
+        .in("race_id", raceIds);
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
+}
+
+async function fetchRaceResultCurrent(supabase, id) {
+  return executeWithRetry(
+    async () => {
+      const { data, error } = await supabase
+        .from("race_results")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw toApiError(error);
+      return data;
+    },
+    { retryTransport: true },
+  );
 }
 
 export async function createRaceResult(payload) {
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("race_results")
-    .insert([payload])
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() => insertOne(supabase, "race_results", payload));
 }
 
 export async function updateRaceResult(id, updates) {
   const supabase = await getAuthenticatedClient();
-  const { data: current, error: currentError } = await supabase
-    .from("race_results")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (currentError) throw new Error(handleApiError(currentError));
+  const current = await fetchRaceResultCurrent(supabase, id);
   await saveRaceResultLog(supabase, current);
-  const { data, error } = await supabase
-    .from("race_results")
-    .update(updates)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(() =>
+    updateOne(supabase, "race_results", id, updates),
+  );
 }
 
 export async function deleteRaceResult(id) {
   const supabase = await getAuthenticatedClient();
-  const { data: current, error: currentError } = await supabase
-    .from("race_results")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (currentError) throw new Error(handleApiError(currentError));
+  const current = await fetchRaceResultCurrent(supabase, id);
   await saveRaceResultLog(supabase, current);
-  const { error } = await supabase.from("race_results").delete().eq("id", id);
-  if (error) throw new Error(handleApiError(error));
+  return executeWithRetry(() => deleteById(supabase, "race_results", id));
 }
 
 export async function createPenalties(penalties) {
   if (!penalties.length) return [];
   const supabase = await getAuthenticatedClient();
-  const { data, error } = await supabase
-    .from("penalties")
-    .insert(penalties)
-    .select("*");
-  if (error) throw new Error(handleApiError(error));
-  return data;
+  return executeWithRetry(async () => {
+    const { data, error } = await supabase
+      .from("penalties")
+      .insert(penalties)
+      .select("*");
+    if (error) throw toApiError(error);
+    return data;
+  });
 }
 
 export async function uploadPicture(file) {
   const supabase = getSupabaseClient();
-  const ext = file.name.split(".").pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { data, error } = await supabase.storage
-    .from("driver-pictures")
-    .upload(fileName, file);
-  if (error) throw new Error(error.message || "Failed to upload image");
-  const { data: publicData } = supabase.storage
-    .from("driver-pictures")
-    .getPublicUrl(data.path);
-  return publicData.publicUrl;
+  return executeWithRetry(async () => {
+    const ext = file.name.split(".").pop();
+    // eslint-disable-next-line sonarjs/pseudo-random -- collision-avoidance suffix for storage filenames, not security-sensitive
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from("driver-pictures")
+      .upload(fileName, file);
+    if (error)
+      throw new ApiError(error.message || "Failed to upload image", {
+        status: error.status ?? null,
+        code: error.code ?? null,
+        cause: error,
+      });
+    const { data: publicData } = supabase.storage
+      .from("driver-pictures")
+      .getPublicUrl(data.path);
+    return publicData.publicUrl;
+  });
 }
-

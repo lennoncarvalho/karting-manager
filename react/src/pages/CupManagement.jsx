@@ -11,17 +11,14 @@ import {
   deleteCup,
 } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/formatting";
-import {
-  isValidDateRange,
-  isValidCupDateRange,
-} from "@/lib/validation";
+import { isValidDateRange, isValidCupDateRange } from "@/lib/validation";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function CupManagement() {
   const { t } = useTranslation();
   const { notify } = useToast();
   const { withLoading: loading } = useLoading();
-  const { seasons, selectedSeasonId, setSeasonId } = useSeason();
+  const { selectedSeasonId } = useSeason();
 
   const [cups, setCups] = useState([]);
   const [allSeasons, setAllSeasons] = useState([]);
@@ -190,6 +187,45 @@ export function CupManagement() {
   );
   const cupSeason = seasonMap[String(formSeason)];
 
+  const cupsRows = !cups.length ? (
+    <tr>
+      <td colSpan="5" className="text-center">
+        {t("cupManagement.list.empty")}
+      </td>
+    </tr>
+  ) : (
+    cups.map((cup) => (
+      <tr key={cup.id}>
+        <td>{cup.name}</td>
+        <td>
+          {seasonMap[cup.season_id]
+            ? seasonMap[cup.season_id].name
+            : t("common.misc.unknown")}
+        </td>
+        <td>{cup.start_date ? formatDisplayDate(cup.start_date) : "-"}</td>
+        <td>{cup.end_date ? formatDisplayDate(cup.end_date) : "-"}</td>
+        <td className="text-end">
+          <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => handleEdit(cup)}
+            >
+              {t("common.actions.edit")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => handleDeleteRequest(cup)}
+            >
+              {t("common.actions.delete")}
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  );
+
   return (
     <div className="container mt-4">
       <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3">
@@ -237,9 +273,9 @@ export function CupManagement() {
                       </option>
                     ))}
                   </select>
-                  {seasonError && (
+                  {seasonError ? (
                     <div className="invalid-feedback">{seasonError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-name">
@@ -261,9 +297,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {nameError && (
+                  {nameError ? (
                     <div className="invalid-feedback">{nameError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-start">
@@ -287,9 +323,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {startError && (
+                  {startError ? (
                     <div className="invalid-feedback">{startError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="mb-3">
                   <label className="form-label" htmlFor="cup-end">
@@ -313,9 +349,9 @@ export function CupManagement() {
                     }}
                     required
                   />
-                  {endError && (
+                  {endError ? (
                     <div className="invalid-feedback">{endError}</div>
-                  )}
+                  ) : null}
                 </div>
                 <div className="d-flex flex-column flex-sm-row gap-2">
                   <button
@@ -326,7 +362,7 @@ export function CupManagement() {
                       ? t("common.actions.update")
                       : t("common.actions.create")}
                   </button>
-                  {editing && (
+                  {editing ? (
                     <button
                       type="button"
                       className="btn btn-outline-secondary w-100 w-sm-auto"
@@ -334,7 +370,7 @@ export function CupManagement() {
                     >
                       {t("common.actions.cancel")}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </form>
             </div>
@@ -342,85 +378,37 @@ export function CupManagement() {
         </div>
 
         <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header text-white">
-              <h2 className="h6 mb-0">{t("cupManagement.list.title")}</h2>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>{t("cupManagement.table.cup")}</th>
-                      <th>{t("cupManagement.table.season")}</th>
-                      <th>{t("cupManagement.table.start")}</th>
-                      <th>{t("cupManagement.table.end")}</th>
-                      <th className="text-end">
-                        {t("cupManagement.table.actions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingList ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          <div className="d-flex align-items-center justify-content-center gap-2">
-                            <div
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                            ></div>
-                            <span>{t("common.status.loadingCups")}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : !cups.length ? (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          {t("cupManagement.list.empty")}
-                        </td>
-                      </tr>
-                    ) : (
-                      cups.map((cup) => (
-                        <tr key={cup.id}>
-                          <td>{cup.name}</td>
-                          <td>
-                            {seasonMap[cup.season_id]
-                              ? seasonMap[cup.season_id].name
-                              : t("common.misc.unknown")}
-                          </td>
-                          <td>
-                            {cup.start_date
-                              ? formatDisplayDate(cup.start_date)
-                              : "-"}
-                          </td>
-                          <td>
-                            {cup.end_date
-                              ? formatDisplayDate(cup.end_date)
-                              : "-"}
-                          </td>
-                          <td className="text-end">
-                            <div className="d-flex flex-column flex-md-row justify-content-end gap-2">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(cup)}
-                              >
-                                {t("common.actions.edit")}
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDeleteRequest(cup)}
-                              >
-                                {t("common.actions.delete")}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="table-responsive">
+            <table className="table table-striped align-middle table-bordered">
+              <thead>
+                <tr>
+                  <th>{t("cupManagement.table.cup")}</th>
+                  <th>{t("cupManagement.table.season")}</th>
+                  <th>{t("cupManagement.table.start")}</th>
+                  <th>{t("cupManagement.table.end")}</th>
+                  <th className="text-end">
+                    {t("cupManagement.table.actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingList ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      <div className="d-flex align-items-center justify-content-center gap-2">
+                        <div
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                        ></div>
+                        <span>{t("common.status.loadingCups")}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  cupsRows
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

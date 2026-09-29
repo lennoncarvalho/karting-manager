@@ -28,9 +28,48 @@ export function Navbar() {
     return "";
   };
 
+  const navItems = [
+    { to: "/rankings", label: t("nav.rankings") },
+    {
+      to: "/admin/seasons",
+      label: t("nav.seasons"),
+      show: isAuthenticated && isAdmin,
+    },
+    {
+      to: "/admin/drivers",
+      label: t("nav.drivers"),
+      show: isAuthenticated && isAdmin,
+    },
+    {
+      to: "/admin/cups",
+      label: t("nav.cups"),
+      show: isAuthenticated && isAdmin,
+    },
+    {
+      to: "/admin/races",
+      label: t("nav.races"),
+      show: isAuthenticated && isAdmin,
+    },
+    {
+      to: "/driver/profile",
+      label: t("nav.myProfile"),
+      show: isAuthenticated && isDriver,
+    },
+    {
+      to: "/driver/login",
+      label: t("nav.driverLogin"),
+      show: !isAuthenticated,
+    },
+    {
+      to: "/login",
+      label: t("nav.adminLogin"),
+      show: !isAuthenticated,
+    },
+  ].filter((item) => item.show !== false);
+
   return (
     <nav
-      className="navbar navbar-expand-lg navbar-dark"
+      className="navbar navbar-expand-lg navbar-dark bg-custom-accent"
       style={{ backgroundColor: "var(--season-accent)" }}
     >
       <div className="container">
@@ -39,7 +78,7 @@ export function Navbar() {
           className="navbar-brand d-flex align-items-center"
           aria-label={t("nav.brandAria")}
         >
-          <img src={logoUrl} alt="" height="80" style={{ maxHeight: "60px" }} />
+          <img src={logoUrl} alt="" height="80" className="max-h-15" />
         </Link>
 
         <button
@@ -56,89 +95,16 @@ export function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
-            <li className="nav-item">
-              <Link
-                className={`nav-link ${isActive("/rankings")}`}
-                to="/rankings"
-              >
-                {t("nav.rankings")}
-              </Link>
-            </li>
-
-            {/* Admin navigation links */}
-            {isAuthenticated && isAdmin && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/admin/seasons")}`}
-                    to="/admin/seasons"
-                  >
-                    {t("nav.seasons")}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/admin/drivers")}`}
-                    to="/admin/drivers"
-                  >
-                    {t("nav.drivers")}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/admin/cups")}`}
-                    to="/admin/cups"
-                  >
-                    {t("nav.cups")}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/admin/races")}`}
-                    to="/admin/races"
-                  >
-                    {t("nav.races")}
-                  </Link>
-                </li>
-              </>
-            )}
-
-            {/* Driver navigation link */}
-            {isAuthenticated && isDriver && (
-              <li className="nav-item">
-                <Link
-                  className={`nav-link ${isActive("/driver/profile")}`}
-                  to="/driver/profile"
-                >
-                  {t("nav.myProfile")}
+            {navItems.map((item) => (
+              <li key={item.to} className="nav-item">
+                <Link className={`nav-link ${isActive(item.to)}`} to={item.to}>
+                  {item.label}
                 </Link>
               </li>
-            )}
-
-            {/* Unauthenticated links */}
-            {!isAuthenticated && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/driver/login")}`}
-                    to="/driver/login"
-                  >
-                    {t("nav.driverLogin")}
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className={`nav-link ${isActive("/login")}`}
-                    to="/login"
-                  >
-                    {t("nav.adminLogin")}
-                  </Link>
-                </li>
-              </>
-            )}
+            ))}
           </ul>
 
-          {isAuthenticated && user && (
+          {isAuthenticated && user ? (
             <ul className="navbar-nav">
               <li className="nav-item dropdown">
                 <a
@@ -155,20 +121,20 @@ export function Navbar() {
                   className="dropdown-menu dropdown-menu-end"
                   aria-labelledby="navbarDropdown"
                 >
-                  {isAdmin && (
+                  {isAdmin ? (
                     <li>
                       <Link className="dropdown-item" to="/admin">
                         {t("nav.settings")}
                       </Link>
                     </li>
-                  )}
-                  {isDriver && (
+                  ) : null}
+                  {isDriver ? (
                     <li>
                       <Link className="dropdown-item" to="/driver/profile">
                         {t("nav.myProfile")}
                       </Link>
                     </li>
-                  )}
+                  ) : null}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
@@ -187,7 +153,7 @@ export function Navbar() {
                 </ul>
               </li>
             </ul>
-          )}
+          ) : null}
         </div>
       </div>
     </nav>

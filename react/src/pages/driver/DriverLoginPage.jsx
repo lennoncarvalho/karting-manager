@@ -53,10 +53,7 @@ export function DriverLoginPage() {
 
   if (loading) {
     return (
-      <div
-        className="d-flex align-items-center justify-content-center"
-        style={{ minHeight: "60vh" }}
-      >
+      <div className="d-flex align-items-center justify-content-center min-vh-60">
         <div className="spinner-border spinner-border-sm" role="status">
           <span className="visually-hidden">{t("common.status.loading")}</span>
         </div>
@@ -76,10 +73,7 @@ export function DriverLoginPage() {
               {emailSent ? (
                 /* Confirmation message after magic link is sent */
                 <div className="text-center py-3">
-                  <i
-                    className="bi bi-envelope-check d-block mb-3"
-                    style={{ fontSize: "2.5rem" }}
-                  ></i>
+                  <i className="bi bi-envelope-check d-block mb-3 fs-1"></i>
                   <p className="mb-1 fw-semibold">
                     {t("driverLogin.checkInbox")}
                   </p>
@@ -99,12 +93,12 @@ export function DriverLoginPage() {
                 </div>
               ) : (
                 <>
-                  {serverError && (
+                  {serverError ? (
                     <div className="alert alert-danger" role="alert">
                       {serverError}
                     </div>
-                  )}
-                  <p className="text-muted small mb-3" style={{ whiteSpace: "pre-line" }}>
+                  ) : null}
+                  <p className="text-muted small mb-3 white-space-pre-line">
                     {t("driverLogin.instructions")}
                   </p>
                   <form onSubmit={handleSubmit}>
@@ -134,15 +128,14 @@ export function DriverLoginPage() {
                         inputMode="email"
                         required
                       />
-                      {emailError && (
+                      {emailError ? (
                         <div className="invalid-feedback">{emailError}</div>
-                      )}
+                      ) : null}
                     </div>
                     <button
                       type="submit"
-                      className="btn btn-primary w-100 py-2"
+                      className="btn btn-primary w-100 py-2 min-h-12"
                       disabled={submitting}
-                      style={{ minHeight: "48px" }}
                     >
                       {submitting
                         ? t("driverLogin.sending")

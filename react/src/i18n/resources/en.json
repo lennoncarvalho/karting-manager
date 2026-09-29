@@ -351,6 +351,7 @@
     "providerAuto": "Auto (Azure Document Intelligence + Tesseract)",
     "providerTesseract": "Tesseract (in-browser)",
     "chooseImage": "Choose an image",
+    "imageHint": "For a successful import, use a good-quality picture. Make it black and white, crop unwanted areas, and leave just the driver's name, position, and time.",
     "runOcr": "Run OCR",
     "cropTitle": "Crop & Enhance",
     "enhance": "Enhance for OCR",

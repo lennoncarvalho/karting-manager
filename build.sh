@@ -22,8 +22,15 @@ fi
 : "${SENTRY_AUTH_TOKEN:=}"
 : "${SENTRY_ENVIRONMENT:=production}"
 
+# Escape a value for use as a sed replacement AND inside a JS single-quoted
+# string literal (the generated line is: export const X = 'VALUE';).
+# The outer sed replacement halves backslashes and expands &, | and the
+# delimiter, so every backslash that must survive in the file needs one extra
+# copy here. Order matters: quadruple existing backslashes first, escape & and
+# | for the outer replacement, then escape JS single quotes last (two
+# backslashes survive the outer halving as the JS escape sequence \').
 escape_sed() {
-  printf '%s' "$1" | sed -e 's/[&|]/\\&/g'
+  printf '%s' "$1" | sed -e 's/\\/\\\\\\\\/g' -e 's/[&|]/\\&/g' -e "s/'/\\\\\\\\'/g"
 }
 
 supabase_url_escaped="$(escape_sed "$SUPABASE_URL")"
