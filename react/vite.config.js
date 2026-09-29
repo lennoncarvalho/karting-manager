@@ -39,7 +39,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
           bootstrap: ["bootstrap"],
-          sentry: ["@sentry/react", "@sentry/vite-plugin"],
+          sentry: ["@sentry/react"],
           i18n: ["react-i18next", "i18next"],
         },
       },
