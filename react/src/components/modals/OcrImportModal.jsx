@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { runOcr } from "@/lib/ocr";
 import { detectSheetType, parseOcrRows } from "@/lib/ocrParsing";
@@ -29,8 +29,49 @@ function clearDraft(key) {
   try {
     localStorage.removeItem(key);
   } catch {
-    /* best-effort draft clear; ignore quota/unavailable errors */
+    /* best-effort draft clear; ignore quota/unavailable storage */
   }
+}
+
+// Re-encodes non-PNG selections as PNG so the OCR providers receive a
+// universally supported format (mirrors the legacy frontend behaviour).
+function normalizeImageToPng(file) {
+  if (file.type === "image/png" || /\.png$/i.test(file.name)) {
+    return Promise.resolve(file);
+  }
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const baseName = file.name.replace(/\.[^.]+$/, "");
+            resolve(new File([blob], `${baseName}.png`, { type: "image/png" }));
+          } else {
+            resolve(file);
+          }
+        },
+        "image/png",
+        0.95,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
 }
 
 export function OcrImportModal({
@@ -55,16 +96,17 @@ export function OcrImportModal({
   const [status, setStatus] = useState("idle");
   const fileInputRef = useRef(null);
 
-  const previewUrl = useMemo(
-    () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
-    [selectedFile],
-  );
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return undefined;
+    }
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [selectedFile]);
 
   useEffect(() => {
     writeDraft(draftKey, {
@@ -102,7 +144,8 @@ export function OcrImportModal({
     setStatus("running");
 
     try {
-      const { text, tables, fallbackUsed } = await runOcr(selectedFile);
+      const ocrFile = await normalizeImageToPng(selectedFile);
+      const { text, tables, fallbackUsed } = await runOcr(ocrFile);
 
       if (fallbackUsed) {
         notify(t("ocrImport.fallbackNotice"), "warning");
