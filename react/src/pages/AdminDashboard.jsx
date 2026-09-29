@@ -4,6 +4,7 @@ import { useToast } from "@/components/Notification";
 import { useAuth } from "@/context/AuthContext";
 import { isValidEmail } from "@/lib/validation";
 import { changePassword, createAdmin } from "@/lib/auth";
+import { listDrivers } from "@/lib/api";
 import { useLoading } from "@/context/LoadingContext";
 import { Link } from "react-router-dom";
 
@@ -28,7 +29,6 @@ export function AdminDashboard() {
 
   useEffect(() => {
     const checkFirst = async () => {
-      const { listDrivers } = await import("@/lib/api");
       try {
         const drivers = await listDrivers({ limit: 1 });
         const count = drivers.length;
