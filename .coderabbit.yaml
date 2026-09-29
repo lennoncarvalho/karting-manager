@@ -4,5 +4,6 @@ reviews:
   auto_review:
     enabled: true
   path_filters:
-    - "react/**"
+    - "!frontend/**"
+    - "!kartarados/**"
 
