@@ -87,14 +87,21 @@ npm run preview
 
 ### Deploy (Cloudflare Pages)
 
-Recommended configuration:
+Current configuration (React app):
 
-- **Root directory**: `frontend`
-- **Build command**: `../build.sh`
-- **Build output directory**: `dist`
-- **Environment variables** (Cloudflare dashboard): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and optionally `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`
+- **Root directory**: `react`
+- **Build command**: `bash ../build.sh`
+- **Build output directory**: `dist` (i.e. `react/dist`)
+- **Environment variables** (Cloudflare dashboard, no `VITE_` prefix — `build.sh`
+  bridges them to the `VITE_*` names Vite injects into the bundle):
+  `SUPABASE_URL`, `SUPABASE_ANON_KEY` (required), and optionally `APP_URL`,
+  `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`, `SENTRY_DSN`,
+  `SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN`
 
-The build script injects environment values into `frontend/src/config.js` and then runs the Vite build.
+`build.sh` runs `npm ci && npm run build` in `react/` and verifies the SPA
+fallback (`dist/_redirects`) before the bundle is shipped. See
+`AGENTS.md` → "Env & Secrets" for the full variable table and the rollback
+procedure (revert the root directory to `frontend` to deploy the legacy app).
 
 ## Project Structure
 
