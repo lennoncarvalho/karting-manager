@@ -21,6 +21,7 @@ body,
 table.table thead th {
   background-color: var(--season-accent) !important;
   color: var(--season-accent-contrast, #fff);
+  border-bottom: 2px solid #fff;
 }
 
 .bg-custom-accent {

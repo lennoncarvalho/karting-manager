@@ -102,7 +102,6 @@ export function PublicRankings() {
       cancelled = true;
     };
     // Intentionally omit `t`: it changes on language switch and would refetch data.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSeasonId]);
 
   const raceResultsByRace = useMemo(() => {
@@ -239,7 +238,7 @@ export function PublicRankings() {
           {sections.map((section, index) => (
             <li className="nav-item" role="presentation" key={section.id}>
               <button
-                className={`nav-link ${index === 0 ? "active" : ""} text-nowrap`}
+                className={`nav-link ${index === 0 ? "active" : ""} fw-bold text-nowrap`}
                 data-bs-toggle="tab"
                 data-bs-target={`#${section.id}`}
                 type="button"

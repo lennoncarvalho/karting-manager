@@ -3,8 +3,19 @@ updates:
   - package-ecosystem: "npm"
     directory: "/react"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    groups:
+      all-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    groups:
+      all-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
