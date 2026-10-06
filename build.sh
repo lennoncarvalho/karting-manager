@@ -38,6 +38,10 @@ build_react() {
   export VITE_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
   export VITE_APP_URL="${APP_URL:-}"
   export VITE_AZURE_ENDPOINT="${AZURE_VISION_ENDPOINT:-}"
+  # VITE_AZURE_KEY ships to the browser — the long-term fix is to proxy OCR
+  # through a Cloudflare Pages Function (functions/api/ocr.js) so the key
+  # stays server-side. The app has no backend today; Tesseract.js is a
+  # fallback when this key is unset or the endpoint is unavailable.
   export VITE_AZURE_KEY="${AZURE_VISION_KEY:-}"
   export VITE_SENTRY_DSN="${SENTRY_DSN:-}"
   export VITE_SENTRY_ENVIRONMENT="${SENTRY_ENVIRONMENT:-production}"
@@ -76,7 +80,6 @@ build_frontend() {
   : "${AZURE_VISION_ENDPOINT:=}"
   : "${AZURE_VISION_KEY:=}"
   : "${SENTRY_DSN:=}"
-  : "${SENTRY_AUTH_TOKEN:=}"
   : "${SENTRY_ENVIRONMENT:=production}"
 
   # Escape a value for use as a sed replacement AND inside a JS single-quoted
@@ -97,7 +100,6 @@ build_frontend() {
   azure_key_escaped="$(escape_sed "$AZURE_VISION_KEY")"
   sentry_dsn_escaped="$(escape_sed "$SENTRY_DSN")"
   sentry_env_escaped="$(escape_sed "$SENTRY_ENVIRONMENT")"
-  sentry_auth_token="$(escape_sed "$SENTRY_AUTH_TOKEN")"
 
   tmp_file="$(mktemp)"
   sed \
@@ -108,7 +110,6 @@ build_frontend() {
     -e "s|^export const AZURE_VISION_KEY = .*|export const AZURE_VISION_KEY = '${azure_key_escaped}';|" \
     -e "s|^export const SENTRY_DSN = .*|export const SENTRY_DSN = '${sentry_dsn_escaped}';|" \
     -e "s|^export const SENTRY_ENVIRONMENT = .*|export const SENTRY_ENVIRONMENT = '${sentry_env_escaped}';|" \
-    -e "s|^export const SENTRY_AUTH_TOKEN = .*|export const SENTRY_AUTH_TOKEN = '${sentry_auth_token}';|" \
     "$config_file" > "$tmp_file"
   mv "$tmp_file" "$config_file"
 

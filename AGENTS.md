@@ -20,10 +20,11 @@ Two apps in the repo, all for the same go-kart championship manager:
 # react/ (primary)
 cd react && npm run dev          # localhost:8000
 cd react && npm run build        # → react/dist/
+bash build.sh                    # from repo root → full CF pipeline (selects react/)
 
 # frontend/ (read-only — reference only)
 cd frontend && npm run dev       # localhost:8000 (reference only)
-bash build.sh                    # from repo root or frontend/: legacy pipeline (injects env into src/config.js, then vite build)
+bash ../build.sh                 # from frontend/ → legacy pipeline (config.js injection + vite build)
 ```
 
 Pre-verification: `npm run build` (only no-test fallback — no test framework).
@@ -31,7 +32,7 @@ Pre-verification: `npm run build` (only no-test fallback — no test framework).
 ## Env & Secrets
 
 - **Never commit secrets.** `react/.env` is gitignored and is what local dev reads. `@/lib/supabase.js` has **no** in-code fallbacks — it throws if `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are missing (loud failure over silently shipping a broken/hardcoded bundle).
-- `frontend/`: `build.sh` (legacy mode) injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AZURE_VISION_*`, `SENTRY_*` into `src/config.js`. **`src/config.js` is a build artifact — don't hand-edit.**
+- `frontend/`: `build.sh` (legacy mode) injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `AZURE_VISION_*`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` into `src/config.js`. `SENTRY_AUTH_TOKEN` is **not** injected — `@sentry/vite-plugin` reads it from `process.env` at build time. **`src/config.js` is a build artifact — don't hand-edit.**
 
 ### Cloudflare Pages env vars (project `kartarados`)
 
@@ -50,6 +51,8 @@ Dashboard names have **no `VITE_` prefix**. `build.sh` bridges them: it exports 
 | `SENTRY_ORG` / `SENTRY_PROJECT` | — (build-time only) | `vite.config.js` | no (defaults `lennon-carvalho` / `javascript-react`) |
 
 Build-time-only vars (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`) are read from `process.env` by the Vite plugin and are **never** injected into the bundle.
+
+⚠️ `AZURE_VISION_KEY` (`VITE_AZURE_KEY`) is currently embedded in the client bundle (same as the legacy production deployment). The intended fix is to proxy OCR calls through a **Cloudflare Pages Function** — a handful of handler lines in `react/functions/api/ocr.js`, deployed alongside the Pages app with no separate backend needed — so the key stays server-side. Tesseract.js is the fallback when the key is missing/unavailable.
 
 ### Cloudflare Pages build config (project `kartarados`)
 
@@ -98,6 +101,7 @@ Current (React app):
 
 - **Primary**: Azure Document Intelligence (`@/lib/ocr.js` — reads `VITE_AZURE_ENDPOINT`, `VITE_AZURE_KEY`).
 - **Fallback**: Tesseract.js (`por` language).
+- **Security**: `VITE_AZURE_KEY` is currently client-side (same as the legacy production deployment). The intended fix is a Cloudflare Pages Function proxy — see the env table note above.
 - OCR drafts persisted to `localStorage`.
 
 ## i18n (`react/`)
