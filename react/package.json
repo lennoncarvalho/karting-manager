@@ -39,6 +39,6 @@
     "eslint-plugin-sonarjs": "^4.2.2",
     "globals": "^17.12.0",
     "prettier": "^3.9.9",
-    "vite": "^8.3.1"
+    "vite": "^8.3.2"
   }
 }
