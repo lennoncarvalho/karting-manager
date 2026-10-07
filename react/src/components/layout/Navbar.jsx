@@ -68,10 +68,7 @@ export function Navbar() {
   ].filter((item) => item.show !== false);
 
   return (
-    <nav
-      className="navbar navbar-expand-lg navbar-dark bg-custom-accent"
-      style={{ backgroundColor: "var(--season-accent)" }}
-    >
+    <nav className="navbar navbar-expand-lg navbar-dark bg-custom-accent border-bottom border-white">
       <div className="container">
         <Link
           to="/rankings"
@@ -94,7 +91,7 @@ export function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto">
+          <ul className="navbar-nav me-auto fw-bold">
             {navItems.map((item) => (
               <li key={item.to} className="nav-item">
                 <Link className={`nav-link ${isActive(item.to)}`} to={item.to}>

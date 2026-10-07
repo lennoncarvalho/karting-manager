@@ -6,11 +6,7 @@ export function Footer() {
   const currentLang = i18n.language;
 
   return (
-    <footer
-      className="mt-5 p-4 bg-custom-accent"
-      style={{ backgroundColor: "var(--season-accent)" }}
-      role="contentinfo"
-    >
+    <footer className="mt-5 p-4 bg-custom-accent border-top border-white" role="contentinfo">
       <div className="container">
         <div className="row align-items-center">
           <div className="col-12 col-md-6 text-center text-md-start mb-2 mb-md-0">

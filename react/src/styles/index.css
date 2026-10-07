@@ -10,22 +10,30 @@ body,
       border-top-color 0.5s,
       border-right-color 0.5s,
       background-color 0.5s;
+    text-shadow: 0px 0px 2px black;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures;
   }
 }
 
 #root {
   display: flex;
   flex-direction: column;
+  color-scheme: dark;
 }
 
 table.table thead th {
   background-color: var(--season-accent) !important;
   color: var(--season-accent-contrast, #fff);
-  border-bottom: 2px solid #fff;
+  border-bottom: 1px solid #fff;
 }
 
 .bg-custom-accent {
   background-color: var(--season-accent);
+  box-shadow: 0px 0px 10px 2px var(--season-accent);
   color: var(--season-accent-contrast, #fff);
   --bs-navbar-color: var(--season-accent-contrast, #fff);
   --bs-navbar-hover-color: color-mix(
@@ -47,6 +55,7 @@ table.table thead th {
 }
 
 :root {
+    color-scheme: dark;
   --season-accent-link: var(--season-accent, #6ea8fe);
   --bs-link-color: var(--season-accent-link, var(--season-accent, #6ea8fe));
   --bs-link-hover-color: color-mix(
