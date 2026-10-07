@@ -96,6 +96,5 @@ function formatWithPartsCore(date, includeTime, t) {
   if (!includeTime) return `${day} ${month} ${year}`;
   const hour = map.hour || "00";
   const minute = map.minute || "00";
-  const suffix = locale === "pt-BR" ? "h" : "";
-  return `${day} ${month} ${year} ${hour}:${minute}${suffix}`;
+  return `${day} ${month} ${year} ${hour}:${minute}`;
 }
