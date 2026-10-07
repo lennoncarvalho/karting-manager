@@ -276,8 +276,7 @@ export function PublicRankings() {
                       <tbody>
                         {orderedCalendarRaces.map((race) => {
                           const raceTime = getRaceTimestamp(race);
-                          const isCompleted =
-                            raceTime !== null && raceTime <= now;
+                          const isCompleted = raceTime !== null && raceTime <= now;
                           const results = raceResultsByRace.get(race.id) || [];
                           const showResults = isCompleted && results.length > 0;
                           const winner = showResults
@@ -421,7 +420,7 @@ export function PublicRankings() {
   return (
     <div className="container mt-4">
       <div className="d-flex gap-2 mb-3 align-items-center">
-        <div className="h5 mb-0">{t("publicRankings.title")}</div>
+        <div className="h6 mb-0">{t("publicRankings.title")}</div>
         <div className="d-flex w-auto">
           <select
             className="form-select form-select-sm"
