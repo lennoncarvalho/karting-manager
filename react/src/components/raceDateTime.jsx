@@ -27,6 +27,7 @@ export function RaceDateTime({ value, fallback = "-" }) {
     if (p.type !== "literal") map[p.type] = p.value;
   });
   let month = (map.month || "").replace(/\.$/, "");
-  if (locale === "pt-BR") month = month.charAt(0).toUpperCase() + month.slice(1);
+  if (locale === "pt-BR")
+    month = month.charAt(0).toUpperCase() + month.slice(1);
   return `${map.day} ${month} ${map.hour}:${map.minute}`;
 }

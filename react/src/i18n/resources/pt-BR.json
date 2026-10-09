@@ -430,7 +430,7 @@
     "table": {
       "position": "#",
       "driver": "Piloto",
-      "raceDate": "Data da corrida",
+      "raceDate": "Data",
       "raceName": "Corrida",
       "location": "Local",
       "winner": "Vencedor",

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSeason } from "@/context/SeasonContext";
 import { DriverImage } from "@/components/driverImage";
 import { RaceDateTime } from "@/components/raceDateTime";
+import { Spinner } from "@/components/Spinner";
 import { listCups, listRaces, listRaceResultsByRaceIds } from "@/lib/api";
 import {
   calculateRankings,
@@ -219,12 +220,7 @@ export function PublicRankings() {
 
   let rankingsContent;
   if (loading) {
-    rankingsContent = (
-      <div className="d-flex align-items-center gap-2">
-        <div className="spinner-border spinner-border-sm" role="status"></div>
-        <span>{t("common.status.loadingRankings")}</span>
-      </div>
-    );
+    rankingsContent = <Spinner sm label={t("common.status.loadingRankings")} />;
   } else if (!selectedSeasonId) {
     rankingsContent = (
       <div className="alert alert-info">
@@ -276,7 +272,8 @@ export function PublicRankings() {
                       <tbody>
                         {orderedCalendarRaces.map((race) => {
                           const raceTime = getRaceTimestamp(race);
-                          const isCompleted = raceTime !== null && raceTime <= now;
+                          const isCompleted =
+                            raceTime !== null && raceTime <= now;
                           const results = raceResultsByRace.get(race.id) || [];
                           const showResults = isCompleted && results.length > 0;
                           const winner = showResults
