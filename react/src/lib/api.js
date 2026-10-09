@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import * as Sentry from "@sentry/react";
+import { resizeImage } from "./image/resizeImage.js";
 
 let refreshPromise = null;
 
@@ -476,13 +477,13 @@ export async function createPenalties(penalties) {
 
 export async function uploadPicture(file) {
   const supabase = getSupabaseClient();
+  const blob = await resizeImage(file);
   return executeWithRetry(async () => {
-    const ext = file.name.split(".").pop();
     // eslint-disable-next-line sonarjs/pseudo-random -- collision-avoidance suffix for storage filenames, not security-sensitive
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
     const { data, error } = await supabase.storage
       .from("driver-pictures")
-      .upload(fileName, file);
+      .upload(fileName, blob, { contentType: "image/jpeg" });
     if (error)
       throw new ApiError(error.message || "Failed to upload image", {
         status: error.status ?? null,

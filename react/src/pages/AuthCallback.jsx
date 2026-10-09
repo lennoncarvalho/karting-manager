@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
+import { Spinner } from "@/components/Spinner";
 
 /**
  * Handles the redirect after a magic-link click.
@@ -47,11 +48,7 @@ export function AuthCallback() {
         </div>
       ) : (
         <div className="text-center">
-          <div className="spinner-border spinner-border-sm mb-3" role="status">
-            <span className="visually-hidden">
-              {t("common.status.loading")}
-            </span>
-          </div>
+          <Spinner sm />
           <p className="text-muted">{t("authCallback.verifying")}</p>
         </div>
       )}

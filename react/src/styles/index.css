@@ -55,7 +55,7 @@ table.table thead th {
 }
 
 :root {
-    color-scheme: dark;
+  color-scheme: dark;
   --season-accent-link: var(--season-accent, #6ea8fe);
   --bs-link-color: var(--season-accent-link, var(--season-accent, #6ea8fe));
   --bs-link-hover-color: color-mix(
@@ -174,20 +174,8 @@ a:focus {
   white-space: pre-line;
 }
 
-.z-3 {
-  z-index: 1065 !important;
-}
-
 .z-5 {
   z-index: 9999 !important;
-}
-
-.w-3 {
-  width: 3rem !important;
-}
-
-.h-3 {
-  height: 3rem !important;
 }
 
 .min-vh-60 {
