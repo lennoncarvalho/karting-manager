@@ -322,6 +322,7 @@
     "addResult": "Adicionar resultado",
     "importResults": "Importar da foto",
     "backToRaces": "Voltar para corridas",
+    "viewImages": "Ver imagens originais",
     "resultsTitle": "Resultados da corrida",
     "loadingResults": "Carregando resultados...",
     "noResults": "Nenhum resultado ainda.",
@@ -341,6 +342,12 @@
       "actions": "Ações"
     },
     "confirmDelete": "Excluir este resultado da corrida? Isso não pode ser desfeito."
+  },
+  "raceImages": {
+    "title": "Imagens originais",
+    "noImages": "Nenhuma imagem original arquivada para esta corrida.",
+    "close": "Fechar",
+    "slideCounter": "{{current}} / {{total}}"
   },
   "ocrImport": {
     "title": "Importar resultados da foto",
@@ -372,6 +379,7 @@
     "fallbackNotice": "Azure Document Intelligence falhou, usando Tesseract.",
     "noImage": "Selecione uma imagem primeiro.",
     "ocrFailed": "OCR falhou. Tente novamente.",
+    "pdfRequiresAzure": "OCR de PDF requer Azure. Por favor, use uma imagem.",
     "noValidRows": "Selecione ao menos um piloto ou pule linhas inválidas.",
     "unresolvedRows": "Resolva todas as linhas sem piloto ou pule antes de salvar.",
     "duplicateDrivers": "Pilotos duplicados na seleção.",
@@ -380,6 +388,7 @@
     "saveSuccessRace": "Resultados importados.",
     "saveSuccessQualifying": "Posições de largada atualizadas.",
     "saveFailure": "Falha ao salvar o OCR.",
+    "imageArchiveFailed": "Resultados salvos, mas o arquivamento da imagem falhou.",
     "noDriverMatch": "Sem correspondência",
     "table": {
       "position": "POS",

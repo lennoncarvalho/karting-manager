@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { SeasonProvider } from "@/context/SeasonContext";
@@ -7,17 +8,48 @@ import { Spinner } from "@/components/Spinner";
 import { Navbar } from "@/components/layout/Navbar";
 import { MainContent } from "@/components/layout/MainContent";
 import { Footer } from "@/components/layout/Footer";
-import { LoginPage } from "@/pages/LoginPage";
-import { PublicRankings } from "@/pages/PublicRankings";
-import { AdminDashboard } from "@/pages/AdminDashboard";
-import { SeasonManagement } from "@/pages/SeasonManagement";
-import { DriverManagement } from "@/pages/DriverManagement";
-import { CupManagement } from "@/pages/CupManagement";
-import { RaceManagement } from "@/pages/RaceManagement";
-import { RaceDetail } from "@/pages/RaceDetail";
-import { DriverLoginPage } from "@/pages/driver/DriverLoginPage";
-import { DriverProfilePage } from "@/pages/driver/DriverProfilePage";
-import { AuthCallback } from "@/pages/AuthCallback";
+
+const LoginPage = lazy(() =>
+  import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const PublicRankings = lazy(() =>
+  import("@/pages/PublicRankings").then((m) => ({ default: m.PublicRankings })),
+);
+const AdminDashboard = lazy(() =>
+  import("@/pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })),
+);
+const SeasonManagement = lazy(() =>
+  import("@/pages/SeasonManagement").then((m) => ({
+    default: m.SeasonManagement,
+  })),
+);
+const DriverManagement = lazy(() =>
+  import("@/pages/DriverManagement").then((m) => ({
+    default: m.DriverManagement,
+  })),
+);
+const CupManagement = lazy(() =>
+  import("@/pages/CupManagement").then((m) => ({ default: m.CupManagement })),
+);
+const RaceManagement = lazy(() =>
+  import("@/pages/RaceManagement").then((m) => ({ default: m.RaceManagement })),
+);
+const RaceDetail = lazy(() =>
+  import("@/pages/RaceDetail").then((m) => ({ default: m.RaceDetail })),
+);
+const DriverLoginPage = lazy(() =>
+  import("@/pages/driver/DriverLoginPage").then((m) => ({
+    default: m.DriverLoginPage,
+  })),
+);
+const DriverProfilePage = lazy(() =>
+  import("@/pages/driver/DriverProfilePage").then((m) => ({
+    default: m.DriverProfilePage,
+  })),
+);
+const AuthCallback = lazy(() =>
+  import("@/pages/AuthCallback").then((m) => ({ default: m.AuthCallback })),
+);
 
 /**
  * Protects admin-only routes.
@@ -45,7 +77,8 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<Spinner sm centered />}>
+      <Routes>
       <Route path="/" element={<Navigate to="/rankings" replace />} />
       <Route path="/rankings" element={<PublicRankings />} />
       <Route path="/login" element={<LoginPage />} />
@@ -101,6 +134,7 @@ function AppRoutes() {
         }
       />
     </Routes>
+    </Suspense>
   );
 }
 

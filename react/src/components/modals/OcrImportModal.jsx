@@ -5,6 +5,8 @@ import { detectSheetType, parseOcrRows } from "@/lib/ocrParsing";
 import { matchDriverName } from "@/lib/matching";
 import { isValidLapTime } from "@/lib/validation";
 import { useToast } from "@/components/Notification";
+import { uploadRaceImage } from "@/lib/api";
+import { Spinner } from "@/components/Spinner";
 
 const DRAFT_PREFIX = "ocrImportDraft:";
 
@@ -144,7 +146,12 @@ export function OcrImportModal({
     setStatus("running");
 
     try {
-      const ocrFile = await normalizeImageToPng(selectedFile);
+      const isPdf =
+        selectedFile.type === "application/pdf" ||
+        selectedFile.name?.endsWith(".pdf");
+      const ocrFile = isPdf
+        ? selectedFile
+        : await normalizeImageToPng(selectedFile);
       const { text, tables, fallbackUsed } = await runOcr(ocrFile);
 
       if (fallbackUsed) {
@@ -192,7 +199,11 @@ export function OcrImportModal({
       setStatus(matchedRows.length > 0 ? "ready" : "noRows");
     } catch (err) {
       setStatus("idle");
-      notify(err.message || t("ocrImport.ocrFailed"), "error");
+      const message =
+        err.message === "PDF requires Azure"
+          ? t("ocrImport.pdfRequiresAzure")
+          : err.message || t("ocrImport.ocrFailed");
+      notify(message, "error");
     }
   };
 
@@ -246,6 +257,13 @@ export function OcrImportModal({
 
     const success = await onSave({ mode, rows: selectedRows });
     if (success !== false) {
+      if (selectedFile && raceId) {
+        try {
+          await uploadRaceImage(raceId, selectedFile);
+        } catch {
+          notify(t("ocrImport.imageArchiveFailed"), "warning");
+        }
+      }
       clearDraft(draftKey);
       if (onClose) onClose();
     }
@@ -273,7 +291,19 @@ export function OcrImportModal({
             ></button>
           </div>
 
-          <div className="modal-body">
+          <div className="modal-body position-relative">
+            {status === "running" && (
+              <div
+                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  zIndex: 1050,
+                  borderRadius: "0 0 var(--bs-modal-border-radius, 0.375rem) var(--bs-modal-border-radius, 0.375rem)",
+                }}
+              >
+                <Spinner label={t("ocrImport.statusRunning")} className="text-light" />
+              </div>
+            )}
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="ocr-mode">
@@ -311,7 +341,7 @@ export function OcrImportModal({
                 className="form-control"
                 id="ocr-file"
                 type="file"
-                accept="image/*"
+                accept="image/*,.pdf"
                 onChange={handleFileChange}
                 ref={fileInputRef}
               />
@@ -325,6 +355,7 @@ export function OcrImportModal({
                 type="button"
                 className="btn btn-outline-primary"
                 onClick={runOcrFlow}
+                disabled={status === "running"}
               >
                 {t("ocrImport.runOcr")}
               </button>
