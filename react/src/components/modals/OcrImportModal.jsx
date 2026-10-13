@@ -97,18 +97,24 @@ export function OcrImportModal({
   const [ocrTables, setOcrTables] = useState(savedDraft?.tables || []);
   const [status, setStatus] = useState("idle");
   const fileInputRef = useRef(null);
+  const saveInProgressRef = useRef(false);
+
+  const isBusy = ["running", "parsing", "saving"].includes(status);
+  const isPdf =
+    selectedFile?.type === "application/pdf" ||
+    /\.pdf$/i.test(selectedFile?.name || "");
 
   const [previewUrl, setPreviewUrl] = useState(null);
 
   useEffect(() => {
-    if (!selectedFile) {
+    if (!selectedFile || isPdf) {
       setPreviewUrl(null);
       return undefined;
     }
     const url = URL.createObjectURL(selectedFile);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [selectedFile]);
+  }, [selectedFile, isPdf]);
 
   useEffect(() => {
     writeDraft(draftKey, {
@@ -134,6 +140,10 @@ export function OcrImportModal({
   const handleFileChange = (e) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
+    setParsedRows([]);
+    setOcrText("");
+    setOcrTables([]);
+    setStatus("idle");
   };
 
   const runOcrFlow = async () => {
@@ -146,9 +156,6 @@ export function OcrImportModal({
     setStatus("running");
 
     try {
-      const isPdf =
-        selectedFile.type === "application/pdf" ||
-        selectedFile.name?.endsWith(".pdf");
       const ocrFile = isPdf
         ? selectedFile
         : await normalizeImageToPng(selectedFile);
@@ -221,7 +228,7 @@ export function OcrImportModal({
   };
 
   const handleSave = async () => {
-    if (!parsedRows.length) return;
+    if (!parsedRows.length || isBusy || saveInProgressRef.current) return;
 
     if (mode === "race" && hasResults) {
       notify(t("ocrImport.blockedRace"), "warning");
@@ -255,18 +262,26 @@ export function OcrImportModal({
       return;
     }
 
-    const success = await onSave({ mode, rows: selectedRows });
-    if (success !== false) {
-      if (selectedFile && raceId) {
-        try {
-          await uploadRaceImage(raceId, selectedFile);
-        } catch {
-          notify(t("ocrImport.imageArchiveFailed"), "warning");
-        }
+    saveInProgressRef.current = true;
+    setStatus("saving");
+    let saved = false;
+    try {
+      saved = (await onSave({ mode, rows: selectedRows })) !== false;
+    } finally {
+      if (!saved) {
+        saveInProgressRef.current = false;
+        setStatus("ready");
       }
-      clearDraft(draftKey);
-      if (onClose) onClose();
     }
+    if (!saved) return;
+
+    if (selectedFile && raceId) {
+      void uploadRaceImage(raceId, selectedFile).catch(() => {
+        notify(t("ocrImport.imageArchiveFailed"), "warning");
+      });
+    }
+    clearDraft(draftKey);
+    if (onClose) onClose();
   };
 
   const hasRows = parsedRows.length > 0;
@@ -298,10 +313,14 @@ export function OcrImportModal({
                 style={{
                   backgroundColor: "rgba(0,0,0,0.6)",
                   zIndex: 1050,
-                  borderRadius: "0 0 var(--bs-modal-border-radius, 0.375rem) var(--bs-modal-border-radius, 0.375rem)",
+                  borderRadius:
+                    "0 0 var(--bs-modal-border-radius, 0.375rem) var(--bs-modal-border-radius, 0.375rem)",
                 }}
               >
-                <Spinner label={t("ocrImport.statusRunning")} className="text-light" />
+                <Spinner
+                  label={t("ocrImport.statusRunning")}
+                  className="text-light"
+                />
               </div>
             )}
             <div className="row g-3">
@@ -313,6 +332,7 @@ export function OcrImportModal({
                   className="form-select"
                   id="ocr-mode"
                   value={mode}
+                  disabled={isBusy}
                   onChange={(e) => {
                     setMode(e.target.value);
                   }}
@@ -344,6 +364,7 @@ export function OcrImportModal({
                 accept="image/*,.pdf"
                 onChange={handleFileChange}
                 ref={fileInputRef}
+                disabled={isBusy}
               />
             </div>
 
@@ -355,7 +376,7 @@ export function OcrImportModal({
                 type="button"
                 className="btn btn-outline-primary"
                 onClick={runOcrFlow}
-                disabled={status === "running"}
+                disabled={isBusy}
               >
                 {t("ocrImport.runOcr")}
               </button>
@@ -368,7 +389,7 @@ export function OcrImportModal({
               </div>
             </div>
 
-            {selectedFile ? (
+            {selectedFile && !isPdf && previewUrl ? (
               <div className="mt-3">
                 <img
                   src={
@@ -465,7 +486,7 @@ export function OcrImportModal({
               type="button"
               className="btn btn-primary"
               onClick={handleSave}
-              disabled={!hasRows}
+              disabled={!hasRows || isBusy}
             >
               {t("ocrImport.save")}
             </button>

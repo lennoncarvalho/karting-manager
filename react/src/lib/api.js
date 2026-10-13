@@ -529,9 +529,9 @@ export async function uploadDriverAvatar(file, userId, email) {
 export async function uploadRaceImage(raceId, file) {
   const supabase = await getAuthenticatedClient();
   const isPdf =
-    file.type === "application/pdf" || file.name?.endsWith(".pdf");
+    file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
   if (isPdf) {
-    const path = `${raceId}/${Date.now()}.pdf`;
+    const path = `${raceId}/${Date.now()}-${crypto.randomUUID()}.pdf`;
     const { error } = await supabase.storage
       .from("race-images")
       .upload(path, file, { contentType: "application/pdf" });
@@ -539,7 +539,7 @@ export async function uploadRaceImage(raceId, file) {
     return path;
   }
   const blob = await resizeImage(file, { maxSize: 1280, quality: 0.85 });
-  const path = `${raceId}/${Date.now()}.jpg`;
+  const path = `${raceId}/${Date.now()}-${crypto.randomUUID()}.jpg`;
   const { error } = await supabase.storage
     .from("race-images")
     .upload(path, blob, { contentType: "image/jpeg" });
