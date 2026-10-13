@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
+import { Spinner } from "@/components/Spinner";
 import { useSeason } from "@/context/SeasonContext";
 import { formatDateTime, formatDateTimeForInput } from "@/lib/formatting";
 import {
@@ -253,14 +254,8 @@ export function RaceManagement() {
   if (loadingList) {
     racesBody = (
       <tr>
-        <td colSpan="5" className="text-center">
-          <div className="d-flex align-items-center justify-content-center gap-2">
-            <div
-              className="spinner-border spinner-border-sm"
-              role="status"
-            ></div>
-            <span>{t("common.status.loadingRaces")}</span>
-          </div>
+        <td colSpan="5">
+          <Spinner sm label={t("common.status.loadingRaces")} />
         </td>
       </tr>
     );

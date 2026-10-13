@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/Notification";
 import { DriverImage } from "@/components/driverImage";
+import { Spinner } from "@/components/Spinner";
+import { uploadDriverAvatar } from "@/lib/api";
 
 // Fields a driver is allowed to self-edit (visual / non-critical only).
 // Critical fields like id, email, name, created_at, updated_at are excluded.
@@ -68,35 +70,9 @@ export function DriverProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      notify(t("driverProfile.invalidImage"), "error");
-      return;
-    }
-
     setUploading(true);
     try {
-      // Upload to driver-pictures/{uid}/avatar with file extension
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/avatar.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("driver-pictures")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-
-      // Get the public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("driver-pictures").getPublicUrl(path);
-
-      // Update the driver row with the new picture URL (bust cache with timestamp)
-      const pictureUrl = `${publicUrl}?t=${Date.now()}`;
-      const { error: updateError } = await supabase
-        .from("drivers")
-        .update({ picture_url: pictureUrl })
-        .eq("email", user.email);
-      if (updateError) throw updateError;
+      const pictureUrl = await uploadDriverAvatar(file, user.id, user.email);
 
       setDriver((prev) => ({ ...prev, picture_url: pictureUrl }));
       notify(t("driverProfile.avatarUpdated"), "success");
@@ -104,7 +80,6 @@ export function DriverProfilePage() {
       notify(err.message || t("errors.uploadFailed"), "error");
     } finally {
       setUploading(false);
-      // Reset file input so the same file can be re-selected
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -163,13 +138,7 @@ export function DriverProfilePage() {
   }
 
   if (loading || fetching) {
-    return (
-      <div className="d-flex align-items-center justify-content-center min-vh-60">
-        <div className="spinner-border spinner-border-sm" role="status">
-          <span className="visually-hidden">{t("common.status.loading")}</span>
-        </div>
-      </div>
-    );
+    return <Spinner sm centered />;
   }
 
   // Email not registered as a driver
@@ -240,7 +209,7 @@ export function DriverProfilePage() {
                     ref={fileInputRef}
                     id="avatar-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                     className="d-none"
                     onChange={handleAvatarUpload}
                     disabled={uploading}

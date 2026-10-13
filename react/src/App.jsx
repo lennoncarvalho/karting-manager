@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { SeasonProvider } from "@/context/SeasonContext";
 import { LoadingProvider } from "@/context/LoadingContext";
 import { ToastProvider } from "@/components/Notification";
+import { Spinner } from "@/components/Spinner";
 import { Navbar } from "@/components/layout/Navbar";
 import { MainContent } from "@/components/layout/MainContent";
 import { Footer } from "@/components/layout/Footer";
@@ -27,13 +28,7 @@ function AdminRoute({ children }) {
   const { isAuthenticated, isDriver, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="d-flex align-items-center justify-content-center min-vh-60">
-        <div className="spinner-border spinner-border-sm" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+    return <Spinner sm centered />;
   }
 
   if (!isAuthenticated) {

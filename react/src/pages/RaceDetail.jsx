@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/components/Notification";
 import { useLoading } from "@/context/LoadingContext";
 import { DriverImage } from "@/components/driverImage";
+import { Spinner } from "@/components/Spinner";
 import { formatDateTime } from "@/lib/formatting";
 import { calculatePenaltyPoints, parseLapTime } from "@/lib/points";
 import {
@@ -367,10 +368,7 @@ export function RaceDetail() {
   if (loadingList) {
     return (
       <div className="container mt-4">
-        <div className="d-flex align-items-center justify-content-center gap-2">
-          <div className="spinner-border spinner-border-sm" role="status"></div>
-          <span>{t("raceDetail.loadingResults")}</span>
-        </div>
+        <Spinner sm label={t("raceDetail.loadingResults")} />
       </div>
     );
   }

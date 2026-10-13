@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import { isValidEmail } from "@/lib/validation";
+import { Spinner } from "@/components/Spinner";
 
 export function DriverLoginPage() {
   const { t } = useTranslation();
@@ -52,13 +53,7 @@ export function DriverLoginPage() {
   };
 
   if (loading) {
-    return (
-      <div className="d-flex align-items-center justify-content-center min-vh-60">
-        <div className="spinner-border spinner-border-sm" role="status">
-          <span className="visually-hidden">{t("common.status.loading")}</span>
-        </div>
-      </div>
-    );
+    return <Spinner sm centered />;
   }
 
   return (
