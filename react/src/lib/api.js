@@ -496,3 +496,32 @@ export async function uploadPicture(file) {
     return publicData.publicUrl;
   });
 }
+
+export async function uploadDriverAvatar(file, userId, email) {
+  const supabase = getSupabaseClient();
+  const blob = await resizeImage(file);
+  const path = `${userId}/avatar.jpg`;
+
+  return executeWithRetry(async () => {
+    const { error: uploadError } = await supabase.storage
+      .from("driver-pictures")
+      .upload(path, blob, {
+        upsert: true,
+        contentType: "image/jpeg",
+      });
+    if (uploadError) throw uploadError;
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("driver-pictures").getPublicUrl(path);
+
+    const pictureUrl = `${publicUrl}?t=${Date.now()}`;
+    const { error: updateError } = await supabase
+      .from("drivers")
+      .update({ picture_url: pictureUrl })
+      .eq("email", email);
+    if (updateError) throw updateError;
+
+    return pictureUrl;
+  });
+}

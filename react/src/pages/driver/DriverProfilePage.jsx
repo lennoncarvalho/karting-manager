@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/Notification";
 import { DriverImage } from "@/components/driverImage";
 import { Spinner } from "@/components/Spinner";
-import { resizeImage } from "@/lib/image/resizeImage";
+import { uploadDriverAvatar } from "@/lib/api";
 
 // Fields a driver is allowed to self-edit (visual / non-critical only).
 // Critical fields like id, email, name, created_at, updated_at are excluded.
@@ -72,28 +72,7 @@ export function DriverProfilePage() {
 
     setUploading(true);
     try {
-      const blob = await resizeImage(file);
-      const ext = "jpg";
-      const path = `${user.id}/avatar.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("driver-pictures")
-        .upload(path, blob, {
-          upsert: true,
-          contentType: "image/jpeg",
-        });
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("driver-pictures").getPublicUrl(path);
-
-      const pictureUrl = `${publicUrl}?t=${Date.now()}`;
-      const { error: updateError } = await supabase
-        .from("drivers")
-        .update({ picture_url: pictureUrl })
-        .eq("email", user.email);
-      if (updateError) throw updateError;
+      const pictureUrl = await uploadDriverAvatar(file, user.id, user.email);
 
       setDriver((prev) => ({ ...prev, picture_url: pictureUrl }));
       notify(t("driverProfile.avatarUpdated"), "success");
@@ -230,7 +209,7 @@ export function DriverProfilePage() {
                     ref={fileInputRef}
                     id="avatar-upload"
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                     className="d-none"
                     onChange={handleAvatarUpload}
                     disabled={uploading}

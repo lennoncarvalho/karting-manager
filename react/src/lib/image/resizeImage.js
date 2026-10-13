@@ -1,6 +1,6 @@
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 
-export class UnsupportedImageError extends Error {}
+class UnsupportedImageError extends Error {}
 
 async function decodeImage(file) {
   try {
@@ -29,8 +29,8 @@ export async function resizeImage(
 
   const bitmap = await decodeImage(file);
   const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
