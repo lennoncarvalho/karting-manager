@@ -24,6 +24,18 @@ async function loadTesseract() {
 }
 
 export async function runOcr(imageFile) {
+  const isPdf =
+    imageFile.type === "application/pdf" ||
+    /\.pdf$/i.test(imageFile.name || "");
+
+  if (isPdf) {
+    if (!hasConfig()) {
+      throw new Error("PDF requires Azure");
+    }
+    const result = await runAzure(imageFile);
+    return { ...result, fallbackUsed: false };
+  }
+
   if (hasConfig()) {
     try {
       const result = await runAzure(imageFile);

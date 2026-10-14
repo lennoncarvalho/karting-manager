@@ -525,3 +525,39 @@ export async function uploadDriverAvatar(file, userId, email) {
     return pictureUrl;
   });
 }
+
+export async function uploadRaceImage(raceId, file) {
+  const supabase = await getAuthenticatedClient();
+  const isPdf =
+    file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+  if (isPdf) {
+    const path = `${raceId}/${Date.now()}-${crypto.randomUUID()}.pdf`;
+    const { error } = await supabase.storage
+      .from("race-images")
+      .upload(path, file, { contentType: "application/pdf" });
+    if (error) throw toApiError(error);
+    return path;
+  }
+  const blob = await resizeImage(file, { maxSize: 1280, quality: 0.85 });
+  const path = `${raceId}/${Date.now()}-${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage
+    .from("race-images")
+    .upload(path, blob, { contentType: "image/jpeg" });
+  if (error) throw toApiError(error);
+  return path;
+}
+
+export async function listRaceImages(raceId) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.storage
+    .from("race-images")
+    .list(raceId, { sortBy: { column: "created_at", order: "desc" } });
+  if (error) throw toApiError(error);
+  if (!data) return [];
+  return data.map((file) => {
+    const { data: urlData } = supabase.storage
+      .from("race-images")
+      .getPublicUrl(`${raceId}/${file.name}`);
+    return { name: file.name, url: urlData.publicUrl };
+  });
+}

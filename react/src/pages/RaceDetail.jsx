@@ -16,10 +16,12 @@ import {
   deleteRaceResult,
   createPenalties,
   listDrivers,
+  listRaceImages,
 } from "@/lib/api";
 import { isValidLapTime } from "@/lib/validation";
 import { RaceResultModal } from "@/components/modals/RaceResultModal";
 import { OcrImportModal } from "@/components/modals/OcrImportModal";
+import { RaceImagesCarousel } from "@/components/modals/RaceImagesCarousel";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 export function RaceDetail() {
@@ -40,6 +42,8 @@ export function RaceDetail() {
   const [showResultModal, setShowResultModal] = useState(false);
   const [editingResult, setEditingResult] = useState(null);
   const [showOcrModal, setShowOcrModal] = useState(false);
+  const [showImagesModal, setShowImagesModal] = useState(false);
+  const [raceImages, setRaceImages] = useState([]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(null);
 
   useEffect(() => {
@@ -398,6 +402,21 @@ export function RaceDetail() {
           >
             {t("raceDetail.importResults")}
           </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100 w-sm-auto"
+            onClick={async () => {
+              try {
+                const images = await listRaceImages(raceId);
+                setRaceImages(images);
+                setShowImagesModal(true);
+              } catch {
+                notify(t("errors.routeLoad", { message: "" }), "error");
+              }
+            }}
+          >
+            {t("raceDetail.viewImages")}
+          </button>
           <Link
             to="/admin/races"
             className="btn btn-outline-secondary w-100 w-sm-auto"
@@ -446,6 +465,16 @@ export function RaceDetail() {
           existingResults={results}
           onSave={handleOcrSave}
           onClose={() => setShowOcrModal(false)}
+        />
+      ) : null}
+
+      {showImagesModal ? (
+        <RaceImagesCarousel
+          images={raceImages}
+          onClose={() => {
+            setShowImagesModal(false);
+            setRaceImages([]);
+          }}
         />
       ) : null}
 

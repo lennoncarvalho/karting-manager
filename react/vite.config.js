@@ -34,6 +34,7 @@ export default defineConfig({
     // Vite 8 (rolldown) uses its native minifier by default.
     // Required for Sentry to symbolicate stack traces in production.
     sourcemap: true,
+    chunkSizeWarningLimit: 3500,
     rollupOptions: {
       output: {
         // Vite 8 (rolldown) only supports function-form manualChunks.

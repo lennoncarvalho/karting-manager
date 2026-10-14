@@ -322,6 +322,7 @@
     "addResult": "Add Result",
     "importResults": "Import from Photo",
     "backToRaces": "Back to Races",
+    "viewImages": "View Source Images",
     "resultsTitle": "Race Results",
     "loadingResults": "Loading results...",
     "noResults": "No results yet.",
@@ -341,6 +342,12 @@
       "actions": "Actions"
     },
     "confirmDelete": "Delete this race result? This cannot be undone."
+  },
+  "raceImages": {
+    "title": "Source Images",
+    "noImages": "No source images archived for this race.",
+    "close": "Close",
+    "slideCounter": "{{current}} / {{total}}"
   },
   "ocrImport": {
     "title": "Import Results from Photo",
@@ -372,6 +379,7 @@
     "fallbackNotice": "Azure Document Intelligence failed, falling back to Tesseract.",
     "noImage": "Please select an image first.",
     "ocrFailed": "OCR failed. Please try again.",
+    "pdfRequiresAzure": "PDF OCR requires Azure. Please use an image instead.",
     "noValidRows": "Select at least one driver or skip invalid rows.",
     "unresolvedRows": "Resolve all unmatched rows or skip them before saving.",
     "duplicateDrivers": "Duplicate drivers found in the selection.",
@@ -380,6 +388,7 @@
     "saveSuccessRace": "Race results imported.",
     "saveSuccessQualifying": "Qualifying positions updated.",
     "saveFailure": "Failed to save OCR results.",
+    "imageArchiveFailed": "Results saved, but image archive failed.",
     "noDriverMatch": "No match",
     "table": {
       "position": "POS",
