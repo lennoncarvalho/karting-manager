@@ -92,9 +92,9 @@ export function OcrImportModal({
 
   const [mode, setMode] = useState(savedDraft?.mode || "race");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [parsedRows, setParsedRows] = useState(savedDraft?.rows || []);
-  const [ocrText, setOcrText] = useState(savedDraft?.text || "");
-  const [ocrTables, setOcrTables] = useState(savedDraft?.tables || []);
+  const [parsedRows, setParsedRows] = useState([]);
+  const [ocrText, setOcrText] = useState("");
+  const [ocrTables, setOcrTables] = useState([]);
   const [status, setStatus] = useState("idle");
   const fileInputRef = useRef(null);
   const saveInProgressRef = useRef(false);
@@ -300,6 +300,7 @@ export function OcrImportModal({
             <button
               type="button"
               className="btn-close btn-close-white"
+              disabled={status === "saving"}
               onClick={() => {
                 if (onClose) onClose();
               }}
@@ -307,7 +308,7 @@ export function OcrImportModal({
           </div>
 
           <div className="modal-body position-relative">
-            {status === "running" && (
+            {isBusy ? (
               <div
                 className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                 style={{
@@ -318,11 +319,15 @@ export function OcrImportModal({
                 }}
               >
                 <Spinner
-                  label={t("ocrImport.statusRunning")}
+                  label={t(
+                    status === "running"
+                      ? "ocrImport.statusRunning"
+                      : "common.status.loading",
+                  )}
                   className="text-light"
                 />
               </div>
-            )}
+            ) : null}
             <div className="row g-3">
               <div className="col-md-4">
                 <label className="form-label" htmlFor="ocr-mode">
@@ -476,6 +481,7 @@ export function OcrImportModal({
             <button
               type="button"
               className="btn btn-outline-secondary"
+              disabled={status === "saving"}
               onClick={() => {
                 if (onClose) onClose();
               }}

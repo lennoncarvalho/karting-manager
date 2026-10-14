@@ -26,7 +26,7 @@ async function loadTesseract() {
 export async function runOcr(imageFile) {
   const isPdf =
     imageFile.type === "application/pdf" ||
-    imageFile.name?.endsWith(".pdf");
+    /\.pdf$/i.test(imageFile.name || "");
 
   if (isPdf) {
     if (!hasConfig()) {
