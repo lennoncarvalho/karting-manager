@@ -1,5 +1,5 @@
 const AZURE_VER = "2024-11-30";
-// Azure OCR config comes from `react/.env`. When either value is missing,
+// Azure OCR config comes from `.env`. When either value is missing,
 // `hasConfig()` returns false and OCR transparently falls back to Tesseract.
 const AZURE_ENDPOINT = import.meta.env.VITE_AZURE_ENDPOINT;
 const AZURE_KEY = import.meta.env.VITE_AZURE_KEY;

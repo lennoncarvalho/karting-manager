@@ -26,18 +26,18 @@ Pre-verification: `npm run build` (only no-test fallback — no test framework).
 
 Cloudflare Pages passes environment variables to the build process. Vite reads `VITE_`-prefixed vars and injects them into the bundle at build time via `import.meta.env`. Build-time-only vars without the `VITE_` prefix are read by tooling from `process.env` and never reach the bundle.
 
-| CF dashboard var        | Read by                                                   | Required                                             |
-| ----------------------- | --------------------------------------------------------- | ---------------------------------------------------- |
-| `VITE_SUPABASE_URL`     | `@/lib/supabase.js`                                       | yes                                                  |
-| `VITE_SUPABASE_ANON_KEY`| `@/lib/supabase.js`                                       | yes                                                  |
-| `VITE_APP_URL`          | `@/lib/auth.js` (OAuth `emailRedirectTo`)                 | no — set the production URL                          |
-| `VITE_AZURE_ENDPOINT`   | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
-| `VITE_AZURE_KEY`        | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
-| `VITE_SENTRY_DSN`       | `@/lib/sentry.js` (runtime init gate)                     | no                                                   |
-| `VITE_SENTRY_ENVIRONMENT`| `@/lib/sentry.js`                                         | no (defaults `production`)                           |
-| `SENTRY_AUTH_TOKEN`     | `vite.config.js` → `@sentry/vite-plugin` sourcemap upload | no (upload skipped if unset)                         |
-| `SENTRY_ORG`            | `vite.config.js`                                          | no (defaults `lennon-carvalho`)                      |
-| `SENTRY_PROJECT`        | `vite.config.js`                                          | no (defaults `javascript-react`)                     |
+| CF dashboard var          | Read by                                                   | Required                         |
+| ------------------------- | --------------------------------------------------------- | -------------------------------- |
+| `VITE_SUPABASE_URL`       | `@/lib/supabase.js`                                       | yes                              |
+| `VITE_SUPABASE_ANON_KEY`  | `@/lib/supabase.js`                                       | yes                              |
+| `VITE_APP_URL`            | `@/lib/auth.js` (OAuth `emailRedirectTo`)                 | no — set the production URL      |
+| `VITE_AZURE_ENDPOINT`     | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)       |
+| `VITE_AZURE_KEY`          | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)       |
+| `VITE_SENTRY_DSN`         | `@/lib/sentry.js` (runtime init gate)                     | no                               |
+| `VITE_SENTRY_ENVIRONMENT` | `@/lib/sentry.js`                                         | no (defaults `production`)       |
+| `SENTRY_AUTH_TOKEN`       | `vite.config.js` → `@sentry/vite-plugin` sourcemap upload | no (upload skipped if unset)     |
+| `SENTRY_ORG`              | `vite.config.js`                                          | no (defaults `lennon-carvalho`)  |
+| `SENTRY_PROJECT`          | `vite.config.js`                                          | no (defaults `javascript-react`) |
 
 Build-time-only vars (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`) are read from `process.env` by the Vite plugin and are **never** injected into the bundle.
 
