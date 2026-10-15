@@ -1,217 +1,155 @@
 ---
 name: supabase
-description: Use Supabase (Auth, PostgreSQL, Storage) as the sole backend for the Kartarados app. TRIGGER when wiring auth, designing tables, writing RLS policies, querying with `@supabase/supabase-js`, optimizing reads (selects/joins/caching), uploading driver pictures to Storage, or writing migrations. The Angular client uses anon-key only and depends on RLS for safety.
+description: "Use when doing ANY task involving Supabase. Triggers: Supabase products (Database, Auth, Edge Functions, Realtime, Storage, Vectors, Cron, Queues); client libraries and SSR integrations (supabase-js, @supabase/ssr) in Next.js, React, SvelteKit, Astro, Remix; auth issues (login, logout, sessions, JWT, cookies, getSession, getUser, getClaims, RLS); Supabase CLI or MCP server; schema changes, migrations, declarative schemas, security audits, Postgres extensions (pg_graphql, pg_cron, pg_vector); debugging and troubleshooting errors or unexpected behavior on Supabase projects (HTTP errors, Postgres errors, RLS surprises, permission denied, schema cache issues, timeouts, Edge Function crashes, Realtime drops, Storage failures) and reading or querying logs (Logs Explorer, ClickHouse)."
+metadata:
+  author: supabase
+  version: "0.1.2"
 ---
 
-# Supabase Skill
+# Supabase
 
-This skill encodes the backend rules for the Kartarados rewrite. The app is a static SPA — **all** persistence and auth go through Supabase.
+## Core Principles
 
-## Core Rules
+**1. Supabase changes frequently — verify against changelog and current docs before implementing.**
+Do not rely on training data for Supabase features. Function signatures, config.toml settings, and API conventions change between versions.
 
-1. **One project, one schema** (`public`).
-2. **Anon key in the browser**: The Angular app uses only the `anon` key. Service-role keys must NEVER ship to the client.
-3. **RLS is mandatory** on every table. The anon key is essentially "the internet" — without RLS the database is fully open.
-4. **Auth is email/password** via Supabase Auth. Admins are created **directly in the Supabase dashboard** (no in-app admin invitation UI).
-5. **Schema migrations**: keep a versioned folder `kartarados/supabase/migrations/NNN_*.sql` checked into git. Apply via Supabase SQL editor or `supabase db push`.
-6. **No Edge Functions** unless absolutely required (the current app has none and works fine).
-7. **Storage**: driver pictures live in a public bucket `driver-pictures`. URLs are stored in `drivers.picture_url`.
+First, fetch `https://supabase.com/changelog.md` (a lightweight summary index — not a heavy pull), scan for `breaking-change` tags relevant to your task, and follow the linked page for any that apply. Then look up the relevant topic using the documentation access methods below.
 
-## Client Setup (Angular)
+**2. Verify your work.**
+After implementing any fix, run a test query to confirm the change works. A fix without verification is incomplete.
 
-`SupabaseService` is a thin singleton:
+**3. Recover from errors, don't loop.**
+If an approach fails after 2-3 attempts, stop and reconsider. Try a different method, check documentation, inspect the error more carefully, and review relevant logs when available. Supabase issues are not always solved by retrying the same command, and the answer is not always in the logs, but logs are often worth checking before proceeding.
 
-```ts
-// core/supabase.service.ts
-import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../environments/environment';
+**4. Exposing tables to the Data API:** Depending on the user's [Data API settings](https://supabase.com/dashboard/project/<ref>/integrations/data_api/settings), newly created tables may not be automatically exposed via the Data (REST) API. If this is the case, `anon` and `authenticated` roles will need to be explicitly granted access.
 
-@Injectable({ providedIn: 'root' })
-export class SupabaseService {
-  readonly client: SupabaseClient = createClient(
-    environment.supabaseUrl,
-    environment.supabaseAnonKey,
-    {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
-      db: { schema: 'public' },
-    }
-  );
-}
+> Note that this is separate from RLS, which controls which _rows_ are visible once a table is accessible, not whether the table is accessible at all.
+
+When a user reports a SQL-created table is unexpectedly inaccessible, check their Data API settings and whether the roles have been granted access via explicit `GRANT` SQL. When granting public (`anon`/`authenticated`) access, always enable RLS too. See [Exposing a Table to the Data API](https://supabase.com/docs/guides/api/securing-your-api.md) for the full setup workflow.
+
+**5. RLS in exposed schemas.**
+Enable RLS on every table in any exposed schema, which includes `public` by default. This is critical in Supabase because tables in exposed schemas can be reachable through the Data API when the `anon`/`authenticated` roles have access (see [Exposing a Table to the Data API](https://supabase.com/docs/guides/api/securing-your-api.md)). For private schemas, prefer RLS as defense in depth. After enabling RLS, create policies that match the actual access model rather than defaulting every table to the same `auth.uid()` pattern.
+
+**6. Security checklist.**
+When working on any Supabase task that touches auth, RLS, views, storage, or user data, run through this checklist. These are Supabase-specific security traps that silently create vulnerabilities:
+
+- **Auth and session security**
+  - **Never use `user_metadata` claims in JWT-based authorization decisions.** In Supabase, `raw_user_meta_data` is user-editable and can appear in `auth.jwt()`, so it is unsafe for RLS policies or any other authorization logic. Store authorization data in `raw_app_meta_data` / `app_metadata` instead.
+  - **Deleting a user does not invalidate existing access tokens.** Sign out or revoke sessions first, keep JWT expiry short for sensitive apps, and for strict guarantees validate `session_id` against `auth.sessions` on sensitive operations.
+  - **If you use `app_metadata` or `auth.jwt()` for authorization, remember JWT claims are not always fresh until the user's token is refreshed.**
+
+- **API key and client exposure**
+  - **Never expose the `service_role` or secret key in public clients.** Prefer publishable keys for frontend code. Legacy `anon` keys are only for compatibility. In Next.js, any `NEXT_PUBLIC_` env var is sent to the browser.
+  - **Use scoped personal access tokens for the Management API, CLI, and MCP server.** A classic personal access token carries the user's full account access, on every organization and project. For scripts, CI, and agents, have the user create a scoped token limited to the organizations, projects, and permissions the task needs. The [personal access tokens guide](https://supabase.com/docs/guides/platform/personal-access-tokens.md) lists the permission each Management API endpoint and MCP tool requires. Look permissions up there rather than guessing.
+
+- **RLS, views, and privileged database code**
+  - **Views bypass RLS by default.** In Postgres 15 and above, use `CREATE VIEW ... WITH (security_invoker = true)`. In older versions of Postgres, protect your views by revoking access from the `anon` and `authenticated` roles, or by putting them in an unexposed schema.
+  - **UPDATE requires a SELECT policy.** In Postgres RLS, an UPDATE needs to first SELECT the row. Without a SELECT policy, updates silently return 0 rows — no error, just no change.
+  - **`auth.role()` is deprecated — use the `TO` clause instead.** Supabase has deprecated `auth.role()` in favour of specifying the target role directly on the policy with `TO authenticated` or `TO anon`. Beyond deprecation, `auth.role() = 'authenticated'` breaks silently when anonymous sign-ins are enabled, because anonymous users carry the `authenticated` Postgres role and pass the check regardless of whether the user is genuinely signed in.
+    ```sql
+    -- Deprecated (do not use)
+    create policy "example" on table_name for select
+    using ( auth.role() = 'authenticated' );
+    ```
+  - **`TO authenticated` alone is authentication without authorization (BOLA / IDOR).** Using `TO authenticated` only checks the role — it does not restrict which rows a user can access. The correct pattern combines `TO authenticated` with an ownership predicate in `USING`:
+    ```sql
+    create policy "example" on table_name for select
+    to authenticated
+    using ( (select auth.uid()) = user_id );
+    ```
+  - **UPDATE policies require both `USING` and `WITH CHECK`.** Without `WITH CHECK`, a user can reassign a row's `user_id` to another user:
+    ```sql
+    create policy "example" on table_name for update
+    to authenticated
+    using ( (select auth.uid()) = user_id )
+    with check ( (select auth.uid()) = user_id );
+    ```
+  - **`SECURITY DEFINER` functions bypass RLS.** A `SECURITY DEFINER` function runs with its creator's privileges — typically a role with `bypassrls` (e.g., `postgres`). Never add `SECURITY DEFINER` to resolve a permission error; it silently removes access control without fixing the underlying cause. Prefer `SECURITY INVOKER`.
+  - **`SECURITY DEFINER` functions in `public` are callable by all roles.** Postgres grants `EXECUTE` to `PUBLIC` by default for every new function, so any `SECURITY DEFINER` function in `public` is a public API endpoint callable by `anon` and `authenticated` (which inherit from `PUBLIC`) without any additional grant. When `SECURITY DEFINER` is genuinely needed (e.g., bypassing RLS on an internal lookup table), keep the function in a non-exposed schema, always include an `auth.uid()` check in the function body, and run `supabase db advisors` after making changes.
+
+- **Storage access control**
+  - **Storage upsert requires INSERT + SELECT + UPDATE.** Granting only INSERT allows new uploads but file replacement (upsert) silently fails. You need all three.
+
+- **Dependency and supply-chain security**
+  - **Always pin package versions and commit lockfiles** when installing Supabase packages (`supabase-js`, `@supabase/ssr`, `supabase-py`, etc.). See the [npm security guide](https://supabase.com/docs/guides/security/npm-security.md) for the full checklist.
+
+For any security concern not covered above, fetch the Supabase product security index: `https://supabase.com/docs/guides/security/product-security.md`
+
+## Supabase CLI
+
+Always discover commands via `--help` — never guess. The CLI structure changes between versions.
+
+```bash
+supabase --help                    # All top-level commands
+supabase <group> --help            # Subcommands (e.g., supabase db --help)
+supabase <group> <command> --help  # Flags for a specific command
 ```
 
-All domain services (`SeasonService`, `RaceService`, …) depend on `SupabaseService` and never construct their own client.
+**Supabase CLI Known gotchas:**
 
-## Auth
+- `supabase db query` requires **CLI v2.79.0+** → use MCP `execute_sql` or `psql` as fallback
+- `supabase db advisors` requires **CLI v2.81.3+** → use MCP `get_advisors` as fallback
+- The browser flow of `supabase login` creates a classic token with full account access. In CI, set `SUPABASE_ACCESS_TOKEN` to a scoped personal access token instead. It takes precedence over any saved login. Commands that connect with the database password (`--password` or `SUPABASE_DB_PASSWORD`, for example `supabase db push`) aren't limited by the token's permissions.
+- In imperative migration projects, create new hand-authored migration files with `supabase migration new <name>` first. Never invent a migration filename or rely on memory for the expected format. Declarative schema projects generate migrations from `supabase/schemas/`; see "Making and Committing Schema Changes" below.
 
-```ts
-const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });
-```
+**Version check and upgrade:** Run `supabase --version` to check. For CLI changelogs and version-specific features, consult the [CLI documentation](https://supabase.com/docs/reference/cli/introduction) or [GitHub releases](https://github.com/supabase/cli/releases).
 
-- Use `onAuthStateChange` once at app boot to update an `AuthStore` signal.
-- Guard admin routes with a functional `authGuard` that checks the current session.
-- Password changes via `supabase.auth.updateUser({ password })`.
+## Supabase MCP Server
 
-## Querying — Single Source of Truth
+For setup instructions, server URL, and configuration, see the [MCP setup guide](https://supabase.com/docs/guides/getting-started/mcp).
 
-Every list method follows the same shape (mirrors today's `api.js`):
+**Troubleshooting connection issues** — follow these steps in order:
 
-```ts
-async listRaces(opts: { seasonId?: string; cupId?: string }) {
-  let q = this.supabase.client
-    .from('races')
-    .select('*')
-    .order('race_datetime', { ascending: true });
-  if (opts.seasonId) q = q.eq('season_id', opts.seasonId);
-  if (opts.cupId) q = q.eq('cup_id', opts.cupId);
-  const { data, error } = await q;
-  if (error) throw new Error(this.translate(error));
-  return data;
-}
-```
+1. **Check if the server is reachable:**
+   `curl -so /dev/null -w "%{http_code}" https://mcp.supabase.com/mcp`
+   A `401` is expected (no token) and means the server is up. Timeout or "connection refused" means it may be down.
 
-### Joins
+2. **Check `.mcp.json` configuration:**
+   Verify the project root has a valid `.mcp.json` with the correct server URL. If missing, create one pointing to `https://mcp.supabase.com/mcp`.
 
-Use Supabase's embedded foreign-table syntax to avoid N+1:
+3. **Authenticate the MCP server:**
+   If the server is reachable and `.mcp.json` is correct but tools aren't visible, the user needs to authenticate. The Supabase MCP server uses OAuth 2.1 — tell the user to trigger the auth flow in their agent, complete it in the browser, and reload the session.
+   In CI or other environments where the browser flow can't run, pass a scoped personal access token in the `Authorization: Bearer` header instead.
 
-```ts
-.select('*, drivers(*), penalties(*)')
-```
+4. **Check scoped token permissions:**
+   If a tool fails with "You do not have permission to perform this action" while using a scoped personal access token, the token lacks that tool's permission or the project is outside the token's scope. Check the tool's required permission in the [personal access tokens guide](https://supabase.com/docs/guides/platform/personal-access-tokens.md#mcp-tools).
 
-The rankings page must fetch `race_results` for a season with **one** call:
+## Supabase Documentation
 
-```ts
-.from('race_results')
-.select('*, drivers(*), penalties(*)')
-.in('race_id', raceIdsForSeason)
-```
+Before implementing any Supabase feature, find the relevant documentation. Use these methods in priority order:
 
-This is currently in `listRaceResultsByRaceIds` and must be preserved.
+1. **MCP `search_docs` tool** (preferred — returns relevant snippets directly)
+2. **Fetch docs pages as markdown** — any docs page can be fetched by appending `.md` to the URL path.
+3. **Web search** for Supabase-specific topics when you don't know which page to look at.
 
-### Caching (localStorage)
+## Making and Committing Schema Changes
 
-Cache low-churn, large-impact reads:
+First decide which schema workflow the project uses.
 
-- `seasons` list — `seasonsCache` key (sorted by end_date desc).
-- `seasons by id` — `seasonsCacheById` map.
+### Option A: Declarative schemas
 
-Cache rules:
+Use this when `supabase/schemas/` exists or `config.toml` sets `schema_paths`. Edit the desired schema state in those files, then generate and review the migration. Do not start by hand-writing a migration. See the [Declarative database schemas guide](https://supabase.com/docs/guides/local-development/declarative-database-schemas).
 
-- Read cache first when called with no custom filters.
-- Write cache on every successful create/update; remove on delete.
-- Never cache `race_results` or `penalties` (volatile + per-page).
-- Cache key prefix: `kt:` (e.g. `kt:seasonsCache`) to avoid collisions with other tools.
+### Option B: Imperative migrations
 
-Preload the active season's accent color via the `kt:activeSeason` key BEFORE Angular bootstraps so the navbar/footer doesn't flash a wrong color.
+Use this when the project does not use declarative schemas.
 
-## Row Level Security (RLS) — Required Policies
+**To make schema changes, use `execute_sql` (MCP) or `supabase db query` (CLI).** These run SQL directly on the database without creating migration history entries, so you can iterate freely and generate a clean migration when ready.
 
-Enable RLS on every table, then add:
+Do NOT use `apply_migration` to change a local database schema — it writes a migration history entry on every call, which means you can't iterate, and `supabase db diff` / `supabase db pull` will produce empty or conflicting diffs. If you use it, you'll be stuck with whatever SQL you passed on the first try.
 
-```sql
--- Public read everywhere needed for the rankings page:
-create policy "public read seasons" on seasons for select using (true);
-create policy "public read cups" on cups for select using (true);
-create policy "public read races" on races for select using (true);
-create policy "public read drivers" on drivers for select using (true);
-create policy "public read race_results" on race_results for select using (true);
-create policy "public read penalties" on penalties for select using (true);
+**When ready to commit** your changes to a migration file:
 
--- Admin writes (any authenticated user is considered an admin in this app):
-create policy "admin write seasons" on seasons for all
-  to authenticated using (true) with check (true);
--- repeat for cups, races, drivers, race_results, penalties
+1. **Run advisors** → `supabase db advisors` (CLI v2.81.3+) or MCP `get_advisors`. Fix any issues.
+2. **Review the Security Checklist above** if your changes involve views, functions, triggers, or storage.
+3. **Generate the migration** → `supabase db pull <descriptive-name> --local --yes`
+4. **Verify** → `supabase migration list --local`
 
--- race_results_log audit table:
--- inserts only by authenticated users; never readable by anon
-create policy "admin insert log" on race_results_log for insert
-  to authenticated with check (true);
-create policy "admin read log" on race_results_log for select
-  to authenticated using (true);
-```
+## Debugging
 
-If/when admins need to be distinguished from "any logged-in user", add a `profiles` table with a `role` column and adjust `using` clauses.
+When you get an error on a Supabase-related request, for example an error code from the Supabase REST API, Postgres database, or PostgREST, an empty result, getting blocked by RLS unexpectedly, or an error from a Supabase service like Auth, Realtime, Edge Functions, or Storage, you **must** fetch Supabase's [Monitoring and Debugging](https://supabase.com/docs/guides/monitoring-and-debugging.md) documentation before diagnosing or proposing a fix, rather than working from memory. The same docs also cover performance optimizations, such as slow queries and missing indexes.
 
-## Audit Log (race_results_log)
+## Reference Guides
 
-Spec 009 (production hardening) added an audit log. The pattern:
-
-1. Before any `update` or `delete` on `race_results`, the client SELECTs the current row.
-2. Inserts that row + `changed_by_user_id` into `race_results_log`.
-3. Then performs the actual update/delete.
-
-Schema:
-
-```sql
-create table race_results_log (
-  id uuid primary key default gen_random_uuid(),
-  race_result_id uuid,
-  race_id uuid,
-  driver_id uuid,
-  finish_position int,
-  grid_start_position int,
-  best_lap_time text,
-  is_disqualified boolean,
-  comments text,
-  created_at timestamptz,
-  updated_at timestamptz,
-  changed_by_user_id uuid,
-  logged_at timestamptz default now()
-);
-```
-
-(Optionally enforce this server-side with a Postgres trigger so a careless client can't skip the log. The current code does it client-side — both are acceptable but trigger is safer.)
-
-## Foreign Keys & Cascades
-
-- `races.season_id` → `seasons.id` (RESTRICT, prevent delete with races)
-- `races.cup_id` → `cups.id` (CASCADE delete races when cup is deleted — current behaviour)
-- `cups.season_id` → `seasons.id` (CASCADE)
-- `race_results.race_id` → `races.id` (CASCADE)
-- `race_results.driver_id` → `drivers.id` (**CASCADE** — was changed from RESTRICT in spec 004 to allow driver deletion to wipe their results)
-- `penalties.race_result_id` → `race_results.id` (CASCADE)
-
-## Storage
-
-Bucket: `driver-pictures`
-
-- Public read.
-- CORS must allow GET/HEAD from app origins (Cloudflare Pages domain + localhost dev).
-- Path convention: `drivers/<driver-id>/<timestamp>.<ext>`.
-- The Angular `DriverService.uploadPicture()` calls `supabase.storage.from('driver-pictures').upload(...)` then `getPublicUrl(...)` and stores the URL in `drivers.picture_url`.
-- Old pictures should be removed on successful replace.
-
-## Performance Tips
-
-1. **Always `.select(specific_columns)`** when listing — avoid `select('*')` for big tables (we still do `*` today because rows are small; reconsider if rows grow).
-2. **Index every foreign key** and every column used in `.order()` or `.eq()` filters. Supabase creates FK indexes for you; verify in the dashboard.
-3. **Batch reads** using `.in('id', [...])` instead of N round-trips (see `listRaceResultsByRaceIds`).
-4. **`.range()` pagination** for tables that grow unbounded (race_results_log).
-5. **Avoid `count: 'exact'`** unless you need it — it does an extra count query.
-6. **`single()` vs `maybeSingle()`**: use `maybeSingle()` whenever 0 rows is a valid outcome (no throw).
-
-## Real-time
-
-Currently unused. If added, subscribe via `.channel('race_results').on('postgres_changes', …)`. Be aware:
-
-- Real-time uses a separate WebSocket connection.
-- Subscriptions are billed separately on hosted Supabase free tier.
-- For a rankings page that doesn't need sub-second updates, **don't** use real-time; just refetch on user action.
-
-## Gotchas
-
-1. **Anon key + RLS-off table = full data leak.** Verify RLS is on for every table after every migration.
-2. **`auth.uid()`** is null for anon users — write policies defensively (`auth.role() = 'authenticated'` etc.).
-3. **Time zones**: `timestamptz` is what we use everywhere. Always send ISO strings.
-4. **`onAuthStateChange` fires synchronously at boot** with the persisted session — make sure your `AuthStore` is created before any guard runs.
-5. **CORS on Storage** — easy to forget and silently breaks images. Configure in the Storage section of the dashboard.
-6. **Migrations and Supabase Auth dashboard users**: creating a user in the dashboard does NOT create a row in your own `profiles` / `admins` tables. If you keep an `admins` table, use a trigger or do it manually.
-7. **`upsert` requires a unique constraint** on the conflict columns or it falls back to inserting duplicates.
-8. **Schema drift**: keep migrations idempotent or numbered; never edit the DB through the dashboard without writing the equivalent SQL into the migrations folder.
-
-## Reference Links
-
-- Supabase JS docs: https://supabase.com/docs/reference/javascript
-- RLS guide: https://supabase.com/docs/guides/auth/row-level-security
-- Storage: https://supabase.com/docs/guides/storage
-- PostgREST filters: https://docs.postgrest.org/en/stable/references/api/tables_views.html
+- **Skill Feedback** → [references/skill-feedback.md](references/skill-feedback.md)
+  **MUST read when** the user reports that this skill gave incorrect guidance or is missing information.
