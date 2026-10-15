@@ -1,6 +1,6 @@
-# Kartarados - Championship Manager
+# Kartarados — Championship Manager
 
-A vanilla JavaScript web application for managing go-kart racing championships with Formula 1-inspired design.
+A React application for managing go-kart racing championships with Formula 1-inspired design.
 
 ## Features
 
@@ -8,23 +8,24 @@ A vanilla JavaScript web application for managing go-kart racing championships w
 - **Race Results**: Enter detailed race results with penalties and disqualifications
 - **Points System**: Complex points calculation with tie-breakers (Brazilian go-kart regulations)
 - **Public Rankings**: Real-time driver rankings with cup and overall championship tabs
+- **OCR Import**: Import race results from photos using Azure Document Intelligence (Tesseract.js fallback)
 - **Formula 1 Design**: Modern, responsive interface with season-based accent colors
 
 ## Tech Stack
 
-- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
-- **Build**: Vite (dev server + production bundling/minification)
-- **UI Framework**: Bootstrap 5.3 (CDN) with custom F1 theme overrides
+- **Frontend**: React 19, Vite 8
+- **UI Framework**: Bootstrap 5.3 (npm) with Bootstrap Icons
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **Libraries**: All loaded from CDNs (Bootstrap, Supabase JS)
+- **i18n**: react-i18next (pt-BR default, en fallback)
+- **OCR**: Azure Document Intelligence + Tesseract.js
+- **Error Tracking**: Sentry
 
 ## Quick Start
 
 ### Prerequisites
 
 - Supabase account (free tier)
-- Modern web browser
-- Node.js + npm (for Vite dev/build)
+- Node.js ≥22
 
 ### Setup
 
@@ -33,151 +34,93 @@ A vanilla JavaScript web application for managing go-kart racing championships w
    - Create a new project
    - Note your Project URL and anon key (Settings → API)
 
-2. **Configure Frontend**
-   - **React (active)** — create `react/.env`:
+2. **Configure Environment**
+   - Create `.env` from Supabase credentials:
      ```
      VITE_SUPABASE_URL=https://[your-project-ref].supabase.co
      VITE_SUPABASE_ANON_KEY=your-anon-key
      ```
-   - **Legacy** — update `frontend/src/config.js`:
-     ```javascript
-     export const SUPABASE_URL = 'https://[your-project-ref].supabase.co';
-     export const SUPABASE_ANON_KEY = 'your-anon-key';
-     ```
 
 3. **Setup Database**
-   - See `kartarados/specs/001-championship-manager/quickstart.md` → "Database Setup"
+   - See `.agents/specs/001-championship-manager/quickstart.md` → "Database Setup"
    - Run the SQL scripts in Supabase SQL Editor
 
 4. **Create First Admin**
-   - See `kartarados/specs/001-championship-manager/quickstart.md` → "Create First Admin"
-   - **First Admin Password**: [GENERATE RANDOM PASSWORD AND DOCUMENT HERE]
+   - See `.agents/specs/001-championship-manager/quickstart.md` → "Create First Admin"
 
 5. **Start Development Server**
+
    ```bash
-   cd react
    npm install
    npm run dev
    ```
 
 6. **Open Application**
-   - Navigate to the URL printed by Vite (typically `http://localhost:5173`)
+   - Navigate to `http://localhost:8000`
    - Log in with first admin credentials
 
-## Development / Build / Deploy (Vite)
-
-### Develop (live reload / HMR)
+## Development
 
 ```bash
-cd react
-npm install
-npm run dev
-```
-
-Legacy frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Build (production bundle)
-
-```bash
-cd react
-npm run build
-```
-
-Output is written to `react/dist/` (minified JS/CSS + processed assets).
-
-### Preview production build locally
-
-```bash
-cd react
-npm run preview
+npm install                     # dependencies
+npm run dev                     # dev server → localhost:8000
+npm run build                   # production bundle → dist/
+npm run preview                 # preview the production build locally
+npm run lint                    # ESLint
+npm run format:check            # Prettier
+node scripts/check-size.mjs     # bundle size (budget: 1200 kB gzip)
 ```
 
 ### Deploy (Cloudflare Pages)
 
-Current configuration (React app):
-
-- **Root directory**: `react`
-- **Build command**: `bash ../build.sh`
-- **Build output directory**: `dist` (i.e. `react/dist`)
-- **Environment variables** (Cloudflare dashboard, no `VITE_` prefix):
-  `SUPABASE_URL`, `SUPABASE_ANON_KEY` (required). Optional:
-  `APP_URL`, `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`, `SENTRY_DSN`,
-  `SENTRY_ENVIRONMENT` — `build.sh` bridges these to `VITE_*` names.
+- **Root directory**: `.` (repo root)
+- **Build command**: `npm run build`
+- **Build output directory**: `dist`
+- **Environment variables** (Cloudflare dashboard):
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (required). Optional:
+  `VITE_APP_URL`, `VITE_AZURE_ENDPOINT`, `VITE_AZURE_KEY`,
+  `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`.
   `SENTRY_AUTH_TOKEN` is build-time-only (read by `@sentry/vite-plugin` for
   sourcemap upload), never injected into the bundle.
 
-`build.sh` runs `npm ci && npm run build` in `react/` and verifies the SPA
-fallback (`dist/_redirects`) before the bundle is shipped. See
-`AGENTS.md` → "Env & Secrets" for the full variable table and the rollback
-procedure (revert the root directory to `frontend` to deploy the legacy app).
+See `AGENTS.md` → "Env & Secrets" for the full variable table.
 
 ## Project Structure
 
 ```
-frontend/
-├── src/
-│   ├── components/      # Reusable UI components
-│   ├── pages/          # Page-level components
-│   ├── services/       # API and business logic
-│   ├── utils/          # Utility functions
-│   └── styles/         # CSS files
-└── index.html          # Entry point
-
-backend/
-└── functions/          # Serverless functions (if needed)
+├── src/                     # Application source
+│   ├── components/          # Reusable UI components
+│   │   └── layout/          # Navbar, Footer, MainContent
+│   │   └── modals/          # ConfirmModal, RaceResultModal, OcrImportModal
+│   ├── context/             # AuthContext, SeasonContext, LoadingContext
+│   ├── i18n/                # Translations (pt-BR, en)
+│   ├── lib/                 # API, auth, formatting, OCR, points, Sentry, Supabase
+│   ├── pages/               # Page-level components
+│   └── styles/              # CSS
+├── public/                  # Static assets (_redirects for SPA fallback)
+├── scripts/                 # check-size.mjs
+├── .agents/                 # Skills + specs for AI agents
+│   ├── skills/              # React best practices, Supabase
+│   └── specs/               # Historical feature specs (001–012)
+├── index.html               # SPA entry point
+├── vite.config.js           # Vite configuration
+└── AGENTS.md                # Development rules for AI agents
 ```
 
 ## Local Development
 
 The app runs locally and connects to your remote Supabase project:
 
-- ✅ Frontend runs on the Vite dev server (default `localhost:5173`)
+- ✅ Dev server at `localhost:8000`
 - ✅ Connects to remote Supabase (database, auth, storage)
 - ✅ No local database setup needed
 - ✅ CORS automatically handled by Supabase
 
-See `kartarados/specs/001-championship-manager/quickstart.md` → "Local Development Setup" for details.
-
-## Assets (important)
-
-Because the app is now built with Vite, **do not hardcode `src/...` paths** inside JavaScript-rendered HTML.
-
-- **In JS modules (recommended)**: import the asset and use the returned URL:
-
-```js
-import logoUrl from '../assets/icons/kartarados_3grays.png';
-// ...
-img.src = logoUrl;
-```
-
-- **In `index.html`**: you can keep `href="src/..."` and Vite will rewrite it during build (for example, the favicon becomes a hashed `/assets/...` URL in `dist/index.html`).
-
-This ensures assets work in both `npm run dev` and the built `dist/` output.
-
 ## Documentation
 
-- **Specification**: `kartarados/specs/001-championship-manager/spec.md`
-- **Implementation Plan**: `kartarados/specs/001-championship-manager/plan.md`
-- **Tasks**: `kartarados/specs/001-championship-manager/tasks.md`
-- **Data Model**: `kartarados/specs/001-championship-manager/data-model.md`
-- **API Contracts**: `kartarados/specs/001-championship-manager/contracts/api-contracts.md`
-- **Quick Start**: `kartarados/specs/001-championship-manager/quickstart.md`
-
-## Constitution
-
-This project follows the Kartarados Constitution principles:
-- Code Quality (NON-NEGOTIABLE)
-- Mobile-First Design
-- User Experience Consistency
-- Performance Requirements
-
-See `kartarados/.specify/memory/constitution.md` for details.
+- **Development Rules**: `AGENTS.md`
+- **Specifications**: `.agents/specs/`
+- **Skills**: `.agents/skills/README.md`
 
 ## License
 
