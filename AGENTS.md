@@ -14,7 +14,6 @@ Single React app at repo root:
 ```bash
 npm run dev                    # localhost:8000
 npm run build                  # → dist/
-bash build.sh                  # full CF pipeline (env bridge + npm ci + build + dist checks)
 ```
 
 Pre-verification: `npm run build` (only no-test fallback — no test framework).
@@ -25,34 +24,35 @@ Pre-verification: `npm run build` (only no-test fallback — no test framework).
 
 ### Cloudflare Pages env vars (project `kartarados`)
 
-Dashboard names have **no `VITE_` prefix**. `build.sh` bridges them: it exports `VITE_*` copies at build time because Vite only injects `VITE_`-prefixed vars into the bundle. **Do not rename the dashboard vars.**
+Cloudflare Pages passes environment variables to the build process. Vite reads `VITE_`-prefixed vars and injects them into the bundle at build time via `import.meta.env`. Build-time-only vars without the `VITE_` prefix are read by tooling from `process.env` and never reach the bundle.
 
-| CF dashboard var                | Vite name                 | Read by                                                   | Required                                             |
-| ------------------------------- | ------------------------- | --------------------------------------------------------- | ---------------------------------------------------- |
-| `SUPABASE_URL`                  | `VITE_SUPABASE_URL`       | `@/lib/supabase.js`                                       | yes                                                  |
-| `SUPABASE_ANON_KEY`             | `VITE_SUPABASE_ANON_KEY`  | `@/lib/supabase.js`                                       | yes                                                  |
-| `APP_URL`                       | `VITE_APP_URL`            | `@/lib/auth.js` (OAuth `emailRedirectTo`)                 | no — set the production URL                          |
-| `AZURE_VISION_ENDPOINT`         | `VITE_AZURE_ENDPOINT`     | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
-| `AZURE_VISION_KEY`              | `VITE_AZURE_KEY`          | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
-| `SENTRY_DSN`                    | `VITE_SENTRY_DSN`         | `@/lib/sentry.js` (runtime init gate)                     | no                                                   |
-| `SENTRY_ENVIRONMENT`            | `VITE_SENTRY_ENVIRONMENT` | `@/lib/sentry.js`                                         | no (defaults `production`)                           |
-| `SENTRY_AUTH_TOKEN`             | — (build-time only)       | `vite.config.js` → `@sentry/vite-plugin` sourcemap upload | no (upload skipped if unset)                         |
-| `SENTRY_ORG` / `SENTRY_PROJECT` | — (build-time only)       | `vite.config.js`                                          | no (defaults `lennon-carvalho` / `javascript-react`) |
+| CF dashboard var        | Read by                                                   | Required                                             |
+| ----------------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| `VITE_SUPABASE_URL`     | `@/lib/supabase.js`                                       | yes                                                  |
+| `VITE_SUPABASE_ANON_KEY`| `@/lib/supabase.js`                                       | yes                                                  |
+| `VITE_APP_URL`          | `@/lib/auth.js` (OAuth `emailRedirectTo`)                 | no — set the production URL                          |
+| `VITE_AZURE_ENDPOINT`   | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
+| `VITE_AZURE_KEY`        | `@/lib/ocr.js`                                            | no (Tesseract.js fallback)                           |
+| `VITE_SENTRY_DSN`       | `@/lib/sentry.js` (runtime init gate)                     | no                                                   |
+| `VITE_SENTRY_ENVIRONMENT`| `@/lib/sentry.js`                                         | no (defaults `production`)                           |
+| `SENTRY_AUTH_TOKEN`     | `vite.config.js` → `@sentry/vite-plugin` sourcemap upload | no (upload skipped if unset)                         |
+| `SENTRY_ORG`            | `vite.config.js`                                          | no (defaults `lennon-carvalho`)                      |
+| `SENTRY_PROJECT`        | `vite.config.js`                                          | no (defaults `javascript-react`)                     |
 
 Build-time-only vars (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`) are read from `process.env` by the Vite plugin and are **never** injected into the bundle.
 
-⚠️ `AZURE_VISION_KEY` (`VITE_AZURE_KEY`) is currently embedded in the client bundle (same as the legacy production deployment). The intended fix is to proxy OCR calls through a **Cloudflare Pages Function** — a handful of handler lines in `functions/api/ocr.js`, deployed alongside the Pages app with no separate backend needed — so the key stays server-side. Tesseract.js is the fallback when the key is missing/unavailable.
+⚠️ `VITE_AZURE_KEY` is currently embedded in the client bundle. The intended fix is to proxy OCR calls through a **Cloudflare Pages Function** — a handful of handler lines in `functions/api/ocr.js`, deployed alongside the Pages app with no separate backend needed — so the key stays server-side. Tesseract.js is the fallback when the key is missing/unavailable.
 
 ### Cloudflare Pages build config (project `kartarados`)
 
 | Field                  | Value           |
 | ---------------------- | --------------- |
 | Root directory         | `.` (repo root) |
-| Build command          | `bash build.sh` |
+| Build command          | `npm run build` |
 | Build output directory | `dist`          |
 | Build comments         | Enabled         |
 
-`build.sh` runs `npm ci && npm run build`, fails fast when `SUPABASE_URL` / `SUPABASE_ANON_KEY` are missing, and refuses to finish unless `dist/index.html` and `dist/_redirects` exist. Node version is pinned by `.nvmrc` (Vite 8 needs ≥20.19 / 22.12).
+Cloudflare Pages auto-installs dependencies and runs `npm run build` (Vite). Node version is pinned by `.nvmrc` (Vite 8 needs ≥20.19 / 22.12).
 
 ## Code Style
 

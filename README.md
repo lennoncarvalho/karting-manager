@@ -68,18 +68,18 @@ npm run build                   # production bundle → dist/
 npm run preview                 # preview the production build locally
 npm run lint                    # ESLint
 npm run format:check            # Prettier
-node scripts/check-size.mjs     # bundle size (budget: 320 kB gzip)
+node scripts/check-size.mjs     # bundle size (budget: 1200 kB gzip)
 ```
 
 ### Deploy (Cloudflare Pages)
 
 - **Root directory**: `.` (repo root)
-- **Build command**: `bash build.sh`
+- **Build command**: `npm run build`
 - **Build output directory**: `dist`
-- **Environment variables** (Cloudflare dashboard, no `VITE_` prefix):
-  `SUPABASE_URL`, `SUPABASE_ANON_KEY` (required). Optional:
-  `APP_URL`, `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY`, `SENTRY_DSN`,
-  `SENTRY_ENVIRONMENT` — `build.sh` bridges these to `VITE_*` names.
+- **Environment variables** (Cloudflare dashboard):
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (required). Optional:
+  `VITE_APP_URL`, `VITE_AZURE_ENDPOINT`, `VITE_AZURE_KEY`,
+  `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`.
   `SENTRY_AUTH_TOKEN` is build-time-only (read by `@sentry/vite-plugin` for
   sourcemap upload), never injected into the bundle.
 
@@ -104,7 +104,6 @@ See `AGENTS.md` → "Env & Secrets" for the full variable table.
 │   └── specs/               # Historical feature specs (001–012)
 ├── index.html               # SPA entry point
 ├── vite.config.js           # Vite configuration
-├── build.sh                 # Cloudflare Pages build script
 └── AGENTS.md                # Development rules for AI agents
 ```
 
@@ -121,7 +120,7 @@ The app runs locally and connects to your remote Supabase project:
 
 - **Development Rules**: `AGENTS.md`
 - **Specifications**: `.agents/specs/`
-- **Skills**: `.agents/skills/READEME.md`
+- **Skills**: `.agents/skills/README.md`
 
 ## License
 
