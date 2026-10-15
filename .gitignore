@@ -14,12 +14,9 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-frontend/src/config.local.js
 
 # Dependencies (if using npm/yarn later)
 node_modules/
-package-lock.json
-!react/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
@@ -36,6 +33,7 @@ coverage/
 # Temporary files
 *.cache
 .cache/
+.fallow/
 
 # Supabase local (if using Supabase CLI)
 .supabase/

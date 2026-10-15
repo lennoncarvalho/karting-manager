@@ -4,6 +4,4 @@ reviews:
   auto_review:
     enabled: true
   path_filters:
-    - "!frontend/**"
-    - "!kartarados/**"
-
+    - "!.agents/**"
