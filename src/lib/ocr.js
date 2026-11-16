@@ -23,6 +23,11 @@ async function loadTesseract() {
   return tesseractWorker;
 }
 
+/** Whether Azure Document Intelligence is configured (env vars present). */
+export function hasAzureConfig() {
+  return hasConfig();
+}
+
 export async function runOcr(imageFile) {
   const isPdf =
     imageFile.type === "application/pdf" ||
@@ -33,20 +38,21 @@ export async function runOcr(imageFile) {
       throw new Error("PDF requires Azure");
     }
     const result = await runAzure(imageFile);
-    return { ...result, fallbackUsed: false };
+    return { ...result, fallbackUsed: false, provider: "azure" };
   }
 
   if (hasConfig()) {
     try {
       const result = await runAzure(imageFile);
-      return { ...result, fallbackUsed: false };
+      return { ...result, fallbackUsed: false, provider: "azure" };
     } catch (err) {
       console.error("Azure OCR failed, falling back to Tesseract", err);
       const result = await runTesseract(imageFile);
-      return { ...result, fallbackUsed: true };
+      return { ...result, fallbackUsed: true, provider: "tesseract" };
     }
   }
-  return runTesseract(imageFile);
+  const result = await runTesseract(imageFile);
+  return { ...result, fallbackUsed: true, provider: "tesseract" };
 }
 
 async function runAzure(file) {

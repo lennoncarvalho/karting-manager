@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { runOcr } from "@/lib/ocr";
+import { runOcr, hasAzureConfig } from "@/lib/ocr";
 import { detectSheetType, parseOcrRows } from "@/lib/ocrParsing";
 import { matchDriverName } from "@/lib/matching";
 import { isValidLapTime } from "@/lib/validation";
@@ -95,6 +95,7 @@ export function OcrImportModal({
   const [parsedRows, setParsedRows] = useState([]);
   const [ocrText, setOcrText] = useState("");
   const [ocrTables, setOcrTables] = useState([]);
+  const [ocrProvider, setOcrProvider] = useState(null);
   const [status, setStatus] = useState("idle");
   const fileInputRef = useRef(null);
   const saveInProgressRef = useRef(false);
@@ -143,6 +144,7 @@ export function OcrImportModal({
     setParsedRows([]);
     setOcrText("");
     setOcrTables([]);
+    setOcrProvider(null);
     setStatus("idle");
   };
 
@@ -159,7 +161,9 @@ export function OcrImportModal({
       const ocrFile = isPdf
         ? selectedFile
         : await normalizeImageToPng(selectedFile);
-      const { text, tables, fallbackUsed } = await runOcr(ocrFile);
+      const { text, tables, fallbackUsed, provider } = await runOcr(ocrFile);
+
+      setOcrProvider(provider || "tesseract");
 
       if (fallbackUsed) {
         notify(t("ocrImport.fallbackNotice"), "warning");
@@ -353,7 +357,15 @@ export function OcrImportModal({
                   {t("ocrImport.providerLabel")}
                 </label>
                 <div className="form-control-plaintext">
-                  {t("ocrImport.providerAuto")}
+                  {(() => {
+                    if (ocrProvider === "azure")
+                      return t("ocrImport.providerAzure");
+                    if (ocrProvider === "tesseract")
+                      return t("ocrImport.providerTesseract");
+                    return hasAzureConfig()
+                      ? t("ocrImport.providerReady")
+                      : t("ocrImport.providerTesseract");
+                  })()}
                 </div>
               </div>
             </div>

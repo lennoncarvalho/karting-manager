@@ -356,6 +356,8 @@
     "modeQualifying": "Qualifying",
     "providerLabel": "OCR Provider",
     "providerAuto": "Auto (Azure Document Intelligence + Tesseract)",
+    "providerAzure": "Azure Document Intelligence",
+    "providerReady": "Azure ready (fallback: Tesseract)",
     "providerTesseract": "Tesseract (in-browser)",
     "chooseImage": "Choose an image",
     "imageHint": "For a successful import, use a good-quality picture. Make it black and white, crop unwanted areas, and leave just the driver's name, position, and time.",
