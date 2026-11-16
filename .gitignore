@@ -34,6 +34,7 @@ coverage/
 *.cache
 .cache/
 .fallow/
+*.traineddata
 
 # Supabase local (if using Supabase CLI)
 .supabase/
